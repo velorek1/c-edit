@@ -8,7 +8,8 @@ So far I have implemented:
 * Very Simple Double Screen Buffer with top-down menus using Ansi-functions.
 * Circular linked list for creating selection menus.
 
-==============================================================================================================
+Files:
+=====
 
 * c_cool.c -> code for the library that handles output with Ansi Functions in linux console (with its header file)
 * list_choice.c -> code for the circular linked list responsible for handling menus 

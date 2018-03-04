@@ -1,14 +1,15 @@
-HEADERS = c_cool.h list_choice.h
+HEADERS = c_cool.h list_choice.h screen_buffer.h
 
-default: test1
+default: cedit
 
-test1.o: test1.c $(HEADERS)
-	gcc -c test1.c 
-	gcc -c c_cool.c
-	gcc -c list_choice.c
+cedit.o: cedit.c $(HEADERS)
+	gcc -c -Wall cedit.c 
+	gcc -c -Wall c_cool.c
+	gcc -c -Wall list_choice.c
+	gcc -c -Wall screen_buffer.c
 
-test1: test1.o 
-	gcc test1.o c_cool.o list_choice.o -o test1
+cedit: cedit.o 
+	gcc cedit.o c_cool.o list_choice.o screen_buffer.o -o cedit
 
 clean:
-	-rm -f test1.o
+	-rm -f cedit.o

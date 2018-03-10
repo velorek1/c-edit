@@ -22,4 +22,4 @@ More info at: oldstuff286.blogspot.com
 
 Makefile is included. Type "make" and "./cedit" to execute.
 
-![Alt text](output.gif?raw=true "Demo")
+![Alt text](ceditor.png?raw=true "Demo")

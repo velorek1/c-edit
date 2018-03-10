@@ -164,7 +164,7 @@ char start_vmenu(LISTCHOICE * list_data) {
   char    ch;
   LISTCHOICE aux;
   int     exitwhile = 0;
-
+  int esc_key=0;
   display_list(list_data);	//display whole list
 
   //Highlight first item on the list
@@ -176,28 +176,39 @@ char start_vmenu(LISTCHOICE * list_data) {
   {
     ch = getch();
     if(ch == '\033') {
+      esc_key=1;
       getch();
       switch (getch()) {
 	case 'A':
 	  move_up(&aux);
+          esc_key=0;
 	  break;
 	case 'B':
 	  move_down(&aux);
+          esc_key=0;
 	  break;
 	case 'C':
 	  ch = -1;		// this will be used in top-down menu. Mark for left arrow key
 	  exitwhile = 1;
+          esc_key=0;
 	  break;
 	case 'D':
 	  ch = -2;		// this will be used in top-down menu. Mark for right arrow key
 	  exitwhile = 1;
+          esc_key=0;
 	  break;
+        default:
+          esc_key=1;
+          break;
       }
-    }
-    if(exitwhile == 1)
-      break;
+     }
+  if (esc_key==1){
+     break;
+     }
+  if(exitwhile == 1)
+     break;
   }
-  if(ch == 10) {
+ if(ch == 10||esc_key==1) {
     //Pass data of last item by value.
     *list_data = aux;
   }

@@ -18,6 +18,7 @@ LISTCHOICE *mylist, data;
 BCELL  *my_screen;
 
 int     rows, columns, old_rows, old_columns;
+int     cursorX=2,cursorY=3;
 int     exitp = 0;
 char    kglobal; //Global variables should be turned into functions
 
@@ -29,24 +30,46 @@ void filemenu();
 void optionsmenu();
 void helpmenu();
 int confirmation();
-
+int process_input(int *whereX, int *whereY, char ch);
 
 //PROGRAM
 int main() {
   char    ch;
+  int esc_key =0; //To control key input and scan for keycodes.
   //hidecursor();
   create_screen();
   main_screen();
   do {
-    ch = getch();
-    if(ch == 'a' || ch == 'A') {
+      ch = getch();
+   /* EDIT */
+   process_input(&cursorX,&cursorY, ch); //Edit
+    
+
+   /* SPECIAL KEYS */
+   if (ch==27){
+      esc_key=1; //esc_key is active for longer key codes
+    } 
+
+    if(ch == 82 && esc_key==1) {
+      //F3 -> resize screen
+      free_buffer(); //delete structure from memory for resize
+      create_screen(); //create new structure 
+      main_screen(); //Refresh screen in case of resize
+      esc_key=0;
+    }
+   if(ch == 81 && esc_key==1) {
+      //F2 -> open drop-down menus
+      esc_key=0;
       loadmenus(0);		// horizontal menu
       start_hmenu(&data);
       free_list(mylist);
       kglobal = 0;		//reset kglobal
       //drop-down menu loop -1 value indicates that vertical arrows can be used
       do {
-	if(data.index == 0) {
+        if (kglobal==27) {
+         break;
+        }
+        if(data.index == 0) {
 	  filemenu();
 	  if(kglobal == -1) {
 	    data.index = 1;
@@ -84,6 +107,20 @@ int main() {
 
 /* FUNCTION DEFINITIONS */
 
+/* Edit */
+int process_input(int *whereX, int *whereY,char ch)
+{
+ if (ch != 27) {
+  write_ch(*whereX,*whereY,ch,B_BLUE,F_WHITE);
+  write_str(columns-11,rows,"| L:   C:  ",B_CYAN,FH_WHITE);
+  write_num(columns-7,rows,*whereX-1,3,B_CYAN,FH_WHITE);
+  write_num(columns-2,rows,*whereY-2,3,B_CYAN,FH_WHITE);
+  update_screen();
+   *whereX = *whereX + 1;
+ }
+  return 0;
+}
+
 /* Draw the main screen */
 int main_screen() {
   int     i;
@@ -107,13 +144,37 @@ int main_screen() {
   }
 
   for(i = 1; i < columns; i++) {
-    write_ch(i, rows, 32, B_WHITE, F_WHITE);
+    write_ch(i, rows, 32, B_CYAN, F_WHITE);
   }
-
+  // Text messages
   write_str(1, 1, "File  Options  Help", B_WHITE, F_BLACK);
-  write_str(1, rows, ">> [C-Edit] - Coded by Velorek", B_WHITE, F_BLACK);
+  write_str(1, rows, ">> [C-Edit]", B_CYAN, FH_WHITE);
   write_num(columns - 10, 1, rows, 3, B_WHITE, F_BLACK);
-  write_str(2, 3, "Press A to activate menus", B_BLUE, F_WHITE);
+  write_str(14, rows, "| F2 -> Menus | F3 -> Resize screen |", B_CYAN, FH_WHITE);
+  
+  /* Frames */
+  //window appearance and scroll bar
+  for (i=2; i<rows; i++){
+    write_ch(columns,i,' ',B_WHITE,F_BLACK);
+    write_ch(1,i,'|',B_BLACK,F_WHITE);
+  }
+  for(i = 2; i < columns; i++) {
+    write_ch(i, 2, '-', B_BLACK, F_WHITE);
+    write_ch(i, rows-1, ' ', B_BLACK, F_WHITE);
+  }
+  //horizontal scroll bar
+   for(i = 2; i < columns; i++) {
+    write_ch(i, rows-1, 32, B_WHITE, F_WHITE);
+  }
+  
+  write_str((columns/2)-4,2,"UNTITLED",B_WHITE,F_BLACK); 
+  write_ch(columns,3,'^',B_BLACK,F_WHITE);
+  write_ch(columns,rows-2,'v',B_BLACK,F_WHITE);
+  write_ch(columns,4,'*',B_CYAN,F_WHITE);
+  write_ch(3,rows-1,'*',B_CYAN,F_WHITE);
+  write_ch(2,rows-1,'<',B_BLACK,F_WHITE);
+  write_ch(columns-1,rows-1,'>',B_BLACK,F_WHITE);
+  write_ch(columns,rows-1,'|',B_BLUE,F_WHITE);
   update_screen();
   return 0;
 }

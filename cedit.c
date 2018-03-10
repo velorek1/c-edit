@@ -17,9 +17,9 @@ Last modified : 04/3/2018
 LISTCHOICE *mylist, data;
 BCELL  *my_screen;
 
-int     rows, columns, old_rows, old_columns;
-int     cursorX=2,cursorY=3;
-int     exitp = 0;
+int     rows, columns, old_rows, old_columns; //terminal dimensions
+int     cursorX=2,cursorY=3; //cursor position
+int     exitp = 0; // exit flag
 char    kglobal; //Global variables should be turned into functions
 
 //Function declarations
@@ -45,8 +45,10 @@ int main() {
    update_screen();
    ch = getch();
    /* EDIT */
-   process_input(&cursorX,&cursorY, ch); //Edit
-    
+   if (esc_key == 0) {
+     //process input and get rid of extra keys
+     process_input(&cursorX,&cursorY, ch); //Edit
+   } 
 
    /* SPECIAL KEYS */
    if (ch==27){
@@ -70,7 +72,8 @@ int main() {
       //drop-down menu loop -1 value indicates that vertical arrows can be used
       do {
         if (kglobal==27) {
-         break;
+         esc_key=0;
+          break;
         }
         if(data.index == 0) {
 	  filemenu();
@@ -114,12 +117,15 @@ int main() {
 int process_input(int *whereX, int *whereY,char ch)
 {
  if (ch != 27) {
-  write_ch(*whereX,*whereY,ch,B_BLUE,F_WHITE);
-  write_str(columns-11,rows,"| L:   C:  ",B_CYAN,FH_WHITE);
-  write_num(columns-7,rows,*whereX-1,3,B_CYAN,FH_WHITE);
-  write_num(columns-2,rows,*whereY-2,3,B_CYAN,FH_WHITE);
-  update_screen();
-   *whereX = *whereX + 1;
+   if (ch>31 && ch<128) {
+    //only print ASCII characters to screen.
+     write_ch(*whereX,*whereY,ch,B_BLUE,F_WHITE);
+     write_str(columns-13,rows,"| L:   C:  ",B_CYAN,FH_WHITE);
+     write_num(columns-4,rows,*whereX-1,3,B_CYAN,FH_WHITE);
+     write_num(columns-9,rows,*whereY-2,4,B_CYAN,FH_WHITE);
+     update_screen();
+     *whereX = *whereX + 1;
+  }
  }
   return 0;
 }
@@ -152,8 +158,8 @@ int main_screen() {
   // Text messages
   write_str(1, 1, "File  Options  Help", B_WHITE, F_BLACK);
   write_str(1, rows, ">> [C-Edit]", B_CYAN, FH_WHITE);
-  write_num(columns - 10, 1, rows, 3, B_WHITE, F_BLACK);
-  write_str(14, rows, "| F2 -> Menus | F3 -> Resize screen |", B_CYAN, FH_WHITE);
+ // write_str(columns - 10, 1, "[C-Edit]", B_CYAN, FH_WHITE);
+  write_str(14, rows, "| F2 -> Menus | F3 -> Resize screen", B_CYAN, FH_WHITE);
   
   /* Frames */
   //window appearance and scroll bar
@@ -192,11 +198,11 @@ void loadmenus(int choice) {
   }
 
   if(choice == 1) {
-    add_item(mylist, "Option 1", 3, 3, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
-    add_item(mylist, "Option 2", 3, 4, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
-    add_item(mylist, "Option 3", 3, 5, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
-    add_item(mylist, "Option 4", 3, 6, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
-    add_item(mylist, "Option 5", 3, 7, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
+    add_item(mylist, "New", 3, 3, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
+    add_item(mylist, "Open", 3, 4, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
+    add_item(mylist, "Save", 3, 5, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
+    add_item(mylist, "Save as..", 3, 6, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
+    add_item(mylist, "Print", 3, 7, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
     add_item(mylist, "Exit", 3, 8, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
   }
   if(choice == 2) {

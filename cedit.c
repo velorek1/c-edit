@@ -40,7 +40,10 @@ int main() {
   create_screen();
   main_screen();
   do {
-      ch = getch();
+   /* CURSOR */
+   write_ch(cursorX,cursorY,'|',B_BLUE,FH_WHITE);
+   update_screen();
+   ch = getch();
    /* EDIT */
    process_input(&cursorX,&cursorY, ch); //Edit
     

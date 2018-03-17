@@ -26,6 +26,8 @@ char    kglobal; //Global variables should be turned into functions
 void credits();
 int main_screen();
 void loadmenus(int choice);
+char horizontal_menu();
+void drop_down(char *kglobal);
 void filemenu();
 void optionsmenu();
 void helpmenu();
@@ -34,7 +36,7 @@ int process_input(int *whereX, int *whereY, char ch);
 void draw_cursor(int *whereX, int *whereY, int *timer);
 int refresh_screen();
     
-//PROGRAM
+//MAIN PROGRAM
 int main() {
   char    ch=0;
   int esc_key =0; //To control key input and scan for keycodes.
@@ -43,15 +45,18 @@ int main() {
   pushTerm(); //Save current terminal settings in failsafe
   create_screen();
   main_screen();
+
   do {
+  
    /* CURSOR */
    draw_cursor(&cursorX,&cursorY,&timerCursor);   
    //Query if screen dimensions have changed
    refresh_screen(); 
    /* Wait for key_pressed to read key */
    keypressed = kbhit();
-  if (keypressed==1) 
-  { 
+
+  if (keypressed==1){ 
+  
      ch = readch();
      /* EDIT */
      if (esc_key == 0) {
@@ -66,63 +71,28 @@ int main() {
         esc_key=1; //esc_key is active for longer key codes
       } 
 
-      if(ch == 82 && esc_key==1) {
-        //F3 -> resize screen
+     if(ch == 82 && esc_key==1) {
+        //F3 -> Refresh screen
          refresh_screen();
          esc_key=0;
       }
 
      if(ch == 81 && esc_key==1) {
-       //F2 -> open drop-down menus
-       esc_key=0;
-       write_str(14, rows, "Press ESC thrice [3x] to exit menu", B_CYAN, FH_WHITE);
-       update_screen();
-       loadmenus(0);		// horizontal menu
-       kglobal=start_hmenu(&data);
-       if (kglobal==27) 
-         {
-           write_str(1, 1, "File  Options  Help", B_WHITE, F_BLACK);
-           update_screen();
-         }
-       free_list(mylist);
-       //drop-down menu loop -1 value indicates that vertical arrows can be used
-       do {
-         if (kglobal==27) {
-           esc_key=0;
-           kglobal=0;
-           break;
-         }
-         if(data.index == 0) {
-	   filemenu();
-	   if(kglobal == -1) {
-	      data.index = 1;
-	   }
-	   if(kglobal == -2) {
-	      data.index = 2;
-	   }
-  	 }
-	if(data.index == 1) {
-	   optionsmenu();
-	   if(kglobal == -1) {
-	     data.index = 2;
-	   }
-	   if(kglobal == -2) {
-	     data.index = 0;
-	   }
-	 }
-	if(data.index == 2) {
-	   helpmenu();
-	   if(kglobal == -1) {
-	     data.index = 0;
-	   }
-	   if(kglobal == -2) {
-	     data.index = 1;
-	   }
-	 }
-        } while(kglobal != 13);
-     }
-   }
-  } while(exitp != 1);
+         //F2 -> open drop-down menus
+         esc_key=0;
+         if (horizontal_menu()==27) 
+           {
+             //Exit horizontal menu with ESC 3x
+             kglobal=27;
+             main_screen();
+           } 
+        /*  Drop-down menu loop */       
+         drop_down(&kglobal); //animation
+      } //end F2
+
+    } //end if keypressed
+
+  } while(exitp != 1); //exit flag for the whole program
   credits();
   //showcursor;
   return 0;
@@ -259,7 +229,7 @@ void loadmenus(int choice) {
   if(choice == 2) {
     add_item(mylist, "Settings", 9, 3, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
     add_item(mylist, "Colors", 9, 4, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
-    add_item(mylist, "Resize_F3", 9, 5, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
+    add_item(mylist, "Refresh_F3", 9, 5, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
   }
   if(choice == 3) {
     add_item(mylist, "Help_F1", 18, 3, B_WHITE, F_BLACK, B_BLACK,
@@ -274,6 +244,18 @@ void loadmenus(int choice) {
   }
 }
 
+/* Horizontal menu */
+char horizontal_menu(){
+// Horizontal menu
+char temp_char;
+  write_str(14, rows, "Press ESC thrice [3x] to exit menu  ", B_CYAN, FH_WHITE);
+  update_screen();
+  loadmenus(0);		// horizontal menu
+  temp_char=start_hmenu(&data);
+  free_list(mylist);
+  return temp_char;
+
+}
 /* Display File Menu */
 void filemenu() {
   loadmenus(1);
@@ -335,7 +317,62 @@ int confirmation(){
     close_window();
     return ok; 
 }
+void drop_down(char *kglobal){
+/* 
+   Drop_down loop animation 
+   -1 is used when right/left arrow keys are used
+   so as to break vertical menu and 
+   start the adjacent menu
+   kglobal is changed by the menu functions
+*/
+  
+do {
+      
+  if (*kglobal==27) {
+    //Exit drop-down menu with ESC 3x          
+    *kglobal=0;          
+    main_screen();          
+    break;
+      
+  }
 
+  if(data.index == 0) {
+    filemenu();
+
+      if(*kglobal == -1) {	      
+        data.index = 1;
+      }	   
+      if(*kglobal == -2) {	      
+        data.index = 2;	   
+      } 	
+  }
+
+  if(data.index == 1) {
+    optionsmenu();
+     
+     if(*kglobal == -1) {
+       data.index = 2;	   
+     }
+	   
+     if(*kglobal == -2) {
+       data.index = 0;
+     }
+  }
+	
+  if(data.index == 2) {
+    helpmenu();
+
+    if(*kglobal == -1) {
+	 data.index = 0;	   
+    }
+	 
+    if(*kglobal == -2) {    
+      data.index = 1;	  
+    }	 
+  }
+
+ } while(*kglobal != 13);
+}
 /* Frees memory and displays goodbye message */
 void credits(){
   free_buffer();

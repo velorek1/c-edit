@@ -18,10 +18,10 @@ LISTCHOICE *mylist, data;
 BCELL  *my_screen;
 
 /* Global Variables */
-int     rows, columns, old_rows, old_columns; // Terminal dimensions
+int     rows=0, columns=0, old_rows=0, old_columns=0; // Terminal dimensions
 int     cursorX=2,cursorY=3, timerCursor=0; // Cursor position and Timer
 int     exitp = 0; // Exit flag for main loop
-char    kglobal; // Global variable for menu animation
+char    kglobal=0; // Global variable for menu animation
 
 //Function declarations
 void credits();
@@ -35,7 +35,7 @@ void helpmenu();
 int confirmation();
 int process_input(int *whereX, int *whereY, char ch);
 void draw_cursor(int *whereX, int *whereY, int *timer);
-int refresh_screen();
+int refresh_screen(int force_refresh);
     
 //MAIN PROGRAM
 int main() {
@@ -44,15 +44,15 @@ int main() {
   int keypressed =0;
   hidecursor();
   pushTerm(); //Save current terminal settings in failsafe
-  create_screen();
-  main_screen();
+  create_screen(); //Create screen buffer to control display
+  main_screen(); //Draw screen
 
   do {
   
    /* CURSOR */
    draw_cursor(&cursorX,&cursorY,&timerCursor);   
    //Query if screen dimensions have changed
-   refresh_screen(); 
+   refresh_screen(0); 
    /* Wait for key_pressed to read key */
    keypressed = kbhit();
 
@@ -63,7 +63,6 @@ int main() {
      if (esc_key == 0) {
        //process input and get rid of extra keys
        process_input(&cursorX,&cursorY, ch); //Edit
-       //ch = 0;
        keypressed=0;
      } 
 
@@ -74,7 +73,7 @@ int main() {
 
      if(ch == 82 && esc_key==1) {
         //F3 -> Refresh screen
-         refresh_screen();
+         refresh_screen(0);
          esc_key=0;
       }
 
@@ -137,11 +136,11 @@ void draw_cursor(int *whereX, int *whereY, int *timer)
 }
 
 /* Refresh screen */
-int refresh_screen(){
+int refresh_screen(int force_refresh){
 /* Query terminal dimensions again and check if resize 
    has been produced */
  get_terminal_dimensions(&rows, &columns);
-  if (rows != old_rows || columns != old_columns)
+  if (rows != old_rows || columns != old_columns || force_refresh)
   {
     free_buffer(); //delete structure from memory for resize
     create_screen(); //create new structure 
@@ -156,9 +155,7 @@ int refresh_screen(){
 /* Draw the main screen */
 int main_screen() {
   int     i;
-  rows = 0;
-  columns = 0;
-
+ 
   //Save previous values
   get_terminal_dimensions(&rows, &columns);
   old_rows = rows;
@@ -283,7 +280,7 @@ void optionsmenu() {
   free_list(mylist);
   if(data.index == 2) {
      //Refresh screen
-      refresh_screen();
+      refresh_screen(1);
  }
   data.index = -1;
 }

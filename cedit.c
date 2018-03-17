@@ -17,7 +17,7 @@ Last modified : 16/3/2018
 LISTCHOICE *mylist, data;
 BCELL  *my_screen;
 
-/* Global Variable */
+/* Global Variables */
 int     rows, columns, old_rows, old_columns; // Terminal dimensions
 int     cursorX=2,cursorY=3, timerCursor=0; // Cursor position and Timer
 int     exitp = 0; // Exit flag for main loop
@@ -164,8 +164,9 @@ int main_screen() {
   old_rows = rows;
   old_columns = columns;
  
+  //Failsafe just in case it can't find the terminal dimensions
   if(rows == 0)
-    rows = 25;		//just in case it can't find the terminal dimensions
+    rows = 25;	
   if(columns == 0)
     columns = 80;
 
@@ -248,7 +249,7 @@ char horizontal_menu(){
   char temp_char;
   write_str(14, rows, "Press ESC thrice [3x] to exit menu  ", B_CYAN, FH_WHITE);
   update_screen();
-  loadmenus(0);		// horizontal menu
+  loadmenus(0);		
   temp_char=start_hmenu(&data);
   free_list(mylist);
   return temp_char;
@@ -281,11 +282,9 @@ void optionsmenu() {
   update_screen();
   free_list(mylist);
   if(data.index == 2) {
-     //F3 -> resize screen
-      free_buffer(); //delete structure from memory for resize
-      create_screen(); //create new structure 
-      main_screen(); //Refresh screen in case of resize 	
-  }
+     //Refresh screen
+      refresh_screen();
+ }
   data.index = -1;
 }
 

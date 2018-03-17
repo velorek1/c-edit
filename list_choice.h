@@ -25,7 +25,7 @@ void    add_item(LISTCHOICE * list_identifier, char *str, int x, int y,
 void    free_list(LISTCHOICE * list_identifier);
 void    display_list(LISTCHOICE * list_identifier);
 char    start_vmenu(LISTCHOICE * list_data);
-void    start_hmenu(LISTCHOICE * list_data);
+char    start_hmenu(LISTCHOICE * list_data);
 void    move_up(LISTCHOICE * aux);
 void    move_down(LISTCHOICE * aux);
 void    move_left(LISTCHOICE * aux);

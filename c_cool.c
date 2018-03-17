@@ -15,10 +15,16 @@ Some of the terminal routines were taken from stackoverflow.
 #include <sys/ioctl.h>
 
 struct winsize max;
-static struct termios old, new;
+static struct termios old, new,failsafe;
+static int peek_character = -1;
 
 
 /* Initialize new terminal i/o settings */
+void pushTerm(){
+//Save terminal settings in failsafe to be retrived at the end
+  tcgetattr(0,&failsafe);
+}
+
 void initTermios(int echo) {
   tcgetattr(0, &old);		/* grab old terminal i/o settings */
   new = old;			/* make new settings same as old settings */
@@ -30,6 +36,47 @@ void initTermios(int echo) {
 /* Restore old terminal i/o settings */
 void resetTermios(void) {
   tcsetattr(0, TCSANOW, &old);
+}
+
+void resetTerm() {
+ tcsetattr(0, TCSANOW, &failsafe);	
+ /* retrieve failsafe settings */
+}
+
+/* Detect whether a key has been pressed. */
+
+int kbhit()
+{
+unsigned char ch;
+int nread;
+   // tcgetattr(0, &old);		/* grab old terminal i/o settings */
+    if (peek_character != -1) return 1;
+    new.c_cc[VMIN]=0;
+    tcsetattr(0, TCSANOW, &new);
+    nread = read(0,&ch,1);
+    new.c_cc[VMIN]=1;
+    tcsetattr(0, TCSANOW, &new);
+    if(nread == 1) 
+    {
+        peek_character = ch;
+        return 1;        
+    }
+    return 0;
+}
+
+/*Read char with control */
+int readch()
+{
+char ch;
+    
+    if(peek_character != -1) 
+    {
+        ch = peek_character;
+        peek_character = -1;
+        return ch;
+    }
+    read(0,&ch,1);
+    return ch;
 }
 
 /* Read 1 character - echo defines echo mode */
@@ -45,6 +92,7 @@ char getch_(int echo) {
 char getch(void) {
   return getch_(0);
 }
+
 
 /* Read 1 character with echo */
 char getche(void) {

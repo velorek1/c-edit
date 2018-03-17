@@ -58,6 +58,10 @@ Some of the terminal routines were taken from stackoverflow.
 
 void    initTermios(int echo);
 void    resetTermios(void);
+void    pushTerm();
+void    resetTerm();
+int     kbhit();
+int 	readch();
 char    getch_(int echo);
 char    getch(void);
 char    getche(void);

@@ -172,7 +172,7 @@ char start_vmenu(LISTCHOICE * list_data) {
   move_down(&aux);		//Move down to point to highlight first item.
 
   ch = 0;			//init ch value
-  while(ch != 10)		// escape key or enter
+  while(ch != 13)		// escape key or enter
   {
     ch = getch();
     if(ch == '\033') {
@@ -208,7 +208,7 @@ char start_vmenu(LISTCHOICE * list_data) {
   if(exitwhile == 1)
      break;
   }
- if(ch == 10||esc_key==1) {
+ if(ch == 13||esc_key==1) {
     //Pass data of last item by value.
     *list_data = aux;
   }
@@ -217,8 +217,9 @@ char start_vmenu(LISTCHOICE * list_data) {
 }
 
 /* Starts the selection menu */
- void start_hmenu(LISTCHOICE * list_data) {
+char start_hmenu(LISTCHOICE * list_data) {
   char    ch;
+  int exitloop=0;
   LISTCHOICE aux;
 
   display_list(list_data);	//display whole list
@@ -228,10 +229,11 @@ char start_vmenu(LISTCHOICE * list_data) {
   move_left(&aux);		//Move down to point to highlight first item.
 
   ch = 0;			//init ch value
-  while(ch != 10)		// escape key or enter
+  while(ch != 13)		// escape key or enter
   {
-    ch = getch();
-    if(ch == '\033') {
+    ch=getch();
+   if (exitloop==1) break;
+     if(ch == '\033') {
       getch();
       switch (getch()) {
 	case 'C':
@@ -240,12 +242,15 @@ char start_vmenu(LISTCHOICE * list_data) {
 	case 'D':
 	  move_right(&aux);
 	  break;
+        default:
+          exitloop=1;
+          break;
       }
-    }
+   } 
   }
-  if(ch == 10) {
+  if(ch == 13) {
     //Pass data of last item by value.
     *list_data = aux;
   }
-
+ return ch;
 }

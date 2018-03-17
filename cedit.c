@@ -17,10 +17,11 @@ Last modified : 16/3/2018
 LISTCHOICE *mylist, data;
 BCELL  *my_screen;
 
-int     rows, columns, old_rows, old_columns; //terminal dimensions
-int     cursorX=2,cursorY=3, timerCursor=0; //cursor position
-int     exitp = 0; // exit flag
-char    kglobal; //Global variables should be turned into functions
+/* Global Variable */
+int     rows, columns, old_rows, old_columns; // Terminal dimensions
+int     cursorX=2,cursorY=3, timerCursor=0; // Cursor position and Timer
+int     exitp = 0; // Exit flag for main loop
+char    kglobal; // Global variable for menu animation
 
 //Function declarations
 void credits();
@@ -94,7 +95,6 @@ int main() {
 
   } while(exitp != 1); //exit flag for the whole program
   credits();
-  //showcursor;
   return 0;
 }
 
@@ -152,6 +152,7 @@ int refresh_screen(){
     return 0;
   }
 }
+
 /* Draw the main screen */
 int main_screen() {
   int     i;
@@ -180,7 +181,6 @@ int main_screen() {
   // Text messages
   write_str(1, 1, "File  Options  Help", B_WHITE, F_BLACK);
   write_str(1, rows, ">> [C-Edit]", B_CYAN, FH_WHITE);
- // write_str(columns - 10, 1, "[C-Edit]", B_CYAN, FH_WHITE);
   write_str(14, rows, "| F2 -> Menus | F3 -> Resize screen", B_CYAN, FH_WHITE);
   
   /* Frames */
@@ -209,7 +209,6 @@ int main_screen() {
   update_screen();
   return 0;
 }
-
 
 /* Load current menu into circular linked list */ 
 void loadmenus(int choice) {
@@ -246,16 +245,15 @@ void loadmenus(int choice) {
 
 /* Horizontal menu */
 char horizontal_menu(){
-// Horizontal menu
-char temp_char;
+  char temp_char;
   write_str(14, rows, "Press ESC thrice [3x] to exit menu  ", B_CYAN, FH_WHITE);
   update_screen();
   loadmenus(0);		// horizontal menu
   temp_char=start_hmenu(&data);
   free_list(mylist);
   return temp_char;
-
 }
+
 /* Display File Menu */
 void filemenu() {
   loadmenus(1);
@@ -276,7 +274,7 @@ void filemenu() {
 void optionsmenu() {
   loadmenus(2);
   write_str(7, 1, "Options", B_BLACK, F_WHITE);
-  draw_window(7, 2, 19, 6, B_WHITE, F_BLACK, 1);
+  draw_window(7, 2, 20, 6, B_WHITE, F_BLACK, 1);
   kglobal = start_vmenu(&data);
   close_window();
   write_str(1, 1, "File  Options  Help", B_WHITE, F_BLACK);
@@ -317,6 +315,7 @@ int confirmation(){
     close_window();
     return ok; 
 }
+
 void drop_down(char *kglobal){
 /* 
    Drop_down loop animation 
@@ -326,19 +325,15 @@ void drop_down(char *kglobal){
    kglobal is changed by the menu functions
 */
   
-do {
-      
+do {     
   if (*kglobal==27) {
     //Exit drop-down menu with ESC 3x          
     *kglobal=0;          
     main_screen();          
-    break;
-      
+    break;     
   }
-
   if(data.index == 0) {
     filemenu();
-
       if(*kglobal == -1) {	      
         data.index = 1;
       }	   
@@ -346,37 +341,32 @@ do {
         data.index = 2;	   
       } 	
   }
-
   if(data.index == 1) {
-    optionsmenu();
-     
+    optionsmenu();     
      if(*kglobal == -1) {
        data.index = 2;	   
-     }
-	   
+     }	   
      if(*kglobal == -2) {
        data.index = 0;
      }
-  }
-	
+  }	
   if(data.index == 2) {
     helpmenu();
-
     if(*kglobal == -1) {
 	 data.index = 0;	   
-    }
-	 
+    }	 
     if(*kglobal == -2) {    
       data.index = 1;	  
     }	 
   }
-
  } while(*kglobal != 13);
 }
+
 /* Frees memory and displays goodbye message */
 void credits(){
   free_buffer();
   resetTerm(); //restore terminal settings from failsafe
+  showcursor();
   screencol(0);
   outputcolor(7, 0);
   printf("[C-Edit] coded by Velorek. \n");

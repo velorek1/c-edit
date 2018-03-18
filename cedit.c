@@ -34,63 +34,46 @@ void optionsmenu();
 void helpmenu();
 int confirmation();
 int process_input(int *whereX, int *whereY, char ch);
+int special_keys(int *whereX, int *whereY,char *ch);
 void draw_cursor(int *whereX, int *whereY, int *timer);
 int refresh_screen(int force_refresh);
-    
+int timer_1(int *timer1);
+
 //MAIN PROGRAM
 int main() {
   char    ch=0;
   int esc_key =0; //To control key input and scan for keycodes.
   int keypressed =0;
+  int timer1 =0; // Timer to control esc key
   hidecursor();
   pushTerm(); //Save current terminal settings in failsafe
   create_screen(); //Create screen buffer to control display
   main_screen(); //Draw screen
 
-  do {
+  do {  
+    /* CURSOR */
+    draw_cursor(&cursorX,&cursorY,&timerCursor);   
+    //Query if screen dimensions have changed
+    refresh_screen(0); 
+    /* Wait for key_pressed to read key */
+    keypressed = kbhit();
+    //Process especial keys and esc-related issues
+    esc_key=special_keys(&cursorX,&cursorY,&ch);
+
+     if (keypressed==1){ 
   
-   /* CURSOR */
-   draw_cursor(&cursorX,&cursorY,&timerCursor);   
-   //Query if screen dimensions have changed
-   refresh_screen(0); 
-   /* Wait for key_pressed to read key */
-   keypressed = kbhit();
+        ch = readch();
+        /* EDIT */
+        if (esc_key == 0) {
+          //process input and get rid of extra keys
+          process_input(&cursorX,&cursorY, ch); //Edit
+          keypressed=0;
+        } 
+        if (ch==27){
+          timer_1(&timer1);
+        }
 
-  if (keypressed==1){ 
-  
-     ch = readch();
-     /* EDIT */
-     if (esc_key == 0) {
-       //process input and get rid of extra keys
-       process_input(&cursorX,&cursorY, ch); //Edit
-       keypressed=0;
-     } 
-
-     /* SPECIAL KEYS */
-     if (ch==27){
-        esc_key=1; //esc_key is active for longer key codes
-      } 
-
-     if(ch == 82 && esc_key==1) {
-        //F3 -> Refresh screen
-         refresh_screen(0);
-         esc_key=0;
-      }
-
-     if(ch == 81 && esc_key==1) {
-         //F2 -> open drop-down menus
-         esc_key=0;
-         if (horizontal_menu()==27) 
-           {
-             //Exit horizontal menu with ESC 3x
-             kglobal=27;
-             main_screen();
-           } 
-        /*  Drop-down menu loop */       
-         drop_down(&kglobal); //animation
-      } //end F2
-
-    } //end if keypressed
+     } //end if keypressed
 
   } while(exitp != 1); //exit flag for the whole program
   credits();
@@ -111,9 +94,59 @@ int process_input(int *whereX, int *whereY,char ch)
      write_num(columns-9,rows,*whereY-2,4,B_CYAN,FH_WHITE);
      update_screen();
      *whereX = *whereX + 1;
-  }
+   }
  }
   return 0;
+}
+
+int timer_1(int *timer1){
+  if (*timer1 == 5){
+    *timer1=0;
+     return 0;
+  } else
+  {  
+    *timer1 = *timer1 +1;
+    return 1;
+  }
+}
+
+int special_keys(int *whereX, int *whereY,char *ch){
+/* MANAGE SPECIAL KEYS */ 
+if (*ch==27){
+  switch (getch()){
+    case 'D':
+    //Left-arrow key  
+      *whereX=*whereX-1;
+    break;
+    case 'C':
+    //Right-arrow key  
+      *whereX=*whereX+1;
+      break;
+    case 81: 
+    //F2 -> open drop-down menus
+      if (horizontal_menu()==27) 
+      {
+        //Exit horizontal menu with ESC 3x
+        kglobal=27;
+        main_screen();
+      } 
+      /*  Drop-down menu loop */       
+      drop_down(&kglobal); //animation
+      *ch=0;
+      break;
+    case 82:
+    //F3 -> Refresh screen
+           refresh_screen(1);
+        *ch=0;
+        break;
+    default:
+       *ch=0;
+       break;
+    }
+   return 1; //esc-key = 1
+ } else {
+   return 0; //esc-key = 0
+ }
 }
 
 /* Draw cursor and animate it*/

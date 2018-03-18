@@ -9,6 +9,7 @@ Last modified : 16/3/2018
 */
 
 #include <stdio.h>
+#include <time.h>
 #include <string.h>
 #include "c_cool.h"
 #include "list_choice.h"
@@ -44,7 +45,7 @@ int main() {
   char    ch=0;
   int esc_key =0; //To control key input and scan for keycodes.
   int keypressed =0;
-  int timer1 =0; // Timer to control esc key
+  int timer1 =0; // Timer to display animation
   hidecursor();
   pushTerm(); //Save current terminal settings in failsafe
   create_screen(); //Create screen buffer to control display
@@ -59,7 +60,7 @@ int main() {
     keypressed = kbhit();
     //Process especial keys and esc-related issues
     esc_key=special_keys(&cursorX,&cursorY,&ch);
-
+    timer_1(&timer1); //Display system time
      if (keypressed==1){ 
   
         ch = readch();
@@ -69,9 +70,6 @@ int main() {
           process_input(&cursorX,&cursorY, ch); //Edit
           keypressed=0;
         } 
-        if (ch==27){
-          timer_1(&timer1);
-        }
 
      } //end if keypressed
 
@@ -100,8 +98,14 @@ int process_input(int *whereX, int *whereY,char ch)
 }
 
 int timer_1(int *timer1){
-  if (*timer1 == 5){
+/* Timer for animations - Display time and clean cursor */
+  time_t mytime = time(NULL);
+  char * time_str = ctime(&mytime);
+  if (*timer1 == 5000){
     *timer1=0;
+    time_str[strlen(time_str)-1] = '\0';
+    write_str(columns-strlen(time_str),1,time_str,F_BLACK,B_WHITE);
+    update_smart();
      return 0;
   } else
   {  

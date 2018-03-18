@@ -105,7 +105,7 @@ int timer_1(int *timer1){
     *timer1=0;
     time_str[strlen(time_str)-1] = '\0';
     write_str(columns-strlen(time_str),1,time_str,F_BLACK,B_WHITE);
-    update_smart();
+    update_screen();
      return 0;
   } else
   {  

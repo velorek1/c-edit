@@ -34,6 +34,7 @@ void filemenu();
 void optionsmenu();
 void helpmenu();
 int confirmation();
+int about_info();
 int process_input(int *whereX, int *whereY, char ch);
 int special_keys(int *whereX, int *whereY,char *ch);
 void draw_cursor(int *whereX, int *whereY, int *timer);
@@ -59,14 +60,18 @@ int main() {
     /* Wait for key_pressed to read key */
     keypressed = kbhit();
     //Process especial keys and esc-related issues
-    esc_key=special_keys(&cursorX,&cursorY,&ch);
     timer_1(&timer1); //Display system time
-     if (keypressed==1){ 
+
+    if (keypressed==1){ 
   
+        /* PROCESS SPECIAL KEYS */
+        esc_key=special_keys(&cursorX,&cursorY,&ch);
+        
         ch = readch();
+
         /* EDIT */
         if (esc_key == 0) {
-          //process input and get rid of extra keys
+          //Process input and get rid of extra keys
           process_input(&cursorX,&cursorY, ch); //Edit
           keypressed=0;
         } 
@@ -272,10 +277,15 @@ void loadmenus(int choice) {
   }
 
   if(choice == 5) {
-    add_item(mylist, "<YES>", columns-50, rows-12, B_WHITE, F_BLACK, B_BLACK,
+    add_item(mylist, "<YES>", (columns/2)-6, (rows/2)+2, B_WHITE, F_BLACK, B_BLACK,
 	     F_WHITE);
-    add_item(mylist, "<NO>", columns-35, rows-12, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
+    add_item(mylist, "<NO>", (columns/2)+4, (rows/2)+2, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
   }
+   if(choice == 6) {
+    add_item(mylist, "<OK>", (columns/2)-1, (rows/2)+3 , B_WHITE, F_BLACK, B_BLACK,
+	     F_WHITE);
+  }
+  
 }
 
 /* Horizontal menu */
@@ -300,7 +310,7 @@ void filemenu() {
   update_screen();
   free_list(mylist);
   if(data.index == 4) {
-	exitp = confirmation(); //Shall we exit? Global variable (to be updated)
+	exitp = confirmation(); //Shall we exit? Global variable! 
   }
   data.index = -1;
 }
@@ -332,15 +342,26 @@ void helpmenu() {
   write_str(1, 1, "File  Options  Help", B_WHITE, F_BLACK);
   update_screen();
   free_list(mylist);
-  data.index = -1;
+   if(data.index == 1) {
+     //About info
+      about_info();
+ }
+ data.index = -1;
 }
 
 /* Displays a window to asks user for confirmation */
 int confirmation(){
     int ok=0;
+    int window_x1=0, window_y1=0, window_x2 = 0, window_y2 =0;
+    window_y1 = (rows / 2) - 3;
+    window_y2 = (rows/2) + 3;
+    window_x1 = (columns/2) - 13;
+    window_x2 = (columns/2) +13;
     loadmenus(5);
-    draw_window(16, 6, columns - 20, rows - 10, B_WHITE, F_BLACK, 1);
-    write_str(24, rows-16, "Are you sure you want to quit?", F_BLACK, B_WHITE);
+    draw_window(window_x1, window_y1, window_x2, window_y2, B_WHITE, F_BLACK, 1);
+    write_str(window_x1+3, window_y1+2, "Are you sure you want", F_BLACK, B_WHITE);
+     write_str(window_x1+3, window_y1+3, "   want to quit?    ", F_BLACK, B_WHITE);
+    
     start_hmenu(&data);
     free_list(mylist);
     if(data.index == 0)
@@ -348,6 +369,27 @@ int confirmation(){
     close_window();
     return ok; 
 }
+
+int about_info(){
+    int ok=0;
+    int window_x1=0, window_y1=0, window_x2 = 0, window_y2 =0;
+    loadmenus(6);
+    window_y1 = (rows / 2) - 4;
+    window_y2 = (rows/2) + 4;
+    window_x1= (columns/2) -8;
+    window_x2 = (columns/2) +8;
+    draw_window(window_x1, window_y1, window_x2, window_y2, B_WHITE, F_BLACK, 1);
+    write_str(window_x1+2, window_y1+1, "  [C-EDIT]  ", F_BLACK, B_WHITE);
+    write_str(window_x1+2, window_y1+3, "- Coded by :", F_BLACK, B_WHITE);
+    write_str(window_x1+2, window_y1+4, " - V3l0r3k -", F_BLACK, B_WHITE);
+    start_hmenu(&data);
+    free_list(mylist);
+    if(data.index == 0)
+      ok = 1; //Confirmation has been given
+    close_window();
+    return ok; 
+}
+
 
 void drop_down(char *kglobal){
 /* 

@@ -27,6 +27,7 @@ char    kglobal=0; // Global variable for menu animation
 //Function declarations
 void credits();
 int main_screen();
+void update_position();
 void loadmenus(int choice);
 char horizontal_menu();
 void drop_down(char *kglobal);
@@ -85,19 +86,36 @@ int main() {
 
 /* FUNCTION DEFINITIONS */
 
+void update_position()
+{
+//Update cursor position display on screen
+ write_str(columns-13,rows,"| L:   C:  ",B_CYAN,FH_WHITE);
+ write_num(columns-4,rows,cursorX-1,3,B_CYAN,FH_WHITE);
+ write_num(columns-9,rows,cursorY-2,4,B_CYAN,FH_WHITE);
+}
+
 /* Edit */
 int process_input(int *whereX, int *whereY,char ch)
 {
  if (ch != 27) {
-   if (ch>31 && ch<128) {
+   if (ch>31 && ch<127) {
     //only print ASCII characters to screen.
      write_ch(*whereX,*whereY,ch,B_BLUE,F_WHITE);
-     write_str(columns-13,rows,"| L:   C:  ",B_CYAN,FH_WHITE);
-     write_num(columns-4,rows,*whereX-1,3,B_CYAN,FH_WHITE);
-     write_num(columns-9,rows,*whereY-2,4,B_CYAN,FH_WHITE);
-     update_screen();
      *whereX = *whereX + 1;
    }
+  if (ch==13) {
+    //RETURN - ENTER
+      if (*whereY < rows -2) {
+        *whereY = *whereY + 1;
+        *whereX = 2;
+      }
+   }
+   if (ch==127) {
+    //BACKSPACE
+      write_ch(*whereX,*whereY,' ',B_BLUE,F_BLUE);
+      if (*whereX > 2) *whereX = *whereX - 1;
+   }
+ // update_position(); 
  }
   return 0;
 }
@@ -109,7 +127,9 @@ int timer_1(int *timer1){
   if (*timer1 == 5000){
     *timer1=0;
     time_str[strlen(time_str)-1] = '\0';
+    //display system time
     write_str(columns-strlen(time_str),1,time_str,F_BLACK,B_WHITE);
+    update_position(); //update position display
     update_screen();
      return 0;
   } else
@@ -125,11 +145,19 @@ if (*ch==27){
   switch (getch()){
     case 'D':
     //Left-arrow key  
-      *whereX=*whereX-1;
+      if (*whereX > 2) *whereX=*whereX-1;
     break;
     case 'C':
-    //Right-arrow key  
-      *whereX=*whereX+1;
+    //Left-arrow key  
+      if (*whereX < columns-1) *whereX=*whereX+1;
+      break;
+    case 'A':
+    //Up-arrow key  
+      if (*whereY > 3) *whereY=*whereY-1;
+    break;
+    case 'B':
+    //Down-arrow key  
+      if (*whereY < rows-2) *whereY=*whereY+1;
       break;
     case 81: 
     //F2 -> open drop-down menus
@@ -148,7 +176,7 @@ if (*ch==27){
            refresh_screen(1);
         *ch=0;
         break;
-    default:
+  default:
        *ch=0;
        break;
     }

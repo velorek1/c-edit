@@ -4,7 +4,7 @@ PROGRAM C Editor - An editor with top-down menus.
 
 @author : Velorek
 @version : 1.0
-Last modified : 16/3/2018
+Last modified : 24/3/2018
 
 */
 
@@ -47,7 +47,7 @@ int main() {
   int esc_key =0; //To control key input and scan for keycodes.
   int keypressed =0;
   int timer1 =0; // Timer to display animation
-  hidecursor();
+  hidecursor(); 
   pushTerm(); //Save current terminal settings in failsafe
   create_screen(); //Create screen buffer to control display
   main_screen(); //Draw screen
@@ -55,23 +55,23 @@ int main() {
   do {  
     /* CURSOR */
     draw_cursor(&cursorX,&cursorY,&timerCursor);   
-    //Query if screen dimensions have changed
+    /* Query if screen dimensions have changed and resize screen */
     refresh_screen(0); 
     /* Wait for key_pressed to read key */
     keypressed = kbhit();
-    //Process especial keys and esc-related issues
-    timer_1(&timer1); //Display system time
+    /* Timer for animation to show system time and clean cursor */
+    timer_1(&timer1); 
 
     if (keypressed==1){ 
   
-        /* PROCESS SPECIAL KEYS */
+        /* Process SPECIAL KEYS and other ESC-related issues */
         esc_key=special_keys(&cursorX,&cursorY,&ch);
         
         ch = readch();
 
         /* EDIT */
         if (esc_key == 0) {
-          //Process input and get rid of extra keys
+          //Process input and get rid of extra characters
           process_input(&cursorX,&cursorY, ch); //Edit
           keypressed=0;
         } 

@@ -37,10 +37,10 @@ void helpmenu();
 int confirmation();
 int about_info();
 int process_input(int *whereX, int *whereY, char ch);
-int special_keys(int *whereX, int *whereY,char *ch);
+int special_keys(int *whereX, int *whereY,char *ch, int *buffertimer);
 void draw_cursor(int *whereX, int *whereY, int *timer);
 int refresh_screen(int force_refresh);
-int timer_1(int *timer1);
+int timer_1(int *timer1,char *ch);
 
 //MAIN PROGRAM
 int main() {
@@ -48,6 +48,7 @@ int main() {
   int esc_key =0; //To control key input and scan for keycodes.
   int keypressed =0;
   int timer1 =0; // Timer to display animation
+  int buffertimer =0; // Counter timer for keyboard buffer
   hidecursor(); 
   pushTerm(); //Save current terminal settings in failsafe
   create_screen(); //Create screen buffer to control display
@@ -61,25 +62,34 @@ int main() {
     /* Wait for key_pressed to read key */
     keypressed = kbhit();
     /* Timer for animation to show system time and clean cursor */
-    timer_1(&timer1); 
+    timer_1(&timer1,&ch); 
 
     if (keypressed==1){ 
   
         /* Process SPECIAL KEYS and other ESC-related issues */
-        esc_key=special_keys(&cursorX,&cursorY,&ch);
+        esc_key=special_keys(&cursorX,&cursorY,&ch,&buffertimer);
         
-        ch = readch();
+        ch=readch();
+
+        /* 
+           So as to not saturate the keyboard buffer in slow
+           terminals 
+           Buffertimer deactivates printing chars to screen
+           if cursor arrows are being used repeatedly 64-69
+           Temporary solution if ch>91 it works. 
+         */
+
+        if (ch>91) buffertimer=0;
 
         /* EDIT */
-        if (esc_key == 0) {
+        if (esc_key == 0 && buffertimer<2) {
           //Process input and get rid of extra characters
           process_input(&cursorX,&cursorY, ch); //Edit
           keypressed=0;
         } 
 
      } //end if keypressed
-
-  } while(exitp != 1); //exit flag for the whole program
+ } while(exitp != 1); //exit flag for the whole program
   credits();
   return 0;
 }
@@ -111,16 +121,32 @@ int process_input(int *whereX, int *whereY,char ch)
       }
    }
    if (ch==127) {
-    //BACKSPACE
+    //BACKSPACE key
       write_ch(*whereX,*whereY,' ',B_BLUE,F_BLUE);
       if (*whereX > 2) *whereX = *whereX - 1;
    }
- // update_position(); 
+   if (ch==9) {
+    //TAB key
+      if (*whereX < columns-8) *whereX = *whereX + 8;
+   }
+   //*ch=0;
+ if (ch=='$') {
+   /*'$' Failsafe menu for some terminals */
+    //F2 -> open drop-down menus
+      if (horizontal_menu()==27) 
+      {
+        //Exit horizontal menu with ESC 3x
+        kglobal=27;
+        main_screen();
+      } 
+      /*  Drop-down menu loop */       
+      drop_down(&kglobal); //animation
+  }
  }
   return 0;
 }
 
-int timer_1(int *timer1){
+int timer_1(int *timer1,char *ch){
 /* Timer for animations - Display time and clean cursor */
   time_t mytime = time(NULL);
   char * time_str = ctime(&mytime);
@@ -131,6 +157,7 @@ int timer_1(int *timer1){
     write_str(columns-strlen(time_str),1,time_str,F_BLACK,B_WHITE);
     update_position(); //update position display
     update_screen();
+    *ch=0;
      return 0;
   } else
   {  
@@ -139,8 +166,9 @@ int timer_1(int *timer1){
   }
 }
 
-int special_keys(int *whereX, int *whereY,char *ch){
-/* MANAGE SPECIAL KEYS */ 
+int special_keys(int *whereX, int *whereY,char *ch,int *buffertimer){
+/* MANAGE SPECIAL KEYS */
+  int esc_key=0;
 if (*ch==27){
   switch (getch()){
     case 'D':
@@ -169,21 +197,27 @@ if (*ch==27){
       } 
       /*  Drop-down menu loop */       
       drop_down(&kglobal); //animation
-      *ch=0;
       break;
     case 82:
     //F3 -> Refresh screen
-           refresh_screen(1);
-        *ch=0;
-        break;
-  default:
-       *ch=0;
+      refresh_screen(1);
+      break;
+    default:
        break;
     }
-   return 1; //esc-key = 1
+   esc_key = 1;
+   *ch=27;
+   /*
+      Buffertimer keeps track of arrow keys so as not to saturate
+      keyboard buffer and print random characters to screen.
+      ESC + A,B,C,D : arrow keys
+   */
+   *buffertimer = *buffertimer + 1; 
  } else {
-   return 0; //esc-key = 0
+   esc_key = 0;
+   *ch=0;
  }
+return esc_key;
 }
 
 /* Draw cursor and animate it*/
@@ -249,7 +283,7 @@ int main_screen() {
   // Text messages
   write_str(1, 1, "File  Options  Help", B_WHITE, F_BLACK);
   write_str(1, rows, ">> [C-Edit]", B_CYAN, FH_WHITE);
-  write_str(14, rows, "| F2 -> Menus | F3 -> Resize screen", B_CYAN, FH_WHITE);
+  write_str(14, rows, "| F2 or $ -> Menus | F3 -> Resize screen", B_CYAN, FH_WHITE);
   
   /* Frames */
   //window appearance and scroll bar

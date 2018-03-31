@@ -68,21 +68,16 @@ int main() {
   
         /* Process SPECIAL KEYS and other ESC-related issues */
         esc_key=special_keys(&cursorX,&cursorY,&ch,&buffertimer);
-        
+       
+        //  Buffertimer deactivates printing chars to screen
+        //  when cursor arrows are being used repeatedly (ch != 91)
+         
         ch=readch();
 
-        /* 
-           So as to not saturate the keyboard buffer in slow
-           terminals 
-           Buffertimer deactivates printing chars to screen
-           if cursor arrows are being used repeatedly 64-69
-           Temporary solution if ch>91 it works. 
-         */
-
-        if (ch>91) buffertimer=0;
+        if (ch > 91) buffertimer=0;
 
         /* EDIT */
-        if (esc_key == 0 && buffertimer<2) {
+        if (esc_key == 0 && buffertimer < 2) {
           //Process input and get rid of extra characters
           process_input(&cursorX,&cursorY, ch); //Edit
           keypressed=0;
@@ -210,7 +205,7 @@ if (*ch==27){
    /*
       Buffertimer keeps track of arrow keys so as not to saturate
       keyboard buffer and print random characters to screen.
-      ESC + A,B,C,D : arrow keys
+      ESC ] A,B,C,D : arrow keys
    */
    *buffertimer = *buffertimer + 1; 
  } else {
@@ -283,7 +278,7 @@ int main_screen() {
   // Text messages
   write_str(1, 1, "File  Options  Help", B_WHITE, F_BLACK);
   write_str(1, rows, ">> [C-Edit]", B_CYAN, FH_WHITE);
-  write_str(14, rows, "| F2 or $ -> Menus | F3 -> Resize screen", B_CYAN, FH_WHITE);
+  write_str(14, rows, "| F2 or $ -> Menus |", B_CYAN, FH_WHITE);
   
   /* Frames */
   //window appearance and scroll bar

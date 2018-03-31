@@ -40,7 +40,7 @@ int process_input(int *whereX, int *whereY, char ch);
 int special_keys(int *whereX, int *whereY,char *ch, int *buffertimer);
 void draw_cursor(int *whereX, int *whereY, int *timer);
 int refresh_screen(int force_refresh);
-int timer_1(int *timer1,char *ch);
+int timer_1(int *timer1);
 
 //MAIN PROGRAM
 int main() {
@@ -62,7 +62,7 @@ int main() {
     /* Wait for key_pressed to read key */
     keypressed = kbhit();
     /* Timer for animation to show system time and clean cursor */
-    timer_1(&timer1,&ch); 
+    timer_1(&timer1); 
 
     if (keypressed==1){ 
   
@@ -141,7 +141,7 @@ int process_input(int *whereX, int *whereY,char ch)
   return 0;
 }
 
-int timer_1(int *timer1,char *ch){
+int timer_1(int *timer1){
 /* Timer for animations - Display time and clean cursor */
   time_t mytime = time(NULL);
   char * time_str = ctime(&mytime);
@@ -152,7 +152,6 @@ int timer_1(int *timer1,char *ch){
     write_str(columns-strlen(time_str),1,time_str,F_BLACK,B_WHITE);
     update_position(); //update position display
     update_screen();
-    *ch=0;
      return 0;
   } else
   {  

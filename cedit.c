@@ -4,7 +4,7 @@ PROGRAM C Editor - An editor with top-down menus.
 
 @author : Velorek
 @version : 1.0
-Last modified : 24/3/2018
+Last modified : 8/4/2018
 
 */
 
@@ -75,6 +75,7 @@ int main() {
         ch=readch();
 
         if (ch > 91) buffertimer=0;
+        if (ch == 13) buffertimer=0;
 
         /* EDIT */
         if (esc_key == 0 && buffertimer < 2) {

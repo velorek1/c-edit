@@ -18,6 +18,8 @@ Last modified : 04/3/2018
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <locale.h>
+#include <wchar.h>      /* wint_t */
 #include "c_cool.h"
 
 /* Screen buffer */
@@ -230,6 +232,41 @@ void write_num(int x, int y, int num, int length, int backcolor,
   write_str(x, y, astr, backcolor, forecolor);
 }
 
+/*Converts Alternative Char to Unicode 8 */
+int mapChartoU8(int character){
+  int rtvalue;
+  switch (character){
+    case 113:
+      //horizontal line
+      rtvalue = 9472;
+      break;
+    case 120:
+      //vertical line
+      rtvalue = 9474;
+      break;
+    case 108:
+      //upper left corner
+      rtvalue = 9484;
+      break;
+    case 109:
+      //lower left corner
+      rtvalue = 9492;
+      break; 
+    case 107:
+      //upper right corner
+       rtvalue = 9488;
+       break;
+    case 106:
+      // lower right corner
+       rtvalue = 9496;
+      break;
+
+    default:
+      rtvalue=0;
+      break;
+  }
+  return rtvalue;
+}
 /* Dumps buffer to screen for display */
 void update_screen() {
   int     i, wherex, wherey;
@@ -257,10 +294,12 @@ void update_screen() {
       /* If we have negative chars that means that we 
       are printing box-like characters to screen
       Ansi function. Multiply value by -1 to display the right
-      char with the flag activated. */
-       printf("%c(0",27); //Activate box-like characters
+      char with the flag activated. 
+      Deprecated. Now map negative chars to Unicode */
+      printf("%c(0",27); //Activate box-like characters in vt-100
+      setlocale(LC_ALL, "");
       tempchar = aux->item * -1;
-      printf("%c",tempchar);
+      printf("%lc",(wint_t)mapChartoU8(tempchar)); //unicode
       printf("%c(B",27); //Deactivate box-like characters
     }
   }
@@ -332,10 +371,8 @@ void draw_window(int x1, int y1, int x2, int y2, int backcolor,
     //with borders. ANSI-ASCII 106-121
     for(i = x1; i <= x2; i++) {
       //upper and lower borders
-      printf("%c(0",27);
       write_ch(i, y1, -113, backcolor, bordercolor); //horizontal line box-like char
       write_ch(i, y2, -113, backcolor, bordercolor);
-      printf("%c(B",27);
     }
     for(j = y1; j <= y2; j++) {
       //left and right borders

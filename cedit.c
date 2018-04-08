@@ -283,12 +283,13 @@ int main_screen() {
   //window appearance and scroll bar
   for (i=2; i<rows; i++){
     write_ch(columns,i,' ',B_WHITE,F_BLACK);
-    write_ch(1,i,'|',B_BLACK,F_WHITE);
+    write_ch(1,i,-120,B_BLACK,F_WHITE); //vertical line box-like char 
   }
   for(i = 2; i < columns; i++) {
-    write_ch(i, 2, '-', B_BLACK, F_WHITE);
+    write_ch(i, 2, -113, B_BLACK, F_WHITE);//horizontal line box-like char
     write_ch(i, rows-1, ' ', B_BLACK, F_WHITE);
   }
+  write_ch(1,2,-108,B_BLACK,F_WHITE); //upper-left box-like char
   //horizontal scroll bar
    for(i = 2; i < columns; i++) {
     write_ch(i, rows-1, 32, B_WHITE, F_WHITE);
@@ -357,6 +358,8 @@ char horizontal_menu(){
 
 /* Display File Menu */
 void filemenu() {
+  int i;
+  write_str(14, rows, "Press ESC thrice [3x] to exit menu  ", B_CYAN, FH_WHITE);
   loadmenus(1);
   write_str(1, 1, "File", B_BLACK, F_WHITE);
   draw_window(1, 2, 13, 8, B_WHITE, F_BLACK, 1);
@@ -369,10 +372,19 @@ void filemenu() {
 	exitp = confirmation(); //Shall we exit? Global variable! 
   }
   data.index = -1;
+  //Restore message in status bar
+  for(i = 1; i < columns; i++) {
+    write_ch(i, rows, 32, B_CYAN, F_WHITE);
+  }
+  write_str(1, rows, ">> [C-Edit]", B_CYAN, FH_WHITE);
+  write_str(14, rows, "| F2 or $ -> Menus |", B_CYAN, FH_WHITE);
+ 
 }
 
 /* Display Options Menu */
 void optionsmenu() {
+  int i;
+  write_str(14, rows, "Press ESC thrice [3x] to exit menu  ", B_CYAN, FH_WHITE);
   loadmenus(2);
   write_str(7, 1, "Options", B_BLACK, F_WHITE);
   draw_window(7, 2, 20, 6, B_WHITE, F_BLACK, 1);
@@ -386,10 +398,19 @@ void optionsmenu() {
       refresh_screen(1);
  }
   data.index = -1;
+   //Restore message in status bar
+  for(i = 1; i < columns; i++) {
+    write_ch(i, rows, 32, B_CYAN, F_WHITE);
+  }
+  write_str(1, rows, ">> [C-Edit]", B_CYAN, FH_WHITE);
+  write_str(14, rows, "| F2 or $ -> Menus |", B_CYAN, FH_WHITE);
+ 
 }
 
 /* Display Help Menu */
 void helpmenu() {
+  int i;
+  write_str(14, rows, "Press ESC thrice [3x] to exit menu  ", B_CYAN, FH_WHITE);
   loadmenus(3);
   write_str(16, 1, "Help", B_BLACK, F_WHITE);
   draw_window(16, 2, 26, 5, B_WHITE, F_BLACK, 1);
@@ -402,7 +423,13 @@ void helpmenu() {
      //About info
       about_info();
  }
- data.index = -1;
+  data.index = -1;
+  //Restore message in status bar
+  for(i = 1; i < columns; i++) {
+    write_ch(i, rows, 32, B_CYAN, F_WHITE);
+  }
+  write_str(1, rows, ">> [C-Edit]", B_CYAN, FH_WHITE);
+  write_str(14, rows, "| F2 or $ -> Menus |", B_CYAN, FH_WHITE);
 }
 
 /* Displays a window to asks user for confirmation */

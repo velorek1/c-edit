@@ -233,6 +233,7 @@ void write_num(int x, int y, int num, int length, int backcolor,
 /* Dumps buffer to screen for display */
 void update_screen() {
   int     i, wherex, wherey;
+  char tempchar;
   BCELL  *aux;
   wherey = 1;
   wherex = 1;
@@ -248,7 +249,20 @@ void update_screen() {
       wherey = wherey + 1;
     }
     outputcolor(aux->forecolor0, aux->backcolor0);
-    printf("%c", aux->item);
+    if (aux->item > 0)
+      // Check whether chars are negative
+      printf("%c", aux->item);
+    else
+    {
+      /* If we have negative chars that means that we 
+      are printing box-like characters to screen
+      Ansi function. Multiply value by -1 to display the right
+      char with the flag activated. */
+       printf("%c(0",27); //Activate box-like characters
+      tempchar = aux->item * -1;
+      printf("%c",tempchar);
+      printf("%c(B",27); //Deactivate box-like characters
+    }
   }
 }
 
@@ -295,6 +309,12 @@ void free_buffer() {
 /* Draw window area with or without border. */
 void draw_window(int x1, int y1, int x2, int y2, int backcolor,
 		 int bordercolor, int border) {
+/* 
+   Chars for drawing box-like characters will be passed as negative values.
+   When the update_screen routine is called, it will check for negative
+   values and if so, activate the ANSI flag to draw them correctly 
+   to screen by inverting their value. (i.e multiply char by -1).
+ */
   int     i, j;
   i = x1;
   j = y1;
@@ -312,21 +332,22 @@ void draw_window(int x1, int y1, int x2, int y2, int backcolor,
     //with borders. ANSI-ASCII 106-121
     for(i = x1; i <= x2; i++) {
       //upper and lower borders
-      write_ch(i, y1, '-', backcolor, bordercolor);
-      write_ch(i, y2, '-', backcolor, bordercolor);
+      printf("%c(0",27);
+      write_ch(i, y1, -113, backcolor, bordercolor); //horizontal line box-like char
+      write_ch(i, y2, -113, backcolor, bordercolor);
+      printf("%c(B",27);
     }
     for(j = y1; j <= y2; j++) {
       //left and right borders
-      write_ch(x1, j, '|', backcolor, bordercolor);
-      write_ch(x2, j, '|', backcolor, bordercolor);
+      write_ch(x1, j, -120, backcolor, bordercolor); //vertical line box-like char
+      write_ch(x2, j, -120, backcolor, bordercolor);
     }
-    write_ch(x1, y1, '[', backcolor, bordercolor);	//upper-left corner
-    write_ch(x1, y2, '[', backcolor, bordercolor);	//lower-left corner
-    write_ch(x2, y1, ']', backcolor, bordercolor);	//upper-right corner
-    write_ch(x2, y2, ']', backcolor, bordercolor);	//lower-right corner      
+    write_ch(x1, y1, -108, backcolor, bordercolor);	//upper-left corner box-like char
+    write_ch(x1, y2, -109, backcolor, bordercolor);	//lower-left corner box-like char
+    write_ch(x2, y1, -107, backcolor, bordercolor);	//upper-right corner box-like char
+    write_ch(x2, y2, -106, backcolor, bordercolor);	//lower-right corner box-like char
   }
-
-  update_smart();
+  //update_smart();
 }
 
 

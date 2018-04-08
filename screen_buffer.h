@@ -43,6 +43,7 @@ void    free_buffer();
 void    draw_window(int x1, int y1, int x2, int y2, int backcolor,
 		    int bordercolor, int border);
 void    close_window();
+int     mapChartoU8(int character);
 void    update_screen();
 void    update_smart();
 

@@ -1,6 +1,6 @@
 C-EDIT Project in C language
 ============================
-C-EDIT - IN PROGRESS - An editor in the style of the MSDOS EDIT.
+C-EDIT for linux - IN PROGRESS - A linux editor in the style of the MSDOS EDIT - NO NCURSES 
 
 So far I have implemented:
 

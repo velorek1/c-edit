@@ -4,7 +4,8 @@ C-EDIT for linux - IN PROGRESS - A linux editor in the style of the MSDOS EDIT -
 
 So far I have implemented:
 
-* ANSI functions for positioning cursor in screen, changing output colour, hiding cursor and drawing box-like windows.
+* ANSI functions for positioning cursor in screen, changing output colour, hiding cursor.
+* Unicode for drawing box-like windows.
 * A very simple Double Screen Buffer with a simple linked list in memory for greater display control. 
 * Top-down menus using a double circular linked list.
 * Kbhit and getch so that I can loop without blocking the program.

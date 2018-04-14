@@ -239,27 +239,27 @@ int mapChartoU8(int character){
     case 113:
       //horizontal line
       rtvalue = 9472;
-      break;
+     break;
     case 120:
       //vertical line
       rtvalue = 9474;
-      break;
+     break;
     case 108:
       //upper left corner
       rtvalue = 9484;
-      break;
+     break;
     case 109:
       //lower left corner
       rtvalue = 9492;
-      break; 
+     break; 
     case 107:
       //upper right corner
        rtvalue = 9488;
-       break;
+      break;
     case 106:
       // lower right corner
-       rtvalue = 9496;
-      break;
+      rtvalue = 9496;
+     break;
 
     default:
       rtvalue=0;
@@ -296,11 +296,12 @@ void update_screen() {
       Ansi function. Multiply value by -1 to display the right
       char with the flag activated. 
       Deprecated. Now map negative chars to Unicode */
-      printf("%c(0",27); //Activate box-like characters in vt-100
+      //printf("%c(0",27); //Activate box-like characters in vt-100
       setlocale(LC_ALL, "");
       tempchar = aux->item * -1;
       printf("%lc",(wint_t)mapChartoU8(tempchar)); //unicode
-      printf("%c(B",27); //Deactivate box-like characters
+     
+     // printf("%c(B",27); //Deactivate box-like characters
     }
   }
 }

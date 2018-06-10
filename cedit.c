@@ -1,11 +1,11 @@
 /* 
-
+=============================================================
 PROGRAM C Editor - An editor with top-down menus.
 
 @author : Velorek
 @version : 1.0
-Last modified : 8/4/2018
-
+Last modified : 10/06/2018
+=============================================================
 */
 
 #include <stdio.h>
@@ -15,12 +15,45 @@ Last modified : 8/4/2018
 #include "list_choice.h"
 #include "screen_buffer.h"
 
+//GOODBYE MSG - ASCII ART
+#define cedit_ascii_1 "  _____      ______    _ _ _   \n"   
+#define cedit_ascii_2 " / ____|    |  ____|  | (_) |  \n"  
+#define cedit_ascii_3 "| |   ______| |__   __| |_| |_ \n" 
+#define cedit_ascii_4 "| |  |______|  __| / _` | | __|\n"
+#define cedit_ascii_5 "| |____     | |___| (_| | | |_ \n" 
+#define cedit_ascii_6 " \\_____|    |______\\__,_|_|\\__|\n"
+
+//MISC. CONSTANTS
+#define EXIT_FLAG 1 
+#define FAILSAFE '$' //Failsafe char to activate menus.
+#define TAB_DISTANCE 8 //How many spaces TAB key will send.
+#define START_CURSOR_X 2
+#define START_CURSOR_Y 3
+#define TIME_MS 5000
+#define LIMIT_TIMER 10
+#define ROWS_FAILSAFE 25
+#define COLUMNS_FAILSAFE 80
+#define K_LEFTMENU -1 //Left arrow key pressed while in menu
+#define K_RIGHTMENU -2 //Right arrow key pressed while in menu
+
+//KEYS 
+#define K_ENTER 13
+#define K_CAPS 91
+#define K_BACKSPACE 127
+#define K_TAB 9
+#define K_ESCAPE 27
+#define K_F2 81
+#define K_F3 82
+
+//MENU CONSTANTS
+//#define
+
 LISTCHOICE *mylist, data;
 BCELL  *my_screen;
 
 /* Global Variables */
 int     rows=0, columns=0, old_rows=0, old_columns=0; // Terminal dimensions
-int     cursorX=2,cursorY=3, timerCursor=0; // Cursor position and Timer
+int     cursorX=START_CURSOR_X,cursorY=START_CURSOR_Y, timerCursor=0; // Cursor position and Timer
 int     exitp = 0; // Exit flag for main loop
 char    kglobal=0; // Global variable for menu animation
 
@@ -49,6 +82,7 @@ int main() {
   int keypressed =0;
   int timer1 =0; // Timer to display animation
   int buffertimer =0; // Counter timer for keyboard buffer
+
   hidecursor(); 
   pushTerm(); //Save current terminal settings in failsafe
   create_screen(); //Create screen buffer to control display
@@ -75,7 +109,7 @@ int main() {
         ch=readch();
 
         if (ch > 91) buffertimer=0;
-        if (ch == 13) buffertimer=0;
+        if (ch == K_ENTER) buffertimer=0;
 
         /* EDIT */
         if (esc_key == 0 && buffertimer < 2) {
@@ -85,7 +119,7 @@ int main() {
         } 
 
      } //end if keypressed
- } while(exitp != 1); //exit flag for the whole program
+ } while(exitp != EXIT_FLAG); //exit flag for the whole program
   credits();
   return 0;
 }
@@ -103,36 +137,36 @@ void update_position()
 /* Edit */
 int process_input(int *whereX, int *whereY,char ch)
 {
- if (ch != 27) {
+ if (ch != K_ESCAPE) {
    if (ch>31 && ch<127) {
     //only print ASCII characters to screen.
      write_ch(*whereX,*whereY,ch,B_BLUE,F_WHITE);
      *whereX = *whereX + 1;
    }
-  if (ch==13) {
+  if (ch==K_ENTER) {
     //RETURN - ENTER
       if (*whereY < rows -2) {
         *whereY = *whereY + 1;
         *whereX = 2;
       }
    }
-   if (ch==127) {
+   if (ch==K_BACKSPACE) {
     //BACKSPACE key
       write_ch(*whereX,*whereY,' ',B_BLUE,F_BLUE);
       if (*whereX > 2) *whereX = *whereX - 1;
    }
-   if (ch==9) {
+   if (ch==K_TAB) {
     //TAB key
-      if (*whereX < columns-8) *whereX = *whereX + 8;
+      if (*whereX < columns-TAB_DISTANCE) *whereX = *whereX + TAB_DISTANCE;
    }
    //*ch=0;
- if (ch=='$') {
+ if (ch==FAILSAFE) {
    /*'$' Failsafe menu for some terminals */
     //F2 -> open drop-down menus
-      if (horizontal_menu()==27) 
+      if (horizontal_menu()==K_ESCAPE) 
       {
         //Exit horizontal menu with ESC 3x
-        kglobal=27;
+        kglobal=K_ESCAPE;
         main_screen();
       } 
       /*  Drop-down menu loop */       
@@ -146,7 +180,7 @@ int timer_1(int *timer1){
 /* Timer for animations - Display time and clean cursor */
   time_t mytime = time(NULL);
   char * time_str = ctime(&mytime);
-  if (*timer1 == 5000){
+  if (*timer1 == TIME_MS){
     *timer1=0;
     time_str[strlen(time_str)-1] = '\0';
     //display system time
@@ -164,7 +198,7 @@ int timer_1(int *timer1){
 int special_keys(int *whereX, int *whereY,char *ch,int *buffertimer){
 /* MANAGE SPECIAL KEYS */
   int esc_key=0;
-if (*ch==27){
+if (*ch==K_ESCAPE){
   switch (getch()){
     case 'D':
     //Left-arrow key  
@@ -182,18 +216,18 @@ if (*ch==27){
     //Down-arrow key  
       if (*whereY < rows-2) *whereY=*whereY+1;
       break;
-    case 81: 
+    case K_F2: 
     //F2 -> open drop-down menus
-      if (horizontal_menu()==27) 
+      if (horizontal_menu()==K_ESCAPE) 
       {
         //Exit horizontal menu with ESC 3x
-        kglobal=27;
+        kglobal=K_ESCAPE;
         main_screen();
       } 
       /*  Drop-down menu loop */       
       drop_down(&kglobal); //animation
       break;
-    case 82:
+    case K_F3:
     //F3 -> Refresh screen
       refresh_screen(1);
       break;
@@ -201,7 +235,7 @@ if (*ch==27){
        break;
     }
    esc_key = 1;
-   *ch=27;
+   *ch=K_ESCAPE;
    /*
       Buffertimer keeps track of arrow keys so as not to saturate
       keyboard buffer and print random characters to screen.
@@ -220,7 +254,7 @@ void draw_cursor(int *whereX, int *whereY, int *timer)
 {
 /* CURSOR is drawn directly to screen and not to buffer */
    *timer = *timer +1; //increase timer counter for animation
-  if (*timer < 10)
+  if (*timer < LIMIT_TIMER)
   { 
     gotoxy(*whereX, *whereY);
     outputcolor(F_WHITE, B_BLUE);
@@ -262,9 +296,9 @@ int main_screen() {
  
   //Failsafe just in case it can't find the terminal dimensions
   if(rows == 0)
-    rows = 25;	
+    rows = ROWS_FAILSAFE;	
   if(columns == 0)
-    columns = 80;
+    columns = COLUMNS_FAILSAFE;
 
   bscreen_color(B_BLUE);
   //Draw upper and lower bars
@@ -284,7 +318,7 @@ int main_screen() {
   //window appearance and scroll bar
   for (i=2; i<rows; i++){
     write_ch(columns,i,' ',B_WHITE,F_BLACK);
-    write_ch(1,i,-120,B_BLACK,F_WHITE); //vertical line box-like char 
+    write_ch(1,i,-120,B_BLACK,F_WHITE); //upper vertical line box-like char 
   }
   for(i = 2; i < columns; i++) {
     write_ch(i, 2, -113, B_BLACK, F_WHITE);//horizontal line box-like char
@@ -485,7 +519,7 @@ void drop_down(char *kglobal){
 */
   
 do {     
-  if (*kglobal==27) {
+  if (*kglobal==K_ESCAPE) {
     //Exit drop-down menu with ESC 3x          
     *kglobal=0;          
     main_screen();          
@@ -493,32 +527,32 @@ do {
   }
   if(data.index == 0) {
     filemenu();
-      if(*kglobal == -1) {	      
+      if(*kglobal == K_LEFTMENU) {	      
         data.index = 1;
       }	   
-      if(*kglobal == -2) {	      
+      if(*kglobal == K_RIGHTMENU) {	      
         data.index = 2;	   
       } 	
   }
   if(data.index == 1) {
     optionsmenu();     
-     if(*kglobal == -1) {
+     if(*kglobal == K_LEFTMENU) {
        data.index = 2;	   
      }	   
-     if(*kglobal == -2) {
+     if(*kglobal == K_RIGHTMENU) {
        data.index = 0;
      }
   }	
   if(data.index == 2) {
     helpmenu();
-    if(*kglobal == -1) {
+    if(*kglobal == K_LEFTMENU) {
 	 data.index = 0;	   
     }	 
-    if(*kglobal == -2) {    
+    if(*kglobal == K_RIGHTMENU) {    
       data.index = 1;	  
     }	 
   }
- } while(*kglobal != 13);
+ } while(*kglobal != K_ENTER);
 }
 
 /* Frees memory and displays goodbye message */
@@ -528,5 +562,14 @@ void credits(){
   showcursor();
   screencol(0);
   outputcolor(7, 0);
-  printf("[C-Edit] coded by Velorek. \n");
+  
+  printf(cedit_ascii_1);
+  printf(cedit_ascii_2);
+  printf(cedit_ascii_3);
+  printf(cedit_ascii_4);
+  printf(cedit_ascii_5);
+  printf(cedit_ascii_6);
+
+  printf("\nCoded by v3l0r3k 2018.\n");
+
 }

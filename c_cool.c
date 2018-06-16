@@ -1,11 +1,12 @@
 /* 
-
+======================================================================
 Module to control some display routines that implement ANSI functions.
 
 @author : Velorek
 @version : 1.0
-Some of the terminal routines were taken from stackoverflow.
 
+LAST MODIFIED : JUN 2018
+======================================================================
 */
 
 #include <termios.h>
@@ -15,7 +16,7 @@ Some of the terminal routines were taken from stackoverflow.
 #include <sys/ioctl.h>
 
 struct winsize max;
-static struct termios old, new,failsafe;
+static struct termios new,failsafe;
 static int peek_character = -1;
 
 
@@ -23,19 +24,6 @@ static int peek_character = -1;
 void pushTerm(){
 //Save terminal settings in failsafe to be retrived at the end
   tcgetattr(0,&failsafe);
-}
-
-void initTermios(int echo) {
-  tcgetattr(0, &old);		/* grab old terminal i/o settings */
-  new = old;			/* make new settings same as old settings */
-  new.c_lflag &= ~ICANON;	/* disable buffered i/o */
-  new.c_lflag &= echo ? ECHO : ~ECHO;	/* set echo mode */
-  tcsetattr(0, TCSANOW, &new);	/* use these new terminal i/o settings now */
-}
-
-/* Restore old terminal i/o settings */
-void resetTermios(void) {
-  tcsetattr(0, TCSANOW, &old);
 }
 
 void resetTerm() {
@@ -79,24 +67,18 @@ char ch;
     return ch;
 }
 
+
 /* Read 1 character - echo defines echo mode */
-char getch_(int echo) {
-  char    ch;
-  initTermios(echo);
-  ch = getchar();
-  resetTermios();
-  return ch;
-}
-
-/* Read 1 character without echo */
-char getch(void) {
-  return getch_(0);
-}
-
-
-/* Read 1 character with echo */
-char getche(void) {
-  return getch_(1);
+char getch(){
+struct termios t;
+  tcgetattr(0, &t);
+  tcflag_t old_flag = t.c_lflag;
+  t.c_lflag &= ~(ICANON | ECHO);
+  tcsetattr(0, TCSANOW, &t);
+  int     c = getchar();
+  t.c_lflag = old_flag;
+  tcsetattr(0, TCSANOW, &t);
+  return c;
 }
 
 /* Move cursor to specified position */

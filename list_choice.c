@@ -1,11 +1,11 @@
 /* 
-
+======================================================================
 Module to make a circular linked list to make a selection menu in C.
 
 @author : Velorek
 @version : 1.0
-Last modified : 04/3/2018
-
+Last modified : JUN 2018
+======================================================================
 */
 
 #include <stdio.h>

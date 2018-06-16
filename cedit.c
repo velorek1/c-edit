@@ -44,9 +44,16 @@ Last modified : 10/06/2018
 #define K_ESCAPE 27
 #define K_F2 81
 #define K_F3 82
+#define ARROWKEYS_FLAG 91 //When cursor keys are being used, the scancode 91 is obtained 
 
 //MENU CONSTANTS
-//#define
+#define HOR_MENU 0
+#define FILE_MENU 1
+#define OPT_MENU 2
+#define HELP_MENU 3
+#define EXIT_MENU 4
+#define ABOUT_MENU 5
+
 
 LISTCHOICE *mylist, data;
 BCELL  *my_screen;
@@ -70,7 +77,7 @@ void helpmenu();
 int confirmation();
 int about_info();
 int process_input(int *whereX, int *whereY, char ch);
-int special_keys(int *whereX, int *whereY,char *ch, int *buffertimer);
+int special_keys(int *whereX, int *whereY,char ch);
 void draw_cursor(int *whereX, int *whereY, int *timer);
 int refresh_screen(int force_refresh);
 int timer_1(int *timer1);
@@ -81,7 +88,6 @@ int main() {
   int esc_key =0; //To control key input and scan for keycodes.
   int keypressed =0;
   int timer1 =0; // Timer to display animation
-  int buffertimer =0; // Counter timer for keyboard buffer
 
   hidecursor(); 
   pushTerm(); //Save current terminal settings in failsafe
@@ -101,18 +107,13 @@ int main() {
     if (keypressed==1){ 
   
         /* Process SPECIAL KEYS and other ESC-related issues */
-        esc_key=special_keys(&cursorX,&cursorY,&ch,&buffertimer);
+        esc_key=special_keys(&cursorX,&cursorY,ch);
        
-        //  Buffertimer deactivates printing chars to screen
-        //  when cursor arrows are being used repeatedly (ch != 91)
-         
+        
         ch=readch();
 
-        if (ch > 91) buffertimer=0;
-        if (ch == K_ENTER) buffertimer=0;
-
         /* EDIT */
-        if (esc_key == 0 && buffertimer < 2) {
+        if (esc_key == 0) {
           //Process input and get rid of extra characters
           process_input(&cursorX,&cursorY, ch); //Edit
           keypressed=0;
@@ -195,15 +196,15 @@ int timer_1(int *timer1){
   }
 }
 
-int special_keys(int *whereX, int *whereY,char *ch,int *buffertimer){
+int special_keys(int *whereX, int *whereY,char ch){
 /* MANAGE SPECIAL KEYS */
   int esc_key=0;
-if (*ch==K_ESCAPE){
+if (ch==K_ESCAPE){
   switch (getch()){
     case 'D':
     //Left-arrow key  
       if (*whereX > 2) *whereX=*whereX-1;
-    break;
+       break;
     case 'C':
     //Left-arrow key  
       if (*whereX < columns-1) *whereX=*whereX+1;
@@ -211,7 +212,7 @@ if (*ch==K_ESCAPE){
     case 'A':
     //Up-arrow key  
       if (*whereY > 3) *whereY=*whereY-1;
-    break;
+      break;
     case 'B':
     //Down-arrow key  
       if (*whereY < rows-2) *whereY=*whereY+1;
@@ -226,25 +227,21 @@ if (*ch==K_ESCAPE){
       } 
       /*  Drop-down menu loop */       
       drop_down(&kglobal); //animation
-      break;
+     break;
     case K_F3:
     //F3 -> Refresh screen
-      refresh_screen(1);
-      break;
+     refresh_screen(1);
+     break;
+       
     default:
-       break;
+      break;
     }
    esc_key = 1;
-   *ch=K_ESCAPE;
-   /*
-      Buffertimer keeps track of arrow keys so as not to saturate
-      keyboard buffer and print random characters to screen.
-      ESC ] A,B,C,D : arrow keys
-   */
-   *buffertimer = *buffertimer + 1; 
  } else {
+   if (ch==ARROWKEYS_FLAG)  
+   esc_key = 1;
+   else
    esc_key = 0;
-   *ch=0;
  }
 return esc_key;
 }
@@ -344,36 +341,36 @@ int main_screen() {
 
 /* Load current menu into circular linked list */ 
 void loadmenus(int choice) {
-  if(choice == 0) {
+  if(choice == HOR_MENU) {
     add_item(mylist, "File", 1, 1, B_WHITE, F_BLACK, B_BLACK, FH_WHITE);
     add_item(mylist, "Options", 7, 1, B_WHITE, F_BLACK, B_BLACK, FH_WHITE);
     add_item(mylist, "Help", 16, 1, B_WHITE, F_BLACK, B_BLACK, FH_WHITE);
   }
 
-  if(choice == 1) {
+  if(choice == FILE_MENU) {
     add_item(mylist, "New", 3, 3, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
     add_item(mylist, "Open", 3, 4, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
     add_item(mylist, "Save", 3, 5, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
     add_item(mylist, "Save as..", 3, 6, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
     add_item(mylist, "Exit", 3, 7, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
   }
-  if(choice == 2) {
+  if(choice == OPT_MENU) {
     add_item(mylist, "Settings", 9, 3, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
     add_item(mylist, "Colors", 9, 4, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
     add_item(mylist, "Refresh_F3", 9, 5, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
   }
-  if(choice == 3) {
+  if(choice == HELP_MENU) {
     add_item(mylist, "Help_F1", 18, 3, B_WHITE, F_BLACK, B_BLACK,
 	     F_WHITE);
     add_item(mylist, "About", 18, 4, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
   }
 
-  if(choice == 5) {
+  if(choice == EXIT_MENU) {
     add_item(mylist, "<YES>", (columns/2)-6, (rows/2)+2, B_WHITE, F_BLACK, B_BLACK,
 	     F_WHITE);
     add_item(mylist, "<NO>", (columns/2)+4, (rows/2)+2, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
   }
-   if(choice == 6) {
+   if(choice == ABOUT_MENU) {
     add_item(mylist, "<OK>", (columns/2)-1, (rows/2)+3 , B_WHITE, F_BLACK, B_BLACK,
 	     F_WHITE);
   }
@@ -385,7 +382,7 @@ char horizontal_menu(){
   char temp_char;
   write_str(14, rows, "Press ESC thrice [3x] to exit menu  ", B_CYAN, FH_WHITE);
   update_screen();
-  loadmenus(0);		
+  loadmenus(HOR_MENU);		
   temp_char=start_hmenu(&data);
   free_list(mylist);
   return temp_char;
@@ -395,7 +392,7 @@ char horizontal_menu(){
 void filemenu() {
   int i;
   write_str(14, rows, "Press ESC thrice [3x] to exit menu  ", B_CYAN, FH_WHITE);
-  loadmenus(1);
+  loadmenus(FILE_MENU);
   write_str(1, 1, "File", B_BLACK, F_WHITE);
   draw_window(1, 2, 13, 8, B_WHITE, F_BLACK, 1);
   kglobal = start_vmenu(&data);
@@ -420,7 +417,7 @@ void filemenu() {
 void optionsmenu() {
   int i;
   write_str(14, rows, "Press ESC thrice [3x] to exit menu  ", B_CYAN, FH_WHITE);
-  loadmenus(2);
+  loadmenus(OPT_MENU);
   write_str(7, 1, "Options", B_BLACK, F_WHITE);
   draw_window(7, 2, 20, 6, B_WHITE, F_BLACK, 1);
   kglobal = start_vmenu(&data);
@@ -446,7 +443,7 @@ void optionsmenu() {
 void helpmenu() {
   int i;
   write_str(14, rows, "Press ESC thrice [3x] to exit menu  ", B_CYAN, FH_WHITE);
-  loadmenus(3);
+  loadmenus(HELP_MENU);
   write_str(16, 1, "Help", B_BLACK, F_WHITE);
   draw_window(16, 2, 26, 5, B_WHITE, F_BLACK, 1);
   kglobal = start_vmenu(&data);
@@ -475,7 +472,7 @@ int confirmation(){
     window_y2 = (rows/2) + 3;
     window_x1 = (columns/2) - 13;
     window_x2 = (columns/2) +13;
-    loadmenus(5);
+    loadmenus(EXIT_MENU);
     draw_window(window_x1, window_y1, window_x2, window_y2, B_WHITE, F_BLACK, 1);
     write_str(window_x1+3, window_y1+2, "Are you sure you want", F_BLACK, B_WHITE);
      write_str(window_x1+3, window_y1+3, "   want to quit?    ", F_BLACK, B_WHITE);
@@ -491,7 +488,7 @@ int confirmation(){
 int about_info(){
     int ok=0;
     int window_x1=0, window_y1=0, window_x2 = 0, window_y2 =0;
-    loadmenus(6);
+    loadmenus(ABOUT_MENU);
     window_y1 = (rows / 2) - 4;
     window_y2 = (rows/2) + 4;
     window_x1= (columns/2) -8;

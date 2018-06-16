@@ -1,5 +1,5 @@
 /* 
-
+============================================================================================
 Module to create a double screen buffer to control how things are displayed on the terminal.
 
 Simple linked list with a "cell" that stores the character to be shown along with
@@ -11,8 +11,8 @@ Then the update routine will finally show the final composition to the user.
 
 @author : Velorek
 @version : 1.0
-Last modified : 04/3/2018
-
+Last modified : JUN 2018
+============================================================================================
 */
 
 #include <stdio.h>
@@ -46,7 +46,7 @@ void create_screen() {
   /* 
      Get terminal dimensions and create 2 dynamic lists with the size of the screen.
      if it is not possible to determine screen dimensions default is set to 80x25.
-     Insertion happens at the end of the list. There are thre pointers to keep track
+     Insertion happens at the end of the list. There are three pointers to keep track
      and make insertions. B_start : head of the list | b_end : tail of the list.
      Old buffer works as a double buffer with its own pointers.
    */

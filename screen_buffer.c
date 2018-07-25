@@ -1,17 +1,21 @@
 /* 
 ============================================================================================
-Module to create a double screen buffer to control how things are displayed on the terminal.
+SCREEN MODULE:
+Module to create a double screen buffer to control how things are 
+displayed on the terminal.Simple linked list with a "cell" that 
+stores the character to be shown along with its background and 
+foreground colors.
 
-Simple linked list with a "cell" that stores the character to be shown along with
-its background and foreground colors.
-The size of our buffer will be determined by rows x columns (simple linked list). 
-This representation in memory of the screen will need subroutines to control the display. 
-Everything you want to show on screen will be printed to the buffer first. 
-Then the update routine will finally show the final composition to the user.
+The size of our buffer will be determined by rows x columns 
+(simple linked list). This representation in memory of the screen 
+will need subroutines to control the display. 
+Everything you want to show on screen will be printed to the 
+buffer first. Then the update routine will finally show the final 
+composition to the user.
 
 @author : Velorek
 @version : 1.0
-Last modified : JUN 2018
+Last modified : 25/07/2018
 ============================================================================================
 */
 

@@ -1,12 +1,15 @@
-/* 
-=============================================================
+/*
+======================================================================
 PROGRAM C Editor - An editor with top-down menus.
 
 @author : Velorek
 @version : 1.0
-Last modified : 10/06/2018
-=============================================================
-*/
+Last modified : 25/07/2018                                           
+======================================================================*/
+
+/*====================================================================*/
+/* COMPILER DIRECTIVES AND INCLUDES                                   */
+/*====================================================================*/
 
 #include <stdio.h>
 #include <time.h>
@@ -14,6 +17,10 @@ Last modified : 10/06/2018
 #include "c_cool.h"
 #include "list_choice.h"
 #include "screen_buffer.h"
+
+/*====================================================================*/
+/* CONSTANT VALUES                                                    */
+/*====================================================================*/
 
 //GOODBYE MSG - ASCII ART
 #define cedit_ascii_1 "  _____      ______    _ _ _   \n"   
@@ -47,24 +54,44 @@ Last modified : 10/06/2018
 #define ARROWKEYS_FLAG 91 //When cursor keys are being used, the scancode 91 is obtained 
 
 //MENU CONSTANTS
-#define HOR_MENU 0
-#define FILE_MENU 1
-#define OPT_MENU 2
-#define HELP_MENU 3
-#define EXIT_MENU 4
-#define ABOUT_MENU 5
+#define HOR_MENU -1
+#define FILE_MENU 0
+#define OPT_MENU 1
+#define HELP_MENU 2
+#define EXIT_MENU 3
+#define ABOUT_MENU 4
 
+//DROP-DOWN MENUS
+#define OPTION_1 0
+#define OPTION_2 1
+#define OPTION_3 2
+#define OPTION_4 3
+#define OPTION_5 4
+#define OPTION_NIL -1 //Reset option
+#define CONFIRMATION 1
+
+// DISPLAY CONSTANTS
+#define FILL_CHAR 32
+#define UP_BOXCHAR -120
+#define HOR_BOXCHAR -113
+#define UPLEFT_BOXCHAR -108
+
+/*====================================================================*/
+/* GLOBAL VARIABLES */
+/*====================================================================*/
 
 LISTCHOICE *mylist, data;
 BCELL  *my_screen;
 
-/* Global Variables */
 int     rows=0, columns=0, old_rows=0, old_columns=0; // Terminal dimensions
 int     cursorX=START_CURSOR_X,cursorY=START_CURSOR_Y, timerCursor=0; // Cursor position and Timer
 int     exitp = 0; // Exit flag for main loop
 char    kglobal=0; // Global variable for menu animation
 
-//Function declarations
+/*====================================================================*/
+/* PROTOTYPES OF FUNCTIONS                                            */
+/*====================================================================*/
+
 void credits();
 int main_screen();
 void update_position();
@@ -82,7 +109,10 @@ void draw_cursor(int *whereX, int *whereY, int *timer);
 int refresh_screen(int force_refresh);
 int timer_1(int *timer1);
 
-//MAIN PROGRAM
+/*====================================================================*/
+/* MAIN PROGRAM - CODE                                                */
+/*====================================================================*/
+
 int main() {
   char    ch=0;
   int esc_key =0; //To control key input and scan for keycodes.
@@ -125,7 +155,14 @@ int main() {
   return 0;
 }
 
-/* FUNCTION DEFINITIONS */
+/*====================================================================*/
+/* FUNCTION DEFINITIONS                                               */
+/*====================================================================*/
+
+
+/*----------------------------------------- */
+/* Update cursor position display on screen */
+/*----------------------------------------- */
 
 void update_position()
 {
@@ -135,7 +172,10 @@ void update_position()
  write_num(columns-9,rows,cursorY-2,4,B_CYAN,FH_WHITE);
 }
 
-/* Edit */
+/*--------------*/
+/* EDIT Section */
+/*------------- */
+
 int process_input(int *whereX, int *whereY,char ch)
 {
  if (ch != K_ESCAPE) {
@@ -177,6 +217,10 @@ int process_input(int *whereX, int *whereY,char ch)
   return 0;
 }
 
+/*-----------------------------------------*/
+/* Timer 1 Animation. Clock and cursor     */
+/*-----------------------------------------*/
+
 int timer_1(int *timer1){
 /* Timer for animations - Display time and clean cursor */
   time_t mytime = time(NULL);
@@ -195,6 +239,10 @@ int timer_1(int *timer1){
     return 1;
   }
 }
+
+/*-----------------------------------------*/
+/* Manage keys that send a ESC sequence    */
+/*-----------------------------------------*/
 
 int special_keys(int *whereX, int *whereY,char ch){
 /* MANAGE SPECIAL KEYS */
@@ -246,7 +294,10 @@ if (ch==K_ESCAPE){
 return esc_key;
 }
 
-/* Draw cursor and animate it*/
+/*-----------------------------------------*/
+/* Draw cursor on screen and animate it    */
+/*-----------------------------------------*/
+
 void draw_cursor(int *whereX, int *whereY, int *timer)
 {
 /* CURSOR is drawn directly to screen and not to buffer */
@@ -265,7 +316,10 @@ void draw_cursor(int *whereX, int *whereY, int *timer)
    }
 }
 
-/* Refresh screen */
+/*-----------------*/
+/* Refresh screen  */
+/*-----------------*/
+
 int refresh_screen(int force_refresh){
 /* Query terminal dimensions again and check if resize 
    has been produced */
@@ -282,7 +336,10 @@ int refresh_screen(int force_refresh){
   }
 }
 
-/* Draw the main screen */
+/*-------------------*/
+/* Draw main screen  */
+/*-------------------*/
+
 int main_screen() {
   int     i;
  
@@ -300,11 +357,11 @@ int main_screen() {
   bscreen_color(B_BLUE);
   //Draw upper and lower bars
   for(i = 1; i <= columns; i++) {
-    write_ch(i, 1, 32, B_WHITE, F_WHITE);
+    write_ch(i, 1, FILL_CHAR, B_WHITE, F_WHITE);
   }
 
   for(i = 1; i < columns; i++) {
-    write_ch(i, rows, 32, B_CYAN, F_WHITE);
+    write_ch(i, rows, FILL_CHAR, B_CYAN, F_WHITE);
   }
   // Text messages
   write_str(1, 1, "File  Options  Help", B_WHITE, F_BLACK);
@@ -315,16 +372,16 @@ int main_screen() {
   //window appearance and scroll bar
   for (i=2; i<rows; i++){
     write_ch(columns,i,' ',B_WHITE,F_BLACK);
-    write_ch(1,i,-120,B_BLACK,F_WHITE); //upper vertical line box-like char 
+    write_ch(1,i,UP_BOXCHAR,B_BLACK,F_WHITE); //upper vertical line box-like char 
   }
   for(i = 2; i < columns; i++) {
-    write_ch(i, 2, -113, B_BLACK, F_WHITE);//horizontal line box-like char
+    write_ch(i, 2, HOR_BOXCHAR, B_BLACK, F_WHITE);//horizontal line box-like char
     write_ch(i, rows-1, ' ', B_BLACK, F_WHITE);
   }
-  write_ch(1,2,-108,B_BLACK,F_WHITE); //upper-left box-like char
+  write_ch(1,2,UPLEFT_BOXCHAR,B_BLACK,F_WHITE); //upper-left box-like char
   //horizontal scroll bar
    for(i = 2; i < columns; i++) {
-    write_ch(i, rows-1, 32, B_WHITE, F_WHITE);
+    write_ch(i, rows-1, FILL_CHAR, B_WHITE, F_WHITE);
   }
   
   write_str((columns/2)-4,2,"UNTITLED",B_WHITE,F_BLACK); 
@@ -339,7 +396,10 @@ int main_screen() {
   return 0;
 }
 
-/* Load current menu into circular linked list */ 
+/*--------------------------------------------*/
+/* Load current menu into circular linked list*/ 
+/*--------------------------------------------*/
+
 void loadmenus(int choice) {
   if(choice == HOR_MENU) {
     add_item(mylist, "File", 1, 1, B_WHITE, F_BLACK, B_BLACK, FH_WHITE);
@@ -377,7 +437,10 @@ void loadmenus(int choice) {
   
 }
 
-/* Horizontal menu */
+/*--------------------------*/
+/* Display horizontal menu  */
+/*--------------------------*/
+
 char horizontal_menu(){
   char temp_char;
   write_str(14, rows, "Press ESC thrice [3x] to exit menu  ", B_CYAN, FH_WHITE);
@@ -388,9 +451,13 @@ char horizontal_menu(){
   return temp_char;
 }
 
-/* Display File Menu */
+/*-------------------------*/
+/* Display File menu       */
+/*-------------------------*/
+
 void filemenu() {
   int i;
+  data.index = OPTION_NIL;
   write_str(14, rows, "Press ESC thrice [3x] to exit menu  ", B_CYAN, FH_WHITE);
   loadmenus(FILE_MENU);
   write_str(1, 1, "File", B_BLACK, F_WHITE);
@@ -400,22 +467,26 @@ void filemenu() {
   write_str(1, 1, "File  Options  Help", B_WHITE, F_BLACK);
   update_screen();
   free_list(mylist);
-  if(data.index == 4) {
+  if(data.index == OPTION_5) {
 	exitp = confirmation(); //Shall we exit? Global variable! 
   }
-  data.index = -1;
+  data.index = OPTION_NIL;
   //Restore message in status bar
   for(i = 1; i < columns; i++) {
-    write_ch(i, rows, 32, B_CYAN, F_WHITE);
+    write_ch(i, rows, FILL_CHAR, B_CYAN, F_WHITE);
   }
   write_str(1, rows, ">> [C-Edit]", B_CYAN, FH_WHITE);
   write_str(14, rows, "| F2 or $ -> Menus |", B_CYAN, FH_WHITE);
  
 }
 
-/* Display Options Menu */
+/*--------------------------*/
+/* Display Options menu     */
+/*--------------------------*/
+
 void optionsmenu() {
   int i;
+  data.index = OPTION_NIL;
   write_str(14, rows, "Press ESC thrice [3x] to exit menu  ", B_CYAN, FH_WHITE);
   loadmenus(OPT_MENU);
   write_str(7, 1, "Options", B_BLACK, F_WHITE);
@@ -425,23 +496,27 @@ void optionsmenu() {
   write_str(1, 1, "File  Options  Help", B_WHITE, F_BLACK);
   update_screen();
   free_list(mylist);
-  if(data.index == 2) {
+  if(data.index == OPTION_3) {
      //Refresh screen
       refresh_screen(1);
  }
-  data.index = -1;
+  data.index = OPTION_NIL;
    //Restore message in status bar
   for(i = 1; i < columns; i++) {
-    write_ch(i, rows, 32, B_CYAN, F_WHITE);
+    write_ch(i, rows, FILL_CHAR, B_CYAN, F_WHITE);
   }
   write_str(1, rows, ">> [C-Edit]", B_CYAN, FH_WHITE);
   write_str(14, rows, "| F2 or $ -> Menus |", B_CYAN, FH_WHITE);
  
 }
 
-/* Display Help Menu */
+/*--------------------------*/
+/* Display Help menu        */
+/*--------------------------*/
+
 void helpmenu() {
   int i;
+  data.index = OPTION_NIL;
   write_str(14, rows, "Press ESC thrice [3x] to exit menu  ", B_CYAN, FH_WHITE);
   loadmenus(HELP_MENU);
   write_str(16, 1, "Help", B_BLACK, F_WHITE);
@@ -451,23 +526,28 @@ void helpmenu() {
   write_str(1, 1, "File  Options  Help", B_WHITE, F_BLACK);
   update_screen();
   free_list(mylist);
-   if(data.index == 1) {
+   if(data.index == OPTION_2) {
      //About info
       about_info();
  }
   data.index = -1;
   //Restore message in status bar
   for(i = 1; i < columns; i++) {
-    write_ch(i, rows, 32, B_CYAN, F_WHITE);
+    write_ch(i, rows, FILL_CHAR, B_CYAN, F_WHITE);
   }
   write_str(1, rows, ">> [C-Edit]", B_CYAN, FH_WHITE);
   write_str(14, rows, "| F2 or $ -> Menus |", B_CYAN, FH_WHITE);
 }
 
+/*-------------------------------*/
+/* Display Confirmation Dialog   */
+/*-------------------------------*/
+
 /* Displays a window to asks user for confirmation */
 int confirmation(){
     int ok=0;
     int window_x1=0, window_y1=0, window_x2 = 0, window_y2 =0;
+    data.index = OPTION_NIL;
     window_y1 = (rows / 2) - 3;
     window_y2 = (rows/2) + 3;
     window_x1 = (columns/2) - 13;
@@ -479,15 +559,20 @@ int confirmation(){
     
     start_hmenu(&data);
     free_list(mylist);
-    if(data.index == 0)
-      ok = 1; //Confirmation has been given
+    if(data.index == OPTION_1)
+      ok = CONFIRMATION; //Confirmation has been given
     close_window();
     return ok; 
 }
 
+/*--------------------------*/
+/* Display About Dialog     */
+/*--------------------------*/
+
 int about_info(){
     int ok=0;
     int window_x1=0, window_y1=0, window_x2 = 0, window_y2 =0;
+    data.index = OPTION_NIL;
     loadmenus(ABOUT_MENU);
     window_y1 = (rows / 2) - 4;
     window_y2 = (rows/2) + 4;
@@ -499,8 +584,8 @@ int about_info(){
     write_str(window_x1+2, window_y1+4, " - V3l0r3k -", F_BLACK, B_WHITE);
     start_hmenu(&data);
     free_list(mylist);
-    if(data.index == 0)
-      ok = 1; //Confirmation has been given
+    if(data.index == OPTION_1)
+      ok = CONFIRMATION; //Confirmation has been given
     close_window();
     return ok; 
 }
@@ -513,7 +598,10 @@ void drop_down(char *kglobal){
    so as to break vertical menu and 
    start the adjacent menu
    kglobal is changed by the menu functions
-*/
+   FILE_MENU 0
+   OPT_MENU 1
+   HELP_MENU 2
+ */
   
 do {     
   if (*kglobal==K_ESCAPE) {
@@ -522,38 +610,42 @@ do {
     main_screen();          
     break;     
   }
-  if(data.index == 0) {
+  if(data.index == FILE_MENU) {
     filemenu();
       if(*kglobal == K_LEFTMENU) {	      
-        data.index = 1;
+        data.index = OPT_MENU;
       }	   
       if(*kglobal == K_RIGHTMENU) {	      
-        data.index = 2;	   
+        data.index = HELP_MENU;	   
       } 	
   }
-  if(data.index == 1) {
+  if(data.index == OPT_MENU) {
     optionsmenu();     
      if(*kglobal == K_LEFTMENU) {
-       data.index = 2;	   
+       data.index = HELP_MENU;	   
      }	   
      if(*kglobal == K_RIGHTMENU) {
-       data.index = 0;
+       data.index = FILE_MENU;
      }
   }	
-  if(data.index == 2) {
+  if(data.index == HELP_MENU) {
     helpmenu();
     if(*kglobal == K_LEFTMENU) {
-	 data.index = 0;	   
+	 data.index = FILE_MENU;	   
     }	 
     if(*kglobal == K_RIGHTMENU) {    
-      data.index = 1;	  
+      data.index = OPT_MENU;	  
     }	 
   }
  } while(*kglobal != K_ENTER);
 }
 
-/* Frees memory and displays goodbye message */
+/*---------*/
+/* Credits */
+/*---------*/
+
 void credits(){
+/* Frees memory and displays goodbye message */
   free_buffer();
   resetTerm(); //restore terminal settings from failsafe
   showcursor();

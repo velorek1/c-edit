@@ -590,18 +590,18 @@ int about_info(){
     return ok; 
 }
 
+/*----------------------*/
+/* Drop_Down Menu Loop  */
+/*----------------------*/
+
 
 void drop_down(char *kglobal){
 /* 
-   Drop_down loop animation 
-   -1 is used when right/left arrow keys are used
-   so as to break vertical menu and 
-   start the adjacent menu
-   kglobal is changed by the menu functions
-   FILE_MENU 0
-   OPT_MENU 1
-   HELP_MENU 2
- */
+   Drop_down loop animation. 
+   K_LEFTMENU/K_RIGHTMENU -1 is used when right/left arrow keys are used
+   so as to break vertical menu and start the adjacent menu
+   kglobal is changed by the menu functions.
+*/
   
 do {     
   if (*kglobal==K_ESCAPE) {

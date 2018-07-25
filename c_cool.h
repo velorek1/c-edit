@@ -1,20 +1,28 @@
-/* 
-
-- HEADER - Module to control some display routines that implement ANSI functions.
-
+/*
+========================================================================
+- HEADER - 
+Module to control some display routines that implement ANSI functions.
 @author : Velorek
-@version : 1.0
-Some of the terminal routines were taken from stackoverflow.
-
+@version : 1.0                                                                  
+========================================================================
 */
-#ifndef _C_COOL_H_
-# define _C_COOL_H_
 
-# include <termios.h>
-# include <stdio.h>
-# include <stdlib.h>
-# include <unistd.h>
-# include <sys/ioctl.h>
+#ifndef _C_COOL_H_
+#define _C_COOL_H_
+
+/*====================================================================*/
+/* COMPILER DIRECTIVES AND INCLUDES                                   */
+/*====================================================================*/
+
+#include <termios.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+
+/*====================================================================*/
+/* COLOR CONSTANTS                                                    */
+/*====================================================================*/
 
 // Background colors low intensity                                                                         
 # define B_BLACK 40
@@ -27,44 +35,44 @@ Some of the terminal routines were taken from stackoverflow.
 # define B_WHITE 47
 
 // Foreground colors low intensity                                                                                                                                 
-# define F_BLACK 30
-# define F_RED 31
-# define F_GREEN 32
-# define F_YELLOW 33
-# define F_BLUE 34
-# define F_MAGENTA 35
-# define F_CYAN 36
-# define F_WHITE 37
+#define F_BLACK 30
+#define F_RED 31
+#define F_GREEN 32
+#define F_YELLOW 33
+#define F_BLUE 34
+#define F_MAGENTA 35
+#define F_CYAN 36
+#define F_WHITE 37
 
 // Background colors high intensity                                                                                                                                     
-# define BH_BLACK 100
-# define BH_RED 101
-# define BH_GREEN 102
-# define BH_YELLOW 103
-# define BH_BLUE 104
-# define BH_MAGENTA 105
-# define BH_CYAN 106
-# define BH_WHITE 107
+#define BH_BLACK 100
+#define BH_RED 101
+#define BH_GREEN 102
+#define BH_YELLOW 103
+#define BH_BLUE 104
+#define BH_MAGENTA 105
+#define BH_CYAN 106
+#define BH_WHITE 107
 
 // Foreground colors high intensity                                                                                                                                     
-# define FH_BLACK 90
-# define FH_RED 91
-# define FH_GREEN 92
-# define FH_YELLOW 93
-# define FH_BLUE 94
-# define FH_MAGENTA 95
-# define FH_CYAN 96
-# define FH_WHITE 97
+#define FH_BLACK 90
+#define FH_RED 91
+#define FH_GREEN 92
+#define FH_YELLOW 93
+#define FH_BLUE 94
+#define FH_MAGENTA 95
+#define FH_CYAN 96
+#define FH_WHITE 97
 
-void    initTermios(int echo);
-void    resetTermios(void);
+/*====================================================================*/
+/* FUNCTION PROTOTYPES                                                */
+/*====================================================================*/
+
 void    pushTerm();
 void    resetTerm();
 int     kbhit();
 int 	readch();
-char    getch_(int echo);
 char    getch(void);
-char    getche(void);
 void    gotoxy(int x, int y);
 void    outputcolor(int foreground, int background);
 void    screencol(int x);

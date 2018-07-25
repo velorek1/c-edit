@@ -1,12 +1,31 @@
+/* 
+======================================================================
+HEADER:
+Module to create vertical and horizontal selection menus with
+double linked list. 
+@author : Velorek
+@version : 1.0
+-LAST MODIFIED : 25/07/2018
+======================================================================
+*/
+
 #ifndef _LIST_CHOICE_H_
-# define _LIST_CHOICE_H_
+#define _LIST_CHOICE_H_
 
-# include <stdio.h>
-# include <stdlib.h>
-# include <strings.h>
-# include "c_cool.h"
+/*====================================================================*/
+/* COMPILER DIRECTIVES AND INCLUDES                                   */
+/*====================================================================*/
 
-/* Circular linked list for selection of menus */
+#include <stdio.h>
+#include <stdlib.h>
+#include <strings.h>
+#include "c_cool.h"
+
+/*====================================================================*/
+/* TYPE DEFINITIONS                                                   */
+/*====================================================================*/
+
+
 typedef struct _listchoice {
   int     index;		// Item number
   int     backcolor0;		// Back and Fore colors when not selected
@@ -20,15 +39,17 @@ typedef struct _listchoice {
   struct _listchoice *back;	// Pointer to previous item.
 } LISTCHOICE;
 
+
+/*====================================================================*/
+/* FUNCTION PROTOTYPES                                                */
+/*====================================================================*/
+
 void    add_item(LISTCHOICE * list_identifier, char *str, int x, int y,
 		 int bcolor0, int fcolor0, int bcolor1, int fcolor1);
 void    free_list(LISTCHOICE * list_identifier);
 void    display_list(LISTCHOICE * list_identifier);
 char    start_vmenu(LISTCHOICE * list_data);
 char    start_hmenu(LISTCHOICE * list_data);
-void    move_up(LISTCHOICE * aux);
-void    move_down(LISTCHOICE * aux);
-void    move_left(LISTCHOICE * aux);
-void    move_right(LISTCHOICE * aux);
+void    move_selector(LISTCHOICE * aux, short direction);
 
 #endif

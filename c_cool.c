@@ -4,10 +4,14 @@ Module to control some display routines that implement ANSI functions.
 
 @author : Velorek
 @version : 1.0
-
-LAST MODIFIED : JUN 2018
+ 
+LAST MODIFIED : 25/07/2018
 ======================================================================
 */
+
+/*====================================================================*/
+/* COMPILER DIRECTIVES AND INCLUDES                                   */
+/*====================================================================*/
 
 #include <termios.h>
 #include <stdio.h>
@@ -15,35 +19,49 @@ LAST MODIFIED : JUN 2018
 #include <unistd.h>
 #include <sys/ioctl.h>
 
+/*====================================================================*/
+/* GLOBAL VARIABLES                                                   */
+/*====================================================================*/
+
 struct winsize max;
-static struct termios new,failsafe;
+static struct termios newp,failsafe;
 static int peek_character = -1;
 
+/*====================================================================*/
+/* FUNCTIONS - CODE                                                   */
+/*====================================================================*/
 
-/* Initialize new terminal i/o settings */
+/*-------------------------------------*/
+/* Initialize new terminal i/o settings*/
+/*-------------------------------------*/
 void pushTerm(){
 //Save terminal settings in failsafe to be retrived at the end
   tcgetattr(0,&failsafe);
 }
 
+
+/*---------------------------*/
+/* Reset terminal to failsafe*/
+/*---------------------------*/
 void resetTerm() {
  tcsetattr(0, TCSANOW, &failsafe);	
  /* retrieve failsafe settings */
 }
 
-/* Detect whether a key has been pressed. */
-
+/*--------------------------------------.*/
+/* Detect whether a key has been pressed.*/
+/*---------------------------------------*/
 int kbhit()
 {
 unsigned char ch;
 int nread;
    // tcgetattr(0, &old);		/* grab old terminal i/o settings */
     if (peek_character != -1) return 1;
-    new.c_cc[VMIN]=0;
-    tcsetattr(0, TCSANOW, &new);
+    newp.c_cc[VMIN]=0;
+    tcsetattr(0, TCSANOW, &newp);
     nread = read(0,&ch,1);
-    new.c_cc[VMIN]=1;
-    tcsetattr(0, TCSANOW, &new);
+    newp.c_cc[VMIN]=1;
+    tcsetattr(0, TCSANOW, &newp);
     if(nread == 1) 
     {
         peek_character = ch;
@@ -52,7 +70,9 @@ int nread;
     return 0;
 }
 
-/*Read char with control */
+/*----------------------*/
+/*Read char with control*/
+/*----------------------*/
 int readch()
 {
 char ch;
@@ -68,7 +88,9 @@ char ch;
 }
 
 
+/*------------------------------------------ */
 /* Read 1 character - echo defines echo mode */
+/*------------------------------------------ */
 char getch(){
 struct termios t;
   tcgetattr(0, &t);
@@ -81,17 +103,23 @@ struct termios t;
   return c;
 }
 
-/* Move cursor to specified position */
+/*----------------------------------*/
+/* Move cursor to specified position*/
+/*----------------------------------*/
 void gotoxy(int x, int y) {
   printf("%c[%d;%df", 0x1B, y, x);
 }
 
-/* Change colour output */
+/*---------------------*/
+/* Change colour output*/
+/*---------------------*/
 void outputcolor(int foreground, int background) {
   printf("%c[%d;%dm", 0x1b, foreground, background);
 }
 
-/* Change the whole color of the screen by applying CLS */
+/*-----------------------------------------------------*/
+/* Change the whole color of the screen by applying CLS*/
+/*-----------------------------------------------------*/
 void screencol(int x) {
   gotoxy(0, 0);
   outputcolor(0, x);
@@ -99,7 +127,9 @@ void screencol(int x) {
   outputcolor(0, 0);
 }
 
-/* Get terminal dimensions */
+/*------------------------*/
+/* Get terminal dimensions*/
+/*------------------------*/
 int get_terminal_dimensions(int *rows, int *columns) {
   ioctl(0, TIOCGWINSZ, &max);
   *columns = max.ws_col;
@@ -107,11 +137,16 @@ int get_terminal_dimensions(int *rows, int *columns) {
   return 0;
 }
 
-/* Ansi function hide cursor */
+/*--------------------------*/
+/* Ansi function hide cursor*/
+/*--------------------------*/
 void hidecursor() {
   printf("\e[?25l");
 }
-/* Ansi function show cursor */
+
+/*--------------------------*/
+/* Ansi function show cursor*/
+/*--------------------------*/
 void showcursor() {
   printf("\e[?25h");
 }

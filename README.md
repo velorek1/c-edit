@@ -24,6 +24,6 @@ More info at: oldstuff286.blogspot.com
 
 Makefile is included. Type "make" and "./cedit" to execute.
 
-![Alt text](cedit1.png?raw=true "Demo")
-![Alt text](cedit2.png?raw=true "Demo")
+![Alt text](screencaps/cedit1.png?raw=true "Demo")
+![Alt text](screencaps/cedit2.png?raw=true "Demo")
 

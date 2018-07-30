@@ -12,3 +12,5 @@ clean:
 	rm -f $(OBJECTS) cedit
 
 $(OBJECTS): $(HEADERS)
+
+.PHONY: default clean

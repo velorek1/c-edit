@@ -4,7 +4,7 @@ Module to make a circular linked list to make a selection menu in C.
 
 @author : Velorek
 @version : 1.0
-Last modified : 28/07/2018
+Last modified : 30/07/2018
 ======================================================================
 */
 
@@ -88,7 +88,7 @@ void add_item(LISTCHOICE * list_identifier, char *str, int x, int y,
     list_identifier->forecolor1 = fcolor1;
     list_identifier->wherex = x;
     list_identifier->wherey = y;
-    list_identifier->item = (char *)malloc(strlen(str) + 1);
+    list_identifier->item = (char *)malloc(sizeof(char) * strlen(str) + 1);
     strcpy(list_identifier->item, str);
     list_identifier->next = head;
     list_identifier->back = head;
@@ -110,7 +110,7 @@ void add_item(LISTCHOICE * list_identifier, char *str, int x, int y,
     newp->forecolor1 = fcolor1;
     newp->wherex = x;
     newp->wherey = y;
-    newp->item = (char *)malloc(strlen(str) + 1);
+    newp->item = (char *)malloc(sizeof(char) * strlen(str) + 1);
     strcpy(newp->item, str);
     newp->index = former->index + 1;
   }

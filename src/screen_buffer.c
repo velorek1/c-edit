@@ -13,7 +13,7 @@ composition to the user.
 
 @author : Velorek
 @version : 1.0
-Last modified : 28/07/2018
+Last modified : 30/07/2018
 =====================================================================
 */
 
@@ -38,7 +38,7 @@ Last modified : 28/07/2018
 #define COLUMNS_FAILSAFE 80
 #define SECONDARYBUFFER_ON 1
 #define SECONDARYBUFFER_OFF 0
-
+#define MAX_STR 100
 //Special characters (VT100 - ANSI CHARS).
 #define HOR_LINE 113
 #define VER_LINE 120
@@ -67,6 +67,8 @@ typedef struct _screencell {
   int     index;		// Item number
   int     backcolor0;		// Back and Fore colors of each cell
   int     forecolor0;
+  int     rows;                 //Save screen dimensions
+  int     columns;
   char    item;			// Item char
   struct _screencell *next;	// Pointer to next cell
 } SCREENCELL;
@@ -128,6 +130,8 @@ void create_screen() {
     screen->item = FILL_CHAR;
     screen->next = NULL;
     screen->index = 0;
+    screen->rows = rows;
+    screen->columns = columns;
     primary_start = screen;		// Pointer to first cell
     primary_end = screen;		// Pointer to last/previous cell
     primary_end->next = NULL;		//Last item of the list next points to NULL
@@ -139,6 +143,8 @@ void create_screen() {
     new_cell->forecolor0 = F_WHITE;
     new_cell->item = FILL_CHAR;
     new_cell->index = i;
+    new_cell->rows = rows;              //Each cell stores screen dimensions
+    new_cell->columns = columns;   
     primary_end->next = new_cell;
     primary_end = new_cell;
     primary_end->next = NULL;		//Last item of the list next points to NULL
@@ -152,6 +158,8 @@ void create_screen() {
     old_screen->forecolor0 = F_WHITE;
     old_screen->item = FILL_CHAR;
     old_screen->next = NULL;
+    old_screen->rows = rows;
+    old_screen->columns = columns;
     old_screen->index = 0;
     secondary_start = old_screen;	// Pointer to first cell
     secondary_end = old_screen;	// Pointer to last/previous cell
@@ -164,6 +172,8 @@ void create_screen() {
     newo_cell->forecolor0 = F_WHITE;
     newo_cell->item = FILL_CHAR;
     newo_cell->index = i;
+    newo_cell->rows = rows;              //Each cell stores screen dimensions
+    newo_cell->columns = columns;   
     secondary_end->next = newo_cell;
     secondary_end = newo_cell;
     secondary_end->next = NULL;	//Last item of the list next points to NULL
@@ -289,14 +299,13 @@ void write_str(int x, int y, char *str, int backcolor, int forecolor) {
   char   *astr;
   int     i, wherex;
   wherex = x;
-  astr = (char *)malloc(strlen(str) + 1);
+  astr = (char *)malloc(sizeof(char)*strlen(str) + 1);
   astr = str;
   for(i = 0; i <= strlen(str) - 1; i++) {
     write_ch(wherex, y, astr[i], backcolor, forecolor);
     wherex = wherex + 1;
   }
-
-}
+ }
 
 /*-----------------------------------------------*/
 /* Writes an integer value as a string on screen */
@@ -306,7 +315,7 @@ void write_num(int x, int y, int num, int length, int backcolor,
 	       int forecolor) {
   //the length of the string must be passed on the function
   char   *astr;
-  astr = (char *)malloc(length + 1);
+  astr = (char *)malloc(sizeof(char)*length + 1);
   sprintf(astr, "%d", num);
   write_str(x, y, astr, backcolor, forecolor);
 }

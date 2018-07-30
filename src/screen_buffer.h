@@ -5,7 +5,7 @@ are displayed on the terminal.
 
 @author : Velorek
 @version : 1.0
-Last modified : 28/7/2018
+Last modified : 30/7/2018
 ======================================================================
 */
 
@@ -31,6 +31,8 @@ typedef struct _screencell {
   int     index;		// Item number
   int     backcolor0;		// Back and Fore colors of each cell
   int     forecolor0;
+  int     rows;                 //Save screen dimensions
+  int     columns;
   char    item;			// Item string
   struct _screencell *next;	// Pointer to next item
 } SCREENCELL;

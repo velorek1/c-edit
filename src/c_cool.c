@@ -5,7 +5,7 @@ Module to control some display routines that implement ANSI functions.
 @author : Velorek
 @version : 1.0
  
-LAST MODIFIED : 28/07/2018
+LAST MODIFIED : 30/07/2018
 ======================================================================
 */
 
@@ -150,4 +150,5 @@ void hidecursor() {
 void showcursor() {
   printf("\e[?25h");
 }
+
 

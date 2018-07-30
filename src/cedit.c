@@ -4,7 +4,7 @@ PROGRAM C Editor - An editor with top-down menus.
 
 @author : Velorek
 @version : 1.0
-Last modified : 28/07/2018                                           
+Last modified : 30/07/2018                                           
 ======================================================================*/
 
 /*====================================================================*/
@@ -17,6 +17,7 @@ Last modified : 28/07/2018
 #include "c_cool.h"
 #include "list_choice.h"
 #include "screen_buffer.h"
+#include "opfile_dialog.h"
 
 /*====================================================================*/
 /* CONSTANT VALUES                                                    */
@@ -29,6 +30,9 @@ Last modified : 28/07/2018
 #define cedit_ascii_4 "| |  |______|  __| / _` | | __|\n"
 #define cedit_ascii_5 "| |____     | |___| (_| | | |_ \n" 
 #define cedit_ascii_6 " \\_____|    |______\\__,_|_|\\__|\n"
+
+//MESSAGES
+#define UNKNOWN "UNTITLED"
 
 //MISC. CONSTANTS
 #define EXIT_FLAG 1 
@@ -60,6 +64,7 @@ Last modified : 28/07/2018
 #define HELP_MENU 2
 #define EXIT_MENU 3
 #define ABOUT_MENU 4
+#define MAX_FILENAME 100
 
 //DROP-DOWN MENUS
 #define OPTION_1 0
@@ -81,12 +86,14 @@ Last modified : 28/07/2018
 /*====================================================================*/
 
 LISTCHOICE *mylist, data;
-SCREENCELL  *my_screen;
+SCREENCELL *my_screen;
+SCROLLDATA openFileData;
 
 int     rows=0, columns=0, old_rows=0, old_columns=0; // Terminal dimensions
 int     cursorX=START_CURSOR_X,cursorY=START_CURSOR_Y, timerCursor=0; // Cursor position and Timer
 int     exitp = 0; // Exit flag for main loop
 char    kglobal=0; // Global variable for menu animation
+char    *currentFile;
 
 /*====================================================================*/
 /* PROTOTYPES OF FUNCTIONS                                            */
@@ -123,6 +130,7 @@ int main() {
   pushTerm(); //Save current terminal settings in failsafe
   create_screen(); //Create screen buffer to control display
   main_screen(); //Draw screen
+
 
   do {  
     /* CURSOR */
@@ -341,8 +349,10 @@ int refresh_screen(int force_refresh){
 /*-------------------*/
 
 int main_screen() {
-  int     i;
+  int     i;   
+  
  
+  //strcpy(msg, currentFile);
   //Save previous values
   get_terminal_dimensions(&rows, &columns);
   old_rows = rows;
@@ -384,7 +394,7 @@ int main_screen() {
     write_ch(i, rows-1, FILL_CHAR, B_WHITE, F_WHITE);
   }
   
-  write_str((columns/2)-4,2,"UNTITLED",B_WHITE,F_BLACK); 
+  write_str((columns/2)-4,2,UNKNOWN,B_WHITE,F_BLACK); 
   write_ch(columns,3,'^',B_BLACK,F_WHITE);
   write_ch(columns,rows-2,'v',B_BLACK,F_WHITE);
   write_ch(columns,4,'*',B_CYAN,F_WHITE);
@@ -467,6 +477,12 @@ void filemenu() {
   write_str(1, 1, "File  Options  Help", B_WHITE, F_BLACK);
   update_screen();
   free_list(mylist);
+  if (data.index == OPTION_2){
+    //External Module - Open file dialog.
+    openFileDialog(rows, columns, &openFileData); 
+    write_str((columns/2)-4,2,openFileData.path,B_WHITE,F_BLACK);
+  //  refresh_screen(1);
+  }
   if(data.index == OPTION_5) {
 	exitp = confirmation(); //Shall we exit? Global variable! 
   }

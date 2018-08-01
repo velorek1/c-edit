@@ -4,7 +4,7 @@ PROGRAM C Editor - An editor with top-down menus.
 
 @author : Velorek
 @version : 1.0
-Last modified : 30/07/2018                                           
+Last modified : 01/08/2018                                           
 ======================================================================*/
 
 /*====================================================================*/
@@ -33,6 +33,8 @@ Last modified : 30/07/2018
 
 //MESSAGES
 #define UNKNOWN "UNTITLED"
+#define STATUS_BAR_MSG1  ">[C-Edit] | F2 / CTRL-L -> MENU | CTRL-C EXIT"
+#define STATUS_BAR_MSG2 ">[C-Edit] Press ESC thrice [3x] to exit menu.  "
 
 //MISC. CONSTANTS
 #define EXIT_FLAG 1 
@@ -46,6 +48,7 @@ Last modified : 30/07/2018
 #define COLUMNS_FAILSAFE 80
 #define K_LEFTMENU -1 //Left arrow key pressed while in menu
 #define K_RIGHTMENU -2 //Right arrow key pressed while in menu
+#define MAX_TEXT 200
 
 //KEYS 
 #define K_ENTER 13
@@ -56,6 +59,11 @@ Last modified : 30/07/2018
 #define K_F2 81
 #define K_F3 82
 #define ARROWKEYS_FLAG 91 //When cursor keys are being used, the scancode 91 is obtained 
+#define K_CTRL_C 0x03
+#define K_CTRL_D 0x04
+#define K_CTRL_J 0x0A
+#define K_CTRL_L 0x0C
+
 
 //MENU CONSTANTS
 #define HOR_MENU -1
@@ -80,6 +88,33 @@ Last modified : 30/07/2018
 #define UP_BOXCHAR -120
 #define HOR_BOXCHAR -113
 #define UPLEFT_BOXCHAR -108
+#define LOWER_LEFT_CORNER -109
+#define UPPER_RIGHT_CORNER -107
+#define LOWER_RIGHT_CORNER -106
+
+
+//EDIT AREA CONSTANTS
+//Temporary implementation : 
+//Edit buffer is 400lines x 400chars
+
+#define MAX_CHARS 400 // 400 chars per line
+#define MAX_LINES 400 // 400 lines per page
+#define CHAR_NIL '\0'
+#define END_LINE_CHAR 0x0A // $0A
+
+//FILE CONSTANTS
+#define TMP_FILE "tmp.txt"
+
+/*====================================================================*/
+/* TYPEDEF DEFINITIONS                                                */
+/*====================================================================*/
+
+typedef struct _editbuffer{
+
+  char charBuf[MAX_LINES];
+
+}EDITBUFFER;
+
 
 /*====================================================================*/
 /* GLOBAL VARIABLES */
@@ -88,12 +123,15 @@ Last modified : 30/07/2018
 LISTCHOICE *mylist, data;
 SCREENCELL *my_screen;
 SCROLLDATA openFileData;
+EDITBUFFER editBuffer[MAX_LINES];
+ 
+FILE *filePtr;
 
 int     rows=0, columns=0, old_rows=0, old_columns=0; // Terminal dimensions
 int     cursorX=START_CURSOR_X,cursorY=START_CURSOR_Y, timerCursor=0; // Cursor position and Timer
 int     exitp = 0; // Exit flag for main loop
 char    kglobal=0; // Global variable for menu animation
-char    *currentFile;
+char    currentFile[MAX_TEXT];
 
 /*====================================================================*/
 /* PROTOTYPES OF FUNCTIONS                                            */
@@ -110,12 +148,21 @@ void optionsmenu();
 void helpmenu();
 int confirmation();
 int about_info();
-int process_input(int *whereX, int *whereY, char ch);
 int special_keys(int *whereX, int *whereY,char ch);
 void draw_cursor(int *whereX, int *whereY, int *timer);
 int refresh_screen(int force_refresh);
 int timer_1(int *timer1);
 
+//Edit prototypes
+void cleanBuffer(EDITBUFFER editBuffer[MAX_LINES]);
+int writetoBuffer(EDITBUFFER editBuffer[MAX_LINES], int whereX, int whereY, char ch);
+int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, char ch);
+
+//File-handling prototypes
+int openFile(FILE ** filePtr, char fileName[], char *mode);	
+int closeFile(FILE * filePtr);
+int writeBuffertoFile(FILE *filePtr, EDITBUFFER editBuffer[MAX_LINES]);
+int saveDialog(char fileName[MAX_TEXT]);
 /*====================================================================*/
 /* MAIN PROGRAM - CODE                                                */
 /*====================================================================*/
@@ -125,13 +172,17 @@ int main() {
   int esc_key =0; //To control key input and scan for keycodes.
   int keypressed =0;
   int timer1 =0; // Timer to display animation
-
+ 
   hidecursor(); 
   pushTerm(); //Save current terminal settings in failsafe
   create_screen(); //Create screen buffer to control display
   main_screen(); //Draw screen
 
+  //Initialize edit buffer
 
+  cleanBuffer(editBuffer);
+
+  //MAIN PROGRAM LOOP
   do {  
     /* CURSOR */
     draw_cursor(&cursorX,&cursorY,&timerCursor);   
@@ -153,12 +204,15 @@ int main() {
         /* EDIT */
         if (esc_key == 0) {
           //Process input and get rid of extra characters
-          process_input(&cursorX,&cursorY, ch); //Edit
+          process_input(editBuffer, &cursorX,&cursorY, ch); //Edit
           keypressed=0;
         } 
 
      } //end if keypressed
  } while(exitp != EXIT_FLAG); //exit flag for the whole program
+  if (filePtr != NULL) {
+    closeFile(filePtr);
+  }
   credits();
   return 0;
 }
@@ -184,17 +238,19 @@ void update_position()
 /* EDIT Section */
 /*------------- */
 
-int process_input(int *whereX, int *whereY,char ch)
+int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY,char ch)
 {
  if (ch != K_ESCAPE) {
    if (ch>31 && ch<127) {
     //only print ASCII characters to screen.
      write_ch(*whereX,*whereY,ch,B_BLUE,F_WHITE);
+     writetoBuffer(editBuffer, *whereX-2,*whereY-3,ch);
      *whereX = *whereX + 1;
    }
   if (ch==K_ENTER) {
     //RETURN - ENTER
       if (*whereY < rows -2) {
+        writetoBuffer(editBuffer, *whereX-2,*whereY-3, END_LINE_CHAR);
         *whereY = *whereY + 1;
         *whereX = 2;
       }
@@ -209,7 +265,7 @@ int process_input(int *whereX, int *whereY,char ch)
       if (*whereX < columns-TAB_DISTANCE) *whereX = *whereX + TAB_DISTANCE;
    }
    //*ch=0;
- if (ch==FAILSAFE) {
+ if (ch==FAILSAFE || ch==K_CTRL_L) {
    /*'$' Failsafe menu for some terminals */
     //F2 -> open drop-down menus
       if (horizontal_menu()==K_ESCAPE) 
@@ -221,6 +277,11 @@ int process_input(int *whereX, int *whereY,char ch)
       /*  Drop-down menu loop */       
       drop_down(&kglobal); //animation
   }
+ if (ch == K_CTRL_C)
+ {
+   //Ask for confirmations CTRL-C -> Exit
+    exitp = confirmation(); //Shall we exit? Global variable! 
+ }
  }
   return 0;
 }
@@ -287,8 +348,7 @@ if (ch==K_ESCAPE){
     case K_F3:
     //F3 -> Refresh screen
      refresh_screen(1);
-     break;
-       
+     break;      
     default:
       break;
     }
@@ -375,8 +435,7 @@ int main_screen() {
   }
   // Text messages
   write_str(1, 1, "File  Options  Help", B_WHITE, F_BLACK);
-  write_str(1, rows, ">> [C-Edit]", B_CYAN, FH_WHITE);
-  write_str(14, rows, "| F2 or $ -> Menus |", B_CYAN, FH_WHITE);
+  write_str(1, rows, STATUS_BAR_MSG1, B_CYAN, FH_WHITE);
   
   /* Frames */
   //window appearance and scroll bar
@@ -441,7 +500,7 @@ void loadmenus(int choice) {
     add_item(mylist, "<NO>", (columns/2)+4, (rows/2)+2, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
   }
    if(choice == ABOUT_MENU) {
-    add_item(mylist, "<OK>", (columns/2)-1, (rows/2)+3 , B_WHITE, F_BLACK, B_BLACK,
+    add_item(mylist, "<OK>", (columns/2)-1, (rows/2)+2 , B_WHITE, F_BLACK, B_BLACK,
 	     F_WHITE);
   }
   
@@ -453,7 +512,7 @@ void loadmenus(int choice) {
 
 char horizontal_menu(){
   char temp_char;
-  write_str(14, rows, "Press ESC thrice [3x] to exit menu  ", B_CYAN, FH_WHITE);
+  write_str(1, rows, STATUS_BAR_MSG2, B_CYAN, FH_WHITE);
   update_screen();
   loadmenus(HOR_MENU);		
   temp_char=start_hmenu(&data);
@@ -465,10 +524,11 @@ char horizontal_menu(){
 /* Display File menu       */
 /*-------------------------*/
 
-void filemenu() {
+void filemenu()
+{
   int i;
   data.index = OPTION_NIL;
-  write_str(14, rows, "Press ESC thrice [3x] to exit menu  ", B_CYAN, FH_WHITE);
+  write_str(1, rows, STATUS_BAR_MSG2, B_CYAN, FH_WHITE);
   loadmenus(FILE_MENU);
   write_str(1, 1, "File", B_BLACK, F_WHITE);
   draw_window(1, 2, 13, 8, B_WHITE, F_BLACK, 1);
@@ -483,6 +543,9 @@ void filemenu() {
     write_str((columns/2)-4,2,openFileData.path,B_WHITE,F_BLACK);
   //  refresh_screen(1);
   }
+  if (data.index == OPTION_3){
+    saveDialog(currentFile);
+  }
   if(data.index == OPTION_5) {
 	exitp = confirmation(); //Shall we exit? Global variable! 
   }
@@ -491,10 +554,9 @@ void filemenu() {
   for(i = 1; i < columns; i++) {
     write_ch(i, rows, FILL_CHAR, B_CYAN, F_WHITE);
   }
-  write_str(1, rows, ">> [C-Edit]", B_CYAN, FH_WHITE);
-  write_str(14, rows, "| F2 or $ -> Menus |", B_CYAN, FH_WHITE);
- 
-}
+
+  write_str(1, rows, STATUS_BAR_MSG1, B_CYAN, FH_WHITE);
+ }
 
 /*--------------------------*/
 /* Display Options menu     */
@@ -503,7 +565,7 @@ void filemenu() {
 void optionsmenu() {
   int i;
   data.index = OPTION_NIL;
-  write_str(14, rows, "Press ESC thrice [3x] to exit menu  ", B_CYAN, FH_WHITE);
+  write_str(1, rows, STATUS_BAR_MSG2, B_CYAN, FH_WHITE);
   loadmenus(OPT_MENU);
   write_str(7, 1, "Options", B_BLACK, F_WHITE);
   draw_window(7, 2, 20, 6, B_WHITE, F_BLACK, 1);
@@ -521,8 +583,7 @@ void optionsmenu() {
   for(i = 1; i < columns; i++) {
     write_ch(i, rows, FILL_CHAR, B_CYAN, F_WHITE);
   }
-  write_str(1, rows, ">> [C-Edit]", B_CYAN, FH_WHITE);
-  write_str(14, rows, "| F2 or $ -> Menus |", B_CYAN, FH_WHITE);
+  write_str(1, rows, STATUS_BAR_MSG1, B_CYAN, FH_WHITE);
  
 }
 
@@ -533,7 +594,7 @@ void optionsmenu() {
 void helpmenu() {
   int i;
   data.index = OPTION_NIL;
-  write_str(14, rows, "Press ESC thrice [3x] to exit menu  ", B_CYAN, FH_WHITE);
+  write_str(1, rows, STATUS_BAR_MSG2, B_CYAN, FH_WHITE);
   loadmenus(HELP_MENU);
   write_str(16, 1, "Help", B_BLACK, F_WHITE);
   draw_window(16, 2, 26, 5, B_WHITE, F_BLACK, 1);
@@ -551,8 +612,8 @@ void helpmenu() {
   for(i = 1; i < columns; i++) {
     write_ch(i, rows, FILL_CHAR, B_CYAN, F_WHITE);
   }
-  write_str(1, rows, ">> [C-Edit]", B_CYAN, FH_WHITE);
-  write_str(14, rows, "| F2 or $ -> Menus |", B_CYAN, FH_WHITE);
+
+  write_str(1, rows, STATUS_BAR_MSG1, B_CYAN, FH_WHITE);
 }
 
 /*-------------------------------*/
@@ -677,4 +738,147 @@ void credits(){
 
   printf("\nCoded by v3l0r3k 2018.\n");
 
+}
+
+/*===============*/
+/*EDIT functions */
+/*===============*/
+
+/*----------------------------------*/
+/* Initialize and clean edit buffer */
+/*----------------------------------*/
+
+
+void cleanBuffer(EDITBUFFER editBuffer[MAX_LINES])
+{
+//Clean and initialize the edit buffer
+  int i,j;
+
+  for (j=0; j<MAX_LINES; j++)
+    for(i=0; i<MAX_CHARS; i++)
+      editBuffer[j].charBuf[i] = CHAR_NIL; 
+}
+
+int writetoBuffer(EDITBUFFER editBuffer[MAX_LINES], int whereX, int whereY, char ch)
+{
+  editBuffer[whereY].charBuf[whereX] = ch;
+  return 1;
+}
+
+/*========================*/
+/*FILE handling functions */
+/*========================*/
+
+
+/*-----------*/
+/* Open file */
+/*-----------*/
+
+int openFile(FILE ** filePtr, char fileName[], char *mode)	
+/* 
+Open file.
+@return ok = 1 ? 0 Success! 
+*/
+{
+  int     ok = 0;
+  *filePtr = fopen(fileName, mode);
+
+  if(*filePtr != NULL) {
+    //File opened correctly.
+    ok = 1;
+  } else {
+    //Error
+    ok = 0;
+  }
+  //devolvemos el resultado
+  return ok;
+}
+
+/*------------*/
+/* Close file */
+/*------------*/
+
+int closeFile(FILE * filePtr)
+{
+/* 
+   Close file
+@return ok: 
+*/
+  int     ok;
+
+  if(filePtr != NULL) {
+    ok = fclose(filePtr);
+  }
+
+  return ok;
+}
+
+int writeBuffertoFile(FILE *filePtr, EDITBUFFER editBuffer[MAX_LINES])
+{
+  char tempChar,oldChar;
+  int lineCounter=0;
+  int inlineChar=0;
+
+  //Check if pointer is valid
+  if(filePtr != NULL) {
+    rewind(filePtr); //Make sure we are at the beginning
+    lineCounter=0;
+    inlineChar=0;
+    do{
+      oldChar = tempChar;
+      tempChar = editBuffer[lineCounter].charBuf[inlineChar];
+      inlineChar++;
+      if (tempChar == END_LINE_CHAR) {
+        inlineChar = 0;
+        lineCounter++;
+      }
+      fprintf(filePtr, "%c", tempChar);	//escribimos la primera linea en el fichero con los nombres de los campos
+    }while (tempChar != CHAR_NIL);
+    //Check if last line finishes in 0x0A - oldChar = 0x0A
+    if (oldChar != END_LINE_CHAR) fprintf(filePtr, "%c", END_LINE_CHAR);
+  }
+  return 1;
+}
+
+
+int saveDialog(char fileName[MAX_TEXT])
+{
+    int window_x1=0, window_y1=0, window_x2 = 0, window_y2 =0;
+    int i,ok,count;
+    data.index = OPTION_NIL;
+    window_y1 = (rows / 2) - 2;
+    window_y2 = (rows/2) + 2;
+    window_x1= (columns/2) -14;
+    window_x2 = (columns/2) +14;
+    draw_window(window_x1, window_y1, window_x2, window_y2, B_WHITE, F_BLACK, 1);
+    write_str(window_x1+2, window_y1+1, "  [C-EDIT SAVE FILE]  ", F_BLACK, B_WHITE);
+    update_screen();
+    for (i=window_x1+1;i<window_x2;i++){
+    //Draw a horizontal line
+    write_ch(i,window_y1+2, HOR_BOXCHAR,B_WHITE,F_BLACK);
+    }
+    //Corners of lines
+    write_ch(window_x1,window_y1+2, LOWER_LEFT_CORNER, B_WHITE,F_BLACK);
+    write_ch(window_x2,window_y1+2, LOWER_RIGHT_CORNER, B_WHITE,F_BLACK);
+
+    count = textbox(window_x1+1,window_y1+3, 12, "[-] File:", fileName, B_WHITE, F_BLACK, F_BLACK); 
+    close_window();
+    if (count>0) {       
+        //Save file
+       window_y1 = (rows / 2) - 3;
+       window_y2 = (rows/2) + 3;
+       data.index = OPTION_NIL;
+       loadmenus(ABOUT_MENU);
+       draw_window(window_x1, window_y1, window_x2, window_y2, B_WHITE, F_BLACK, 1);
+       write_str(window_x1+2, window_y1+1, "File saved successfully!", F_BLACK, B_WHITE);
+       write_str(window_x1+2, window_y1+2, fileName, F_BLACK, B_WHITE);
+       openFile(&filePtr, fileName, "w");
+       writeBuffertoFile(filePtr, editBuffer);
+       start_hmenu(&data);
+       free_list(mylist);
+       if(data.index == OPTION_1)
+       ok = CONFIRMATION; //Confirmation has been given 
+    }
+    close_window();
+return ok;
 }

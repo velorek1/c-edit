@@ -13,7 +13,7 @@ composition to the user.
 
 @author : Velorek
 @version : 1.0
-Last modified : 30/07/2018
+Last modified : 1/08/2018
 =====================================================================
 */
 
@@ -28,6 +28,7 @@ Last modified : 30/07/2018
 #include <wchar.h>      /* wint_t */
 #include "c_cool.h"
 
+
 /*====================================================================*/
 /* CONSTANT VALUES                                                    */
 /*====================================================================*/
@@ -39,6 +40,7 @@ Last modified : 30/07/2018
 #define SECONDARYBUFFER_ON 1
 #define SECONDARYBUFFER_OFF 0
 #define MAX_STR 100
+#define MAX_TEXT 200
 //Special characters (VT100 - ANSI CHARS).
 #define HOR_LINE 113
 #define VER_LINE 120
@@ -54,6 +56,10 @@ Last modified : 30/07/2018
 #define LOWER_LEFT_CORNER_UNICODE 9492
 #define UPPER_RIGHT_CORNER_UNICODE 9488
 #define LOWER_RIGHT_CORNER_UNICODE 9496
+
+//KEYS
+#define K_ENTER 13
+#define K_TAB 9
 
 /*====================================================================*/
 /* TYPEDEF DEFINITIONS                                                */
@@ -492,4 +498,67 @@ void draw_window(int x1, int y1, int x2, int y2, int backcolor,
   //update_smart();
 }
 
+int textbox(int wherex, int wherey, int displayLength, char label[MAX_TEXT], 
+    char text[MAX_TEXT], int backcolor, int labelcolor, int textcolor){
+int charCount=0;
+int exitFlag = 0;
+int cursorON = 1;
+long cursorCount = 0;
+int i;
+int positionx=0;
+int keypressed=0;
+
+char ch;
+     positionx = wherex+strlen(label);
+     write_str(wherex,wherey,label,backcolor,labelcolor);
+     write_ch(positionx,wherey, '[', backcolor, textcolor);
+     for (i=positionx+1; i<=positionx+displayLength; i++){
+        write_ch(i,wherey, '.', backcolor, textcolor);
+     }
+     write_ch(positionx+displayLength+1,wherey, ']', backcolor, textcolor);
+     update_screen();
+    ch=readch();
+    ch=0;
+    do{
+       keypressed = kbhit();
+   //Cursor Animation
+      cursorCount++;
+
+      if (cursorCount == 100){ 
+        cursorCount = 0;
+          switch (cursorON){
+            case 1:
+              write_ch(positionx+1,wherey, '.', backcolor, textcolor);
+              update_screen();
+              cursorON=0;
+              break;
+            case 0:
+              write_ch(positionx+1,wherey, '|', backcolor, textcolor);
+              update_screen();
+              cursorON=1;
+              break;
+         }
+           //update_screen();
+       }
+
+   //Process keys     
+   if (keypressed == 1){
+     ch=readch();
+     keypressed = 0;
+       if (charCount < displayLength){
+         if (ch>31 && ch<127){
+             write_ch(positionx+1, wherey, ch, backcolor, textcolor);
+             text[charCount] = ch; 
+             positionx++;
+             charCount++;
+             update_screen();
+          }
+       }
+      }
+       if (ch==K_ENTER || ch==K_TAB) exitFlag = 1;
+    
+      //ENTER OR TAB FINISH LOOP
+     } while (exitFlag != 1);
+return charCount;
+}
 

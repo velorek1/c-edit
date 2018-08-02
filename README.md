@@ -10,13 +10,14 @@ So far I have implemented:
 * Top-down menus using a double circular linked list.
 * Kbhit and getch so that I can loop without blocking the program.
 * Automatic display resizing.
+* Open file dialog with a Listbox and SCROLL capabilities to navigate and find the file to open.
 
 New August 2018:
-* Open file dialog with a Listbox and SCROLL capabilities to navigate and find the file to open.
 * Rudimentary Edit buffer. 
 * File handling functions. 
 * Save file option. 
 * User interface: Text box.
+* Open file - in progress.
 
 Files:
 =====

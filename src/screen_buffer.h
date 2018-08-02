@@ -57,6 +57,7 @@ void    close_window();
 int     mapChartoU8(int character);
 void    update_screen();
 void    update_smart();
+void    clearString(char *string, int max);
 int     textbox(int wherex, int wherey, int displayLength, char label[MAX_TEXT], 
         char text[MAX_TEXT], int backcolor, int labelcolor, int textcolor);
 

@@ -7,7 +7,7 @@
    are drawn to the terminal on raw mode to have a better scrolling
    animation. Once the file is selected, the window is closed and the
    previous screen is painted to the terminal again.
-   Last modified : 30/7/2018
+   Last modified : 04/8/2018
    Coded by Velorek.
    Target OS: Linux.                                                  */
 /*====================================================================*/
@@ -59,7 +59,7 @@
 #define MAX_ITEM_LENGTH 15
 #define DIRECTORY 1
 #define FILEITEM 0
-#define MAX 1024
+#define MAX 150
 
 /*====================================================================*/
 /* TYPEDEF STRUCTS DEFINITIONS */
@@ -90,6 +90,7 @@ typedef struct _scrolldata {
   unsigned isDirectory;		// Kind of item
   char   *item;
   char   *path;
+  char   fullPath[MAX];
   unsigned itemIndex;
   LISTCHOICE *head;		//store head of the list
 } SCROLLDATA;
@@ -127,6 +128,7 @@ void cleanLine(int line, int backcolor, int forecolor, int startx, int numchars)
 LISTCHOICE *newelement(char *text, char *itemPath, unsigned itemType) {
   LISTCHOICE *newp;
   newp = (LISTCHOICE *) malloc(sizeof(LISTCHOICE));
+
   newp->item = (char *)malloc(sizeof(char) *strlen(text) + 1);
   newp->path = (char *)malloc(sizeof(char) *strlen(itemPath) + 1);
   strcpy(newp->item, text);
@@ -442,9 +444,11 @@ char selectorMenu(LISTCHOICE * aux, SCROLLDATA * scrollData) {
   {
     //Pass data of last item selected.
     scrollData->item = (char *)malloc(sizeof(char) *strlen(aux->item) + 1);
-    scrollData->path = (char *)malloc(sizeof(char) *strlen(aux->path) + 1);
+    //scrollData->path = (char *)malloc(sizeof(char) *strlen(aux->path) + 1);
     scrollData->item = aux->item;
     scrollData->itemIndex = aux->index;
+
+    //strcpy(scrollData->path, aux->path);
     scrollData->path = aux->path;
     scrollData->isDirectory = aux->isDirectory;
   }
@@ -723,6 +727,10 @@ void openFileDialog(int rows, int columns, SCROLLDATA *openFileData) {
   openFileData->item = scrollData.item;
   openFileData->itemIndex = scrollData.itemIndex;
   openFileData->path = scrollData.path;
+  //Save full path
+  strcpy(openFileData->fullPath,fullPath);
+  strcat(openFileData->fullPath,"/");
+  strcat(openFileData->fullPath,scrollData.path);
   openFileData->isDirectory = scrollData.isDirectory;
  //strcpy(filetoOpen, scrollData.path);
 

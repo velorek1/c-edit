@@ -5,7 +5,7 @@ are displayed on the terminal.
 
 @author : Velorek
 @version : 1.0
-Last modified : 1/8/2018
+Last modified : 4/8/2018
 ======================================================================
 */
 
@@ -22,7 +22,6 @@ Last modified : 1/8/2018
 #include <strings.h>
 #include "c_cool.h"
 
-#define MAX_TEXT 200
 
 /*====================================================================*/
 /* TYPE DEFINITIONS                                                   */
@@ -58,7 +57,5 @@ int     mapChartoU8(int character);
 void    update_screen();
 void    update_smart();
 void    clearString(char *string, int max);
-int     textbox(int wherex, int wherey, int displayLength, char label[MAX_TEXT], 
-        char text[MAX_TEXT], int backcolor, int labelcolor, int textcolor);
 
 #endif

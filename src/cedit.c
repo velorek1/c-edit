@@ -1,10 +1,9 @@
 /*
 ======================================================================
 PROGRAM C Editor - An editor with top-down menus.
-
 @author : Velorek
 @version : 1.0
-Last modified : 02/08/2018                                           
+Last modified : 04/08/2018                                           
 ======================================================================*/
 
 /*====================================================================*/
@@ -18,6 +17,7 @@ Last modified : 02/08/2018
 #include "list_choice.h"
 #include "screen_buffer.h"
 #include "opfile_dialog.h"
+#include "user_inter.h"
 
 /*====================================================================*/
 /* CONSTANT VALUES                                                    */
@@ -35,7 +35,15 @@ Last modified : 02/08/2018
 #define UNKNOWN "UNTITLED"
 #define STATUS_BAR_MSG1  ">[C-Edit] | F2 / CTRL-L -> MENU | CTRL-C EXIT"
 #define STATUS_BAR_MSG2 ">[C-Edit] Press ESC thrice [3x] to exit menu.  "
-
+#define WLEAVE_MSG "\n       Are you sure\n    you want to quit?"
+#define WSAVE_MSG ":\nFile successfully saved!"
+#define WSAVELABEL_MSG "[-] File:"
+#define WSAVETITLE_MSG "[C-EDIT SAVE FILE]"
+#define WTITLEABOUT_MSG "[C-EDIT : ABOUT]"
+#define WABOUT_MSG "Coded by Vel0r3k.\n - 2018 - \n Spukhafte Fernwirkungen!"
+#define WINFO_NOPEN "Error:\nThere isn't any file open!"
+#define WINFO_SIZE "Total file size:\n"
+#define WCHECKFILE_MSG "This file doesn't \n seem to be a text file. \n Open anyway?"
 //MISC. CONSTANTS
 #define EXIT_FLAG 1 
 #define FAILSAFE '$' //Failsafe char to activate menus.
@@ -48,7 +56,7 @@ Last modified : 02/08/2018
 #define COLUMNS_FAILSAFE 80
 #define K_LEFTMENU -1 //Left arrow key pressed while in menu
 #define K_RIGHTMENU -2 //Right arrow key pressed while in menu
-#define MAX_TEXT 200
+#define MAX_TEXT 150
 
 //KEYS 
 #define K_ENTER 13
@@ -142,20 +150,22 @@ int     fileModified = FILE_UNMODIFIED; //Have we modified the buffer?
 /* PROTOTYPES OF FUNCTIONS                                            */
 /*====================================================================*/
 
+//Menu and display prototypes
 void credits();
 int main_screen();
 void update_position();
-void loadmenus(int choice);
-char horizontal_menu();
 void drop_down(char *kglobal);
+char horizontal_menu();
 void filemenu();
 void optionsmenu();
 void helpmenu();
 int confirmation();
 int about_info();
+int refresh_screen(int force_refresh);
+
+//Key handling prototypes
 int special_keys(int *whereX, int *whereY,char ch);
 void draw_cursor(int *whereX, int *whereY, int *timer);
-int refresh_screen(int force_refresh);
 int timer_1(int *timer1);
 
 //Edit prototypes
@@ -170,6 +180,9 @@ int writeBuffertoFile(FILE *filePtr, EDITBUFFER editBuffer[MAX_LINES]);
 int saveDialog(char fileName[MAX_TEXT]);
 int writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES]);
 int filetoBuffer(FILE *filePtr, EDITBUFFER editBuffer[MAX_LINES]);
+long getfileSize(FILE *filePtr);
+long countLinesFile(FILE *filePtr);
+long checkFile(FILE *filePtr);
 
 /*====================================================================*/
 /* MAIN PROGRAM - CODE                                                */
@@ -481,47 +494,6 @@ int main_screen() {
   return 0;
 }
 
-/*--------------------------------------------*/
-/* Load current menu into circular linked list*/ 
-/*--------------------------------------------*/
-
-void loadmenus(int choice) {
-  if(choice == HOR_MENU) {
-    add_item(mylist, "File", 1, 1, B_WHITE, F_BLACK, B_BLACK, FH_WHITE);
-    add_item(mylist, "Options", 7, 1, B_WHITE, F_BLACK, B_BLACK, FH_WHITE);
-    add_item(mylist, "Help", 16, 1, B_WHITE, F_BLACK, B_BLACK, FH_WHITE);
-  }
-
-  if(choice == FILE_MENU) {
-    add_item(mylist, "New", 3, 3, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
-    add_item(mylist, "Open", 3, 4, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
-    add_item(mylist, "Save", 3, 5, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
-    add_item(mylist, "Save as..", 3, 6, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
-    add_item(mylist, "Exit", 3, 7, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
-  }
-  if(choice == OPT_MENU) {
-    add_item(mylist, "Settings", 9, 3, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
-    add_item(mylist, "Colors", 9, 4, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
-    add_item(mylist, "Refresh_F3", 9, 5, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
-  }
-  if(choice == HELP_MENU) {
-    add_item(mylist, "Help_F1", 18, 3, B_WHITE, F_BLACK, B_BLACK,
-	     F_WHITE);
-    add_item(mylist, "About", 18, 4, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
-  }
-
-  if(choice == YESNO_MENU) {
-    add_item(mylist, "<YES>", (columns/2)-6, (rows/2)+2, B_WHITE, F_BLACK, B_BLACK,
-	     F_WHITE);
-    add_item(mylist, "<NO>", (columns/2)+4, (rows/2)+2, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
-  }
-   if(choice == OK_MENU) {
-    add_item(mylist, "<OK>", (columns/2)-1, (rows/2)+2 , B_WHITE, F_BLACK, B_BLACK,
-	     F_WHITE);
-  }
-  
-}
-
 /*--------------------------*/
 /* Display horizontal menu  */
 /*--------------------------*/
@@ -530,7 +502,7 @@ char horizontal_menu(){
   char temp_char;
   write_str(1, rows, STATUS_BAR_MSG2, B_CYAN, FH_WHITE);
   update_screen();
-  loadmenus(HOR_MENU);		
+  loadmenus(mylist, rows,columns, HOR_MENU);		
   temp_char=start_hmenu(&data);
   free_list(mylist);
   return temp_char;
@@ -542,10 +514,13 @@ char horizontal_menu(){
 
 void filemenu()
 {
-  int i;
+  int i,ok=0;
+  long checkF=0;
+  char oldFile[MAX_TEXT];
+
   data.index = OPTION_NIL;
   write_str(1, rows, STATUS_BAR_MSG2, B_CYAN, FH_WHITE);
-  loadmenus(FILE_MENU);
+  loadmenus(mylist, rows,columns, FILE_MENU);
   write_str(1, 1, "File", B_BLACK, F_WHITE);
   draw_window(1, 2, 13, 8, B_WHITE, F_BLACK, 1);
   kglobal = start_vmenu(&data);
@@ -565,14 +540,38 @@ void filemenu()
     if (openFileData.itemIndex != 0) {
       //Change current File Name 
       //if the index is different than CLOSE_WINDOW
+      clearString(oldFile, MAX_TEXT);
+      strcpy(oldFile,currentFile); //save previous file to go back
       clearString(currentFile, MAX_TEXT);
       strcpy(currentFile, openFileData.path);
       cleanBuffer(editBuffer);
-      //Open file and dump first page to buffer - temporary
+     //Open file and dump first page to buffer - temporary
       if (filePtr != NULL) closeFile(filePtr);
       openFile(&filePtr, currentFile, "r");
-      filetoBuffer(filePtr, editBuffer);
-      refresh_screen(1);
+      //Check for binary characters to determine filetype
+      checkF = checkFile(filePtr);
+      if (checkF>5) {
+      //File doesn't seem to be a text file. Open anyway?  
+         ok=yesnoWindow(mylist, rows, columns, WCHECKFILE_MSG);
+         if (ok==1) {
+          filetoBuffer(filePtr, editBuffer);
+         } else{
+            //Go back to previous file
+            clearString(currentFile, MAX_TEXT);
+            strcpy(currentFile, oldFile);
+           //Open file again and dump first page to buffer - temporary
+            if (filePtr != NULL) closeFile(filePtr);
+            openFile(&filePtr, currentFile, "r");           
+            filetoBuffer(filePtr, editBuffer);
+         }
+      } else
+      {
+         clearString(currentFile, MAX_TEXT);
+         strcpy(currentFile, openFileData.path);
+         cleanBuffer(editBuffer);
+         filetoBuffer(filePtr, editBuffer);
+      }
+     refresh_screen(1);
     }
   }
  if (data.index == OPTION_3){
@@ -598,9 +597,13 @@ void filemenu()
 
 void optionsmenu() {
   int i;
+  long size, charA;
+  char sizeStr[12];
+  char tempMsg[50];
+  char charStr[12];
   data.index = OPTION_NIL;
   write_str(1, rows, STATUS_BAR_MSG2, B_CYAN, FH_WHITE);
-  loadmenus(OPT_MENU);
+  loadmenus(mylist, rows,columns, OPT_MENU);
   write_str(7, 1, "Options", B_BLACK, F_WHITE);
   draw_window(7, 2, 20, 6, B_WHITE, F_BLACK, 1);
   kglobal = start_vmenu(&data);
@@ -608,6 +611,22 @@ void optionsmenu() {
   write_str(1, 1, "File  Options  Help", B_WHITE, F_BLACK);
   update_screen();
   free_list(mylist);
+  if(data.index == OPTION_1) {
+   //File Info
+      if (filePtr != NULL){
+        size = getfileSize(filePtr);
+        charA = checkFile(filePtr);
+        sprintf(sizeStr, "%ld", size);
+        sprintf(charStr, "%ld", charA);
+        strcpy(tempMsg, WINFO_SIZE);
+        strcat(tempMsg, sizeStr);        
+        strcat(tempMsg, "/");        
+        strcat(tempMsg, charStr);
+        infoWindow(mylist, rows, columns, tempMsg);
+      } else{
+        infoWindow(mylist, rows, columns, WINFO_NOPEN);
+      }
+  }
   if(data.index == OPTION_3) {
      //Refresh screen
       refresh_screen(1);
@@ -629,7 +648,7 @@ void helpmenu() {
   int i;
   data.index = OPTION_NIL;
   write_str(1, rows, STATUS_BAR_MSG2, B_CYAN, FH_WHITE);
-  loadmenus(HELP_MENU);
+  loadmenus(mylist, rows,columns, HELP_MENU);
   write_str(16, 1, "Help", B_BLACK, F_WHITE);
   draw_window(16, 2, 26, 5, B_WHITE, F_BLACK, 1);
   kglobal = start_vmenu(&data);
@@ -657,23 +676,9 @@ void helpmenu() {
 /* Displays a window to asks user for confirmation */
 int confirmation(){
     int ok=0;
-    int window_x1=0, window_y1=0, window_x2 = 0, window_y2 =0;
+    ok=yesnoWindow(mylist, rows, columns, WLEAVE_MSG);
     data.index = OPTION_NIL;
-    window_y1 = (rows / 2) - 3;
-    window_y2 = (rows/2) + 3;
-    window_x1 = (columns/2) - 13;
-    window_x2 = (columns/2) +13;
-    loadmenus(YESNO_MENU);
-    draw_window(window_x1, window_y1, window_x2, window_y2, B_WHITE, F_BLACK, 1);
-    write_str(window_x1+3, window_y1+2, "Are you sure you want", F_BLACK, B_WHITE);
-     write_str(window_x1+3, window_y1+3, "   want to quit?    ", F_BLACK, B_WHITE);
-    
-    start_hmenu(&data);
-    free_list(mylist);
-    if(data.index == OPTION_1)
-      ok = CONFIRMATION; //Confirmation has been given
-    close_window();
-    return ok; 
+   return ok; 
 }
 
 /*--------------------------*/
@@ -682,32 +687,7 @@ int confirmation(){
 
 int about_info(){
     int ok=0;
-    int i;
-    int window_x1=0, window_y1=0, window_x2 = 0, window_y2 =0;
-    data.index = OPTION_NIL;
-    loadmenus(OK_MENU);
-    window_y1 = (rows / 2) - 3;
-    window_y2 = (rows/2) + 3;
-    window_x1= (columns/2) -8;
-    window_x2 = (columns/2) +8;
-    draw_window(window_x1, window_y1, window_x2, window_y2, B_WHITE, F_BLACK, 1);
-    for (i=window_x1+1;i<window_x2;i++){
-    //Draw a horizontal line
-    write_ch(i,window_y1+2, HOR_BOXCHAR,B_WHITE,F_BLACK);
-    }
-    //Corners of lines
-    write_ch(window_x1,window_y1+2, LOWER_LEFT_CORNER, B_WHITE,F_BLACK);
-    write_ch(window_x2,window_y1+2, LOWER_RIGHT_CORNER, B_WHITE,F_BLACK);
-
-   
-    write_str(window_x1+2, window_y1+1, "  [C-EDIT]  ", F_BLACK, B_WHITE);
-    write_str(window_x1+2, window_y1+3, "- Coded by :", F_BLACK, B_WHITE);
-    write_str(window_x1+2, window_y1+4, " - V3l0r3k -", F_BLACK, B_WHITE);
-    start_hmenu(&data);
-    free_list(mylist);
-    if(data.index == OPTION_1)
-      ok = CONFIRMATION; //Confirmation has been given
-    close_window();
+    alertWindow(mylist, rows, columns, WTITLEABOUT_MSG, WABOUT_MSG);
     return ok; 
 }
 
@@ -896,49 +876,25 @@ int writeBuffertoFile(FILE *filePtr, EDITBUFFER editBuffer[MAX_LINES])
 
 int saveDialog(char fileName[MAX_TEXT])
 {
-    int window_x1=0, window_y1=0, window_x2 = 0, window_y2 =0;
-    int i,ok,count;
+    int ok,count;
+    char tempFile[MAX_TEXT], tempMsg[MAX_TEXT];
     data.index = OPTION_NIL;
-    clearString(fileName, MAX_TEXT);
 
-    //Draw window
-    window_y1 = (rows / 2) - 2;
-    window_y2 = (rows/2) + 2;
-    window_x1= (columns/2) -14;
-    window_x2 = (columns/2) +14;
-    draw_window(window_x1, window_y1, window_x2, window_y2, B_WHITE, F_BLACK, 1);
-    write_str(window_x1+2, window_y1+1, "  [C-EDIT SAVE FILE]  ", F_BLACK, B_WHITE);
-    update_screen();
-
-    for (i=window_x1+1;i<window_x2;i++){
-    //Draw a horizontal line
-    write_ch(i,window_y1+2, HOR_BOXCHAR,B_WHITE,F_BLACK);
-    }
-    //Corners of lines
-    write_ch(window_x1,window_y1+2, LOWER_LEFT_CORNER, B_WHITE,F_BLACK);
-    write_ch(window_x2,window_y1+2, LOWER_RIGHT_CORNER, B_WHITE,F_BLACK);
-    
-    count = textbox(window_x1+1,window_y1+3, 12, "[-] File:", fileName, B_WHITE, F_BLACK, F_BLACK); 
-    close_window();
+    clearString(tempFile, MAX_TEXT);
+   
+    count = inputWindow(rows, columns, WSAVETITLE_MSG, WSAVELABEL_MSG, tempFile); 
 
     if (count>0) {       
        //Save file
-       window_y1 = (rows / 2) - 3;
-       window_y2 = (rows/2) + 3;
        data.index = OPTION_NIL;
-       loadmenus(OK_MENU);
-       draw_window(window_x1, window_y1, window_x2, window_y2, B_WHITE, F_BLACK, 1);
-       write_str(window_x1+2, window_y1+1, "File saved successfully!", F_BLACK, B_WHITE);
-       write_str(window_x1+2, window_y1+2, fileName, F_BLACK, B_WHITE);
+       clearString(fileName, MAX_TEXT);
+       strcpy(fileName,tempFile);
        openFile(&filePtr, fileName, "w");
-
-       writeBuffertoFile(filePtr, editBuffer);
-       start_hmenu(&data);
-       free_list(mylist);
-       if(data.index == OPTION_1)
-       ok = CONFIRMATION; //Confirmation has been given 
-    }
-    close_window();
+       writeBuffertoFile(filePtr, editBuffer);       
+       strcpy(tempMsg, fileName);
+       strcat(tempMsg, WSAVE_MSG);
+       ok=infoWindow(mylist, rows, columns, tempMsg);
+   }
 return ok;
 }
 
@@ -969,6 +925,11 @@ int writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES])
    return 1;
 }
 
+/*------------------------------*/
+/* Open file and dump to buffer */
+/*------------------------------*/
+
+
 int filetoBuffer(FILE *filePtr, EDITBUFFER editBuffer[MAX_LINES])
 {
    int inlineChar=0,lineCounter=0;
@@ -982,7 +943,7 @@ int filetoBuffer(FILE *filePtr, EDITBUFFER editBuffer[MAX_LINES])
     while(!feof(filePtr)) {      
       if (ch != CHAR_NIL){
         //Temporary restrictions until scroll is implemented.
-        if (lineCounter == rows-5) break;
+        if (lineCounter == rows-4) break;
         editBuffer[lineCounter].charBuf[inlineChar] = ch;
         inlineChar++;
         if (ch == END_LINE_CHAR) {
@@ -997,4 +958,58 @@ int filetoBuffer(FILE *filePtr, EDITBUFFER editBuffer[MAX_LINES])
   return 1;
 }
 
+/*---------------*/
+/* Get file size */
+/*---------------*/
 
+long getfileSize(FILE *filePtr){
+long sz;
+ if (filePtr != NULL){
+  fseek(filePtr, 0L, SEEK_END);
+  sz = ftell(filePtr);
+  rewind(filePtr);
+ }
+
+  return sz;
+}
+
+/*-----------------*/
+/* Check file type */
+/*-----------------*/
+
+
+long countLinesFile(FILE *filePtr)
+{
+  char ch;
+  long counterA=0;
+   if(filePtr != NULL) {
+    rewind(filePtr); //Make sure we are at the beginning
+ 
+    ch = getc(filePtr);		//Peek ahead in the file
+    while(!feof(filePtr)) {      
+        if (ch == END_LINE_CHAR) {
+          counterA++;
+        }
+      ch=getc(filePtr);
+    }
+   }
+  return counterA;
+}
+
+long checkFile(FILE *filePtr)
+{
+  char ch;
+  long counterA=0;
+   if(filePtr != NULL) {
+    rewind(filePtr); //Make sure we are at the beginning
+ 
+    ch = getc(filePtr);		//Peek ahead in the file
+    while(!feof(filePtr)) {      
+        if (ch < 9) {
+          counterA++;
+        }
+      ch=getc(filePtr);
+    }
+   }
+  return counterA;
+}

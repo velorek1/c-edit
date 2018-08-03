@@ -5,7 +5,7 @@ Module to open a file by showing a dialogue that allows you to navigate
 through directories with a list with scroll.
 @author : Velorek
 @version : 1.0  
-Last modified: 30/07/2018                                                                
+Last modified: 4/08/2018                                                                
 ========================================================================
 */
 
@@ -30,7 +30,7 @@ Last modified: 30/07/2018
 /* CONSTANTS */
 /*====================================================================*/
 #define MAX_ITEM_LENGTH 15
-#define MAX 1024
+#define MAX 150
 /*====================================================================*/
 /* TYPEDEF STRUCTS DEFINITIONS */
 /*====================================================================*/
@@ -60,6 +60,7 @@ typedef struct _scrolldata {
   unsigned isDirectory;		// Kind of item
   char   *item;
   char   *path;
+  char fullPath[MAX];
   unsigned itemIndex;
   LISTBOX *head;		//store head of the list
 } SCROLLDATA;

@@ -36,14 +36,17 @@ Last modified : 04/08/2018
 #define STATUS_BAR_MSG1  ">[C-Edit] | F2 / CTRL-L -> MENU | CTRL-C EXIT"
 #define STATUS_BAR_MSG2 ">[C-Edit] Press ESC thrice [3x] to exit menu.  "
 #define WLEAVE_MSG "\n       Are you sure\n    you want to quit?"
-#define WSAVE_MSG ":\nFile successfully saved!"
+#define WSAVE_MSG ":\nFile saved successfully!"
 #define WSAVELABEL_MSG "[-] File:"
-#define WSAVETITLE_MSG "[C-EDIT SAVE FILE]"
+#define WSAVETITLE_MSG "[C-EDIT SAVE AS]"
+#define WNEWTITLE_MSG "[C-EDIT NEW FILE]"
 #define WTITLEABOUT_MSG "[C-EDIT : ABOUT]"
 #define WABOUT_MSG "Coded by Vel0r3k.\n - 2018 - \n Spukhafte Fernwirkungen!"
 #define WINFO_NOPEN "Error:\nThere isn't any file open!"
 #define WINFO_SIZE "Total file size:\n"
-#define WCHECKFILE_MSG "This file doesn't \n seem to be a text file. \n Open anyway?"
+#define WCHECKFILE_MSG " This file isn't a  \n text file. Program \n may crash. Open anyway?"
+#define WINFONOTYET_MSG "Not implemented yet!"
+#define WMODIFIED_MSG "File has been modified\n Save current buffer?"
 //MISC. CONSTANTS
 #define EXIT_FLAG 1 
 #define FAILSAFE '$' //Failsafe char to activate menus.
@@ -177,7 +180,9 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, ch
 int openFile(FILE ** filePtr, char fileName[], char *mode);	
 int closeFile(FILE * filePtr);
 int writeBuffertoFile(FILE *filePtr, EDITBUFFER editBuffer[MAX_LINES]);
+int newDialog(char fileName[MAX_TEXT]);
 int saveDialog(char fileName[MAX_TEXT]);
+int saveasDialog(char fileName[MAX_TEXT]);
 int writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES]);
 int filetoBuffer(FILE *filePtr, EDITBUFFER editBuffer[MAX_LINES]);
 long getfileSize(FILE *filePtr);
@@ -440,14 +445,15 @@ int main_screen() {
   get_terminal_dimensions(&rows, &columns);
   old_rows = rows;
   old_columns = columns;
- 
+  cursorX = START_CURSOR_X;
+  cursorY = START_CURSOR_Y;
+  draw_cursor(&cursorX,&cursorY,&timerCursor);   
   //Failsafe just in case it can't find the terminal dimensions
   if(rows == 0)
     rows = ROWS_FAILSAFE;	
   if(columns == 0)
     columns = COLUMNS_FAILSAFE;
-
-  screen_color(B_BLUE);
+    screen_color(B_BLUE);
   //Draw upper and lower bars
   for(i = 1; i <= columns; i++) {
     write_ch(i, 1, FILL_CHAR, B_WHITE, F_WHITE);
@@ -528,8 +534,11 @@ void filemenu()
   write_str(1, 1, "File  Options  Help", B_WHITE, F_BLACK);
   update_screen();
   free_list(mylist);
+
   if (data.index == OPTION_1){
-    saveDialog(currentFile);
+   //New file option
+    cleanBuffer(editBuffer);
+    newDialog(currentFile);
     //Update new global file name
     refresh_screen(1);  
   }
@@ -575,11 +584,22 @@ void filemenu()
     }
   }
  if (data.index == OPTION_3){
-    if (fileModified != FILE_READMODE) saveDialog(currentFile);
+   //Save option
+    //if (fileModified != FILE_READMODE) 
+      if (strcmp(currentFile, UNKNOWN) == 0) saveasDialog(currentFile);
+      else{  
+        saveDialog(currentFile);
+      }
     //Update new global file name
     refresh_screen(1);  
   }
+   if(data.index == OPTION_4) {
+     //Save as option  
+     saveasDialog(currentFile); 
+  }
+ 
   if(data.index == OPTION_5) {
+    //Exit option
 	exitp = confirmation(); //Shall we exit? Global variable! 
   }
   data.index = OPTION_NIL;
@@ -597,10 +617,9 @@ void filemenu()
 
 void optionsmenu() {
   int i;
-  long size, charA;
+  long size;
   char sizeStr[12];
   char tempMsg[50];
-  char charStr[12];
   data.index = OPTION_NIL;
   write_str(1, rows, STATUS_BAR_MSG2, B_CYAN, FH_WHITE);
   loadmenus(mylist, rows,columns, OPT_MENU);
@@ -615,13 +634,12 @@ void optionsmenu() {
    //File Info
       if (filePtr != NULL){
         size = getfileSize(filePtr);
-        charA = checkFile(filePtr);
-        sprintf(sizeStr, "%ld", size);
-        sprintf(charStr, "%ld", charA);
-        strcpy(tempMsg, WINFO_SIZE);
+        if (size > 0){
+          sprintf(sizeStr, "%ld", size);
+          strcpy(tempMsg, WINFO_SIZE);
+        }
         strcat(tempMsg, sizeStr);        
-        strcat(tempMsg, "/");        
-        strcat(tempMsg, charStr);
+        strcat(tempMsg, " bytes.");        
         infoWindow(mylist, rows, columns, tempMsg);
       } else{
         infoWindow(mylist, rows, columns, WINFO_NOPEN);
@@ -876,6 +894,20 @@ int writeBuffertoFile(FILE *filePtr, EDITBUFFER editBuffer[MAX_LINES])
 
 int saveDialog(char fileName[MAX_TEXT])
 {
+    int ok=0; 
+    char tempMsg[MAX_TEXT];
+    data.index = OPTION_NIL;
+    openFile(&filePtr, fileName, "w");
+    writeBuffertoFile(filePtr, editBuffer);       
+    strcpy(tempMsg, fileName);
+    strcat(tempMsg, WSAVE_MSG);
+    ok=infoWindow(mylist, rows, columns, tempMsg);
+   
+return ok;
+}
+
+int saveasDialog(char fileName[MAX_TEXT])
+{
     int ok,count;
     char tempFile[MAX_TEXT], tempMsg[MAX_TEXT];
     data.index = OPTION_NIL;
@@ -897,6 +929,34 @@ int saveDialog(char fileName[MAX_TEXT])
    }
 return ok;
 }
+
+
+/*-----------------*/
+/* New File Dialog */
+/*-----------------*/
+
+
+int newDialog(char fileName[MAX_TEXT])
+{
+    int ok,count;
+    char tempFile[MAX_TEXT];
+    data.index = OPTION_NIL;
+
+    clearString(tempFile, MAX_TEXT);
+   
+    count = inputWindow(rows, columns, WNEWTITLE_MSG, WSAVELABEL_MSG, tempFile); 
+    if (count>0) {       
+       //Save file
+       data.index = OPTION_NIL;
+       clearString(fileName, MAX_TEXT);
+       strcpy(fileName,tempFile);
+       openFile(&filePtr, fileName, "w");
+       writeBuffertoFile(filePtr, editBuffer);
+       ok=1;
+   }
+   return ok;
+}
+
 
 /*-----------------------------*/
 /* Write EditBuffer to Display */

@@ -4,7 +4,7 @@
 Module to control some display routines that implement ANSI functions.
 @author : Velorek
 @version : 1.0  
-Last modified: 28/07/2018                                                                
+Last modified: 04/08/2018                                                                
 ========================================================================
 */
 
@@ -73,6 +73,7 @@ void    pushTerm();
 void    resetTerm();
 int     kbhit();
 int 	readch();
+int     resetch();
 char    getch(void);
 void    gotoxy(int x, int y);
 void    outputcolor(int foreground, int background);

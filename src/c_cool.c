@@ -5,7 +5,7 @@ Module to control some display routines that implement ANSI functions.
 @author : Velorek
 @version : 1.0
  
-LAST MODIFIED : 30/07/2018
+LAST MODIFIED : 04/08/2018
 ======================================================================
 */
 
@@ -87,7 +87,12 @@ char ch;
     return ch;
 }
 
-
+void resetch(){
+//Clear ch  
+    newp.c_cc[VMIN]=0;
+    tcsetattr(0, TCSANOW, &newp);
+    peek_character = 0;
+}
 /*------------------------------------------ */
 /* Read 1 character - echo defines echo mode */
 /*------------------------------------------ */

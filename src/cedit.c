@@ -13,6 +13,7 @@ Last modified : 04/08/2018
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
+#include <unistd.h>
 #include "c_cool.h"
 #include "list_choice.h"
 #include "screen_buffer.h"
@@ -47,6 +48,8 @@ Last modified : 04/08/2018
 #define WCHECKFILE_MSG " This file isn't a  \n text file. Program \n may crash. Open anyway?"
 #define WINFONOTYET_MSG "Not implemented yet!"
 #define WMODIFIED_MSG "File has been modified\n Save current buffer?"
+#define WFILEEXISTS_MSG " File exists. \n Overwrite?"
+
 //MISC. CONSTANTS
 #define EXIT_FLAG 1 
 #define FAILSAFE '$' //Failsafe char to activate menus.
@@ -188,6 +191,7 @@ int filetoBuffer(FILE *filePtr, EDITBUFFER editBuffer[MAX_LINES]);
 long getfileSize(FILE *filePtr);
 long countLinesFile(FILE *filePtr);
 long checkFile(FILE *filePtr);
+int file_exists(char *fileName);
 
 /*====================================================================*/
 /* MAIN PROGRAM - CODE                                                */
@@ -922,10 +926,27 @@ int saveasDialog(char fileName[MAX_TEXT])
        clearString(fileName, MAX_TEXT);
        strcpy(fileName,tempFile);
        openFile(&filePtr, fileName, "w");
-       writeBuffertoFile(filePtr, editBuffer);       
-       strcpy(tempMsg, fileName);
-       strcat(tempMsg, WSAVE_MSG);
-       ok=infoWindow(mylist, rows, columns, tempMsg);
+      
+       //Check whether file exists.
+       if (file_exists(fileName)) {
+         ok=yesnoWindow(mylist,rows,columns, WFILEEXISTS_MSG);
+         if(ok==CONFIRMATION){
+           //Save anyway.
+           writeBuffertoFile(filePtr, editBuffer);       
+           strcpy(tempMsg, fileName);
+           strcat(tempMsg, WSAVE_MSG);
+           ok=infoWindow(mylist, rows, columns, tempMsg);
+         }
+         else {
+           //Do nothing.
+         }
+       }
+       else{   
+         writeBuffertoFile(filePtr, editBuffer);       
+         strcpy(tempMsg, fileName);
+         strcat(tempMsg, WSAVE_MSG);
+         ok=infoWindow(mylist, rows, columns, tempMsg);
+       }
    }
 return ok;
 }
@@ -946,13 +967,28 @@ int newDialog(char fileName[MAX_TEXT])
    
     count = inputWindow(rows, columns, WNEWTITLE_MSG, WSAVELABEL_MSG, tempFile); 
     if (count>0) {       
-       //Save file
-       data.index = OPTION_NIL;
-       clearString(fileName, MAX_TEXT);
-       strcpy(fileName,tempFile);
-       openFile(&filePtr, fileName, "w");
-       writeBuffertoFile(filePtr, editBuffer);
-       ok=1;
+       //Check whether file exists.
+       if (file_exists(fileName)) {
+         ok=yesnoWindow(mylist,rows,columns, WFILEEXISTS_MSG);
+         if(ok==CONFIRMATION){
+           //Overwrite anyway.
+          clearString(fileName, MAX_TEXT);
+          strcpy(fileName,tempFile);
+          openFile(&filePtr, fileName, "w");
+          writeBuffertoFile(filePtr, editBuffer);
+        }
+         else {
+           //Do nothing.
+         }
+       } else
+       {
+          //File does not exist.
+          clearString(fileName, MAX_TEXT);
+          strcpy(fileName,tempFile);
+          openFile(&filePtr, fileName, "w");
+          writeBuffertoFile(filePtr, editBuffer); 
+       }
+      ok=1;
    }
    return ok;
 }
@@ -1073,3 +1109,18 @@ long checkFile(FILE *filePtr)
    }
   return counterA;
 }
+
+/*----------------------*/
+/* Check if file exists */
+/*----------------------*/
+
+int file_exists(char *fileName){
+int ok;
+  if(access( fileName, F_OK ) != -1 ) {
+     ok = 1; //File exists
+  } else {
+     ok=0;
+  }
+  return ok;
+}
+

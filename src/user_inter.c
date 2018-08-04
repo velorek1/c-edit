@@ -138,7 +138,7 @@ char ch;
     if (kbhit() == 1) ch=readch();
     ch=0;
     do{
-       keypressed = kbhit();
+       if (keypressed == 0) keypressed = kbhit();
    //Cursor Animation
       cursorCount++;
 
@@ -176,7 +176,8 @@ char ch;
        if (ch==K_ENTER || ch==K_TAB) exitFlag = 1;
     
       //ENTER OR TAB FINISH LOOP
-     } while (exitFlag != 1);
+     } while (exitFlag != 1);  
+resetch();
 return charCount;
 }
 

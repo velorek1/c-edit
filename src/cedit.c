@@ -42,9 +42,11 @@ Last modified : 05/08/2018
 #define WSAVETITLE_MSG "[C-EDIT SAVE AS]"
 #define WNEWTITLE_MSG "[C-EDIT NEW FILE]"
 #define WTITLEABOUT_MSG "[C-EDIT : ABOUT]"
-#define WABOUT_MSG "Coded by Vel0r3k.\n - 2018 - \n Spukhafte Fernwirkungen!"
+#define WABOUT_MSG "Coded by v3l0r3k.\n - 2018 - \n Spukhafte Fernwirkungen!"
 #define WINFO_NOPEN "Error:\nThere isn't any file open!"
-#define WINFO_SIZE "Total file size:\n"
+#define WINFO_SIZE "-File size: "
+#define WINFO_SIZE2 "\n-No. of lines: "
+#define WINFO_SIZE3 "\n-File name: "
 #define WCHECKFILE_MSG " This file isn't a  \n text file. Program \n may crash. Open anyway?"
 #define WINFONOTYET_MSG "Not implemented yet!"
 #define WMODIFIED_MSG "File has been modified\n Save current buffer?"
@@ -148,6 +150,7 @@ int     rows=0, columns=0, old_rows=0, old_columns=0; // Terminal dimensions
 int     cursorX=START_CURSOR_X,cursorY=START_CURSOR_Y, timerCursor=0; // Cursor position and Timer
 char    kglobal=0; // Global variable for menu animation
 char    currentFile[MAX_TEXT];
+//char    fullPathStr[MAX_TEXT];
 //FLAGS
 int     exitp = 0; // Exit flag for main loop
 int     fileModified = FILE_UNMODIFIED; //Have we modified the buffer?
@@ -656,8 +659,9 @@ void filemenu()
 
 void optionsmenu() {
   int i;
-  long size;
+  long size=0, lines=0;
   char sizeStr[12];
+  char linesStr[12];
   char tempMsg[50];
   data.index = OPTION_NIL;
   write_str(1, rows, STATUS_BAR_MSG2, B_CYAN, FH_WHITE);
@@ -673,13 +677,20 @@ void optionsmenu() {
    //File Info
       if (filePtr != NULL){
         size = getfileSize(filePtr);
-        if (size > 0){
-          sprintf(sizeStr, "%ld", size);
-          strcpy(tempMsg, WINFO_SIZE);
-        }
+        lines = countLinesFile(filePtr);
+        if (size <= 0) size = 0;
+        if (lines <= 0) lines = 0;
+        sprintf(sizeStr, "%ld", size);
+        sprintf(linesStr, "%ld", lines);
+        strcpy(tempMsg, WINFO_SIZE);
         strcat(tempMsg, sizeStr);        
-        strcat(tempMsg, " bytes.");        
-        infoWindow(mylist, rows, columns, tempMsg);
+        strcat(tempMsg, " bytes.");
+        strcat(tempMsg, WINFO_SIZE2);
+        strcat(tempMsg, linesStr);
+        strcat(tempMsg, " lines.\n");
+        //strcat(WINFO_SIZE3, currentFile);
+        //strcat(tempMsg, currentFile);
+        alertWindow(mylist, rows, columns, currentFile, tempMsg);
       } else{
         infoWindow(mylist, rows, columns, WINFO_NOPEN);
       }

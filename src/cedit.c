@@ -197,7 +197,7 @@ long countLinesFile(FILE *filePtr);
 long checkFile(FILE *filePtr);
 int file_exists(char *fileName);
 int handleopenFile(FILE **filePtr, char *fileName, char *oldFileName);      
-int createnewFile(FILE *filePtr, char *fileName, int checkFile);
+int createnewFile(FILE **filePtr, char *fileName, int checkFile);
 /*====================================================================*/
 /* MAIN PROGRAM - CODE                                                */
 /*====================================================================*/
@@ -231,7 +231,7 @@ int main(int argc, char *argv[]) {
           //create
            clearString(currentFile, MAX_TEXT);
            strcpy(currentFile, argv[1]);
-           createnewFile(filePtr, currentFile,0);
+           createnewFile(&filePtr, currentFile,0);
        }
    }
 
@@ -637,7 +637,8 @@ void filemenu()
   }
    if(data.index == OPTION_4) {
      //Save as option  
-     saveasDialog(currentFile); 
+     saveasDialog(currentFile);
+     refresh_screen(-1);
   }
  
   if(data.index == OPTION_5) {
@@ -676,6 +677,8 @@ void optionsmenu() {
   if(data.index == OPTION_1) {
    //File Info
       if (filePtr != NULL){
+        closeFile(filePtr);
+        openFile(&filePtr, currentFile, "r");
         size = getfileSize(filePtr);
         lines = countLinesFile(filePtr);
         if (size <= 0) size = 0;
@@ -963,7 +966,7 @@ int saveasDialog(char fileName[MAX_TEXT])
     data.index = OPTION_NIL;
 
     clearString(tempFile, MAX_TEXT);
-   
+
     count = inputWindow(rows, columns, WSAVETITLE_MSG, WSAVELABEL_MSG, tempFile); 
 
     if (count>0) {       
@@ -971,13 +974,13 @@ int saveasDialog(char fileName[MAX_TEXT])
        data.index = OPTION_NIL;
        clearString(fileName, MAX_TEXT);
        strcpy(fileName,tempFile);
-       openFile(&filePtr, fileName, "w");
       
        //Check whether file exists.
        if (file_exists(fileName)) {
          ok=yesnoWindow(mylist,rows,columns, WFILEEXISTS_MSG);
          if(ok==CONFIRMATION){
            //Save anyway.
+           openFile(&filePtr, fileName, "w");
            writeBuffertoFile(filePtr, editBuffer);       
            strcpy(tempMsg, fileName);
            strcat(tempMsg, WSAVE_MSG);
@@ -987,7 +990,8 @@ int saveasDialog(char fileName[MAX_TEXT])
            //Do nothing.
          }
        }
-       else{   
+       else{
+         openFile(&filePtr, fileName, "w");
          writeBuffertoFile(filePtr, editBuffer);       
          strcpy(tempMsg, fileName);
          strcat(tempMsg, WSAVE_MSG);
@@ -1009,13 +1013,14 @@ int newDialog(char fileName[MAX_TEXT])
   int ok,count;
    
    clearString(tempFile, MAX_TEXT);
-
+   //clearString(fileName, MAX_TEXT);
+ 
     data.index = OPTION_NIL;
  
     count = inputWindow(rows, columns, WNEWTITLE_MSG, WSAVELABEL_MSG, tempFile); 
     if (count>0) {       
        //Check whether file exists and create file.
-       ok=createnewFile(filePtr, tempFile, 1);
+       ok=createnewFile(&filePtr, tempFile, 1);
        if (ok ==1) {
          strcpy(fileName, tempFile);
        }
@@ -1196,7 +1201,7 @@ int handleopenFile(FILE **filePtr, char *fileName, char *oldFileName){
 /*-----------------*/
 
 
-int createnewFile(FILE *filePtr, char *fileName, int checkFile){
+int createnewFile(FILE **filePtr, char *fileName, int checkFile){
 int ok;
 
 //Check if file exists if indicated.
@@ -1205,7 +1210,7 @@ int ok;
     ok=yesnoWindow(mylist,rows,columns, WFILEEXISTS_MSG);
     if(ok==CONFIRMATION){
         //Overwrite anyway.
-        openFile(&filePtr, fileName, "w");
+        openFile(filePtr, fileName, "w");
         ok=1;
     }
     else {
@@ -1217,14 +1222,14 @@ int ok;
     //File does not exist.
       //clearString(fileName, MAX_TEXT);
       //strcpy(fileName,tempFile);
-      openFile(&filePtr, fileName, "w");
+      openFile(filePtr, fileName, "w");
       ok=1;
     }
  
   }
   else{
   //Don't check if file exists.
-    openFile(&filePtr, fileName, "w");
+    openFile(filePtr, fileName, "w");
     refresh_screen(-1);
   }
   return ok;

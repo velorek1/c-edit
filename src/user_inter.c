@@ -6,7 +6,7 @@ windows, textbox, etc.
 @author : Velorek
 @version : 1.0
  
-LAST MODIFIED : 04/08/2018
+LAST MODIFIED : 05/08/2018
 ======================================================================
 */
 
@@ -72,9 +72,9 @@ LAST MODIFIED : 04/08/2018
 
 void loadmenus(LISTCHOICE *mylist, int rows, int columns, int choice) {
   if(choice == HOR_MENU) {
-    add_item(mylist, "File", 1, 1, B_WHITE, F_BLACK, B_BLACK, FH_WHITE);
-    add_item(mylist, "Options", 7, 1, B_WHITE, F_BLACK, B_BLACK, FH_WHITE);
-    add_item(mylist, "Help", 16, 1, B_WHITE, F_BLACK, B_BLACK, FH_WHITE);
+    add_item(mylist, "File", 1, 1, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
+    add_item(mylist, "Options", 7, 1, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
+    add_item(mylist, "Help", 16, 1, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
   }
 
   if(choice == FILE_MENU) {
@@ -85,12 +85,12 @@ void loadmenus(LISTCHOICE *mylist, int rows, int columns, int choice) {
     add_item(mylist, "Exit", 3, 7, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
   }
   if(choice == OPT_MENU) {
-    add_item(mylist, "File Info", 9, 3, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
-    add_item(mylist, "Colors", 9, 4, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
-    add_item(mylist, "Refresh_F3", 9, 5, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
+    add_item(mylist, "File Info.", 9, 3, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
+    add_item(mylist, "Find...", 9, 4, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
+    add_item(mylist, "Refresh", 9, 5, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
   }
   if(choice == HELP_MENU) {
-    add_item(mylist, "Help_F1", 18, 3, B_WHITE, F_BLACK, B_BLACK,
+    add_item(mylist, "Help...", 18, 3, B_WHITE, F_BLACK, B_BLACK,
 	     F_WHITE);
     add_item(mylist, "About", 18, 4, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
   }

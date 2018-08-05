@@ -19,8 +19,8 @@ New August 2018:
 * User interface: Text box.
 * Open file - in progress.
 
-Files:
-=====
+Files in /src/:
+===============
 * c_cool.c -> code for the library that handles output with Ansi Functions and kbhit() in linux console (with its header file)
 * list_choice.c -> code for the circular linked list responsible for handling menus 
 * screen_buffer.c -> code for controlling display with a double screen buffer (with its header file)
@@ -33,7 +33,7 @@ As a screen buffer I have implemented a dynamic structure in memory that allows 
 
 More info at: oldstuff286.blogspot.com
 
-Makefile is included. Type "make" and "./cedit" to execute.
+Makefile is included. Type "cd src", "make" and "./cedit" to execute.
 
 ![Alt text](screencaps/cedit.gif?raw=true "Demo")
 ![Alt text](screencaps/cedit1.png?raw=true "Demo")

@@ -159,6 +159,7 @@ int     fileModified = FILE_UNMODIFIED; //Have we modified the buffer?
 //Menu and display prototypes
 void credits();
 int main_screen();
+int refresh_editarea();
 void update_position();
 void drop_down(char *kglobal);
 char horizontal_menu();
@@ -437,15 +438,18 @@ void draw_cursor(int *whereX, int *whereY, int *timer)
 /* Refresh screen  */
 /*-----------------*/
 
-int refresh_screen(int force_refresh){
+int refresh_screen(int force){
 /* Query terminal dimensions again and check if resize 
    has been produced */
  get_terminal_dimensions(&rows, &columns);
-  if (rows != old_rows || columns != old_columns || force_refresh)
+  if (rows != old_rows || columns != old_columns || force == 1 || force == -1)
   {
-    free_buffer(); //delete structure from memory for resize
-    create_screen(); //create new structure 
-    main_screen(); //Refresh screen in case of resize
+    if (force != -1) {
+      free_buffer(); //delete structure from memory for resize
+      create_screen(); //create new structure 
+      main_screen(); //Refresh screen in case of resize
+    } else
+      refresh_editarea(); //only update edit area to avoid flickering effect
     return 1;
   } else
   {
@@ -456,6 +460,7 @@ int refresh_screen(int force_refresh){
 /*-------------------*/
 /* Draw main screen  */
 /*-------------------*/
+
 
 int main_screen() {
   int     i;   
@@ -521,6 +526,44 @@ int main_screen() {
   return 0;
 }
 
+
+/*-------------------------*/
+/* Only refresh edit Area  */
+/*-------------------------*/
+
+int refresh_editarea() {
+  int     i,j;   
+  get_terminal_dimensions(&rows, &columns);
+  old_rows = rows;
+  old_columns = columns;
+  cursorX = START_CURSOR_X;
+  cursorY = START_CURSOR_Y;
+  draw_cursor(&cursorX,&cursorY,&timerCursor);   
+  //Failsafe just in case it can't find the terminal dimensions
+  if(rows == 0)
+    rows = ROWS_FAILSAFE;	
+  if(columns == 0)
+    columns = COLUMNS_FAILSAFE;
+
+  //Paint blue edit area
+  for (j=START_CURSOR_Y; j<rows-2; j++)
+    for(i=START_CURSOR_X; i<columns-1; i++)
+      write_ch(i,j,FILL_CHAR, B_BLUE,F_BLUE);
+
+  for(i = 2; i < columns; i++) {
+    write_ch(i, 2, HOR_BOXCHAR, B_BLACK, F_WHITE);//horizontal line box-like char
+  }
+  write_ch(1,2,UPLEFT_BOXCHAR,B_BLACK,F_WHITE); //upper-left box-like char
+ 
+  //Center and diplay file name
+  write_str((columns/2)-(strlen(currentFile)/2),2,currentFile,B_WHITE,F_BLACK); 
+ 
+  update_screen();
+  //Write editBuffer
+  writeBuffertoDisplay(editBuffer);
+  return 0;
+}
+
 /*--------------------------*/
 /* Display horizontal menu  */
 /*--------------------------*/
@@ -560,7 +603,7 @@ void filemenu()
     cleanBuffer(editBuffer);
     newDialog(currentFile);
     //Update new global file name
-    refresh_screen(1);  
+    refresh_screen(-1);  
   }
   if (data.index == OPTION_2){
     //External Module - Open file dialog.
@@ -587,7 +630,7 @@ void filemenu()
         saveDialog(currentFile);
       }
     //Update new global file name
-    refresh_screen(1);  
+    refresh_screen(-1);  
   }
    if(data.index == OPTION_4) {
      //Save as option  
@@ -1118,6 +1161,7 @@ int handleopenFile(FILE **filePtr, char *fileName, char *oldFileName){
      ok=yesnoWindow(mylist, rows, columns, WCHECKFILE_MSG);
      if (ok==1) {
          filetoBuffer(*filePtr, editBuffer);
+         refresh_screen(-1);
      } else{
          //Go back to previous file
          ok = -1;
@@ -1131,8 +1175,8 @@ int handleopenFile(FILE **filePtr, char *fileName, char *oldFileName){
    {
       //Dump file into edit buffer.
       filetoBuffer(*filePtr, editBuffer);
+      refresh_screen(-1);
    } 
-  refresh_screen(1);
   return ok;
 }
 
@@ -1170,7 +1214,7 @@ int ok;
   else{
   //Don't check if file exists.
     openFile(&filePtr, fileName, "w");
-    refresh_screen(1);
+    refresh_screen(-1);
   }
   return ok;
 }

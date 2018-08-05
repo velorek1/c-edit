@@ -3,7 +3,7 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 04/08/2018                                           
+Last modified : 05/08/2018                                           
 ======================================================================*/
 
 /*====================================================================*/
@@ -192,28 +192,45 @@ long getfileSize(FILE *filePtr);
 long countLinesFile(FILE *filePtr);
 long checkFile(FILE *filePtr);
 int file_exists(char *fileName);
-
+int handleopenFile(FILE **filePtr, char *fileName, char *oldFileName);      
+int createnewFile(FILE *filePtr, char *fileName, int checkFile);
 /*====================================================================*/
 /* MAIN PROGRAM - CODE                                                */
 /*====================================================================*/
 
-int main() {
+int main(int argc, char *argv[]) {
   char    ch=0;
   int esc_key =0; //To control key input and scan for keycodes.
   int keypressed =0;
   int timer1 =0; // Timer to display animation
  
+  //Initial values
   hidecursor(); 
   pushTerm(); //Save current terminal settings in failsafe
   create_screen(); //Create screen buffer to control display
-
-  //Initialize edit buffer
-
   cleanBuffer(editBuffer);
   clearString(currentFile, MAX_TEXT);
   strcpy(currentFile, UNKNOWN);
- 
   main_screen(); //Draw screen
+  resetch(); //Clear keyboard and sets ENTER = 13
+  
+  //Check arguments given
+  if (argc >1){
+    //Does the file exist? Open or create?
+      if (file_exists(argv[1]) == 1) {
+           //open
+           clearString(currentFile, MAX_TEXT);
+           strcpy(currentFile, argv[1]);
+           handleopenFile(&filePtr,currentFile,UNKNOWN);
+          }
+      else{
+          //create
+           clearString(currentFile, MAX_TEXT);
+           strcpy(currentFile, argv[1]);
+           createnewFile(filePtr, currentFile,0);
+       }
+   }
+
   //MAIN PROGRAM LOOP
   do {  
     /* CURSOR */
@@ -524,8 +541,7 @@ char horizontal_menu(){
 
 void filemenu()
 {
-  int i,ok=0;
-  long checkF=0;
+  int i;
   char oldFile[MAX_TEXT];
 
   data.index = OPTION_NIL;
@@ -560,32 +576,8 @@ void filemenu()
       cleanBuffer(editBuffer);
      //Open file and dump first page to buffer - temporary
       if (filePtr != NULL) closeFile(filePtr);
-      openFile(&filePtr, currentFile, "r");
-      //Check for binary characters to determine filetype
-      checkF = checkFile(filePtr);
-      if (checkF>5) {
-      //File doesn't seem to be a text file. Open anyway?  
-         ok=yesnoWindow(mylist, rows, columns, WCHECKFILE_MSG);
-         if (ok==1) {
-          filetoBuffer(filePtr, editBuffer);
-         } else{
-            //Go back to previous file
-            clearString(currentFile, MAX_TEXT);
-            strcpy(currentFile, oldFile);
-           //Open file again and dump first page to buffer - temporary
-            if (filePtr != NULL) closeFile(filePtr);
-            openFile(&filePtr, currentFile, "r");           
-            filetoBuffer(filePtr, editBuffer);
-         }
-      } else
-      {
-         clearString(currentFile, MAX_TEXT);
-         strcpy(currentFile, openFileData.path);
-         cleanBuffer(editBuffer);
-         filetoBuffer(filePtr, editBuffer);
-      }
-     refresh_screen(1);
-    }
+      handleopenFile(&filePtr, currentFile, oldFile);
+   }
   }
  if (data.index == OPTION_3){
    //Save option
@@ -959,36 +951,21 @@ return ok;
 
 int newDialog(char fileName[MAX_TEXT])
 {
-    int ok,count;
-    char tempFile[MAX_TEXT];
-    data.index = OPTION_NIL;
-
-    clearString(tempFile, MAX_TEXT);
+  char tempFile[MAX_TEXT];
+  int ok,count;
    
+   clearString(tempFile, MAX_TEXT);
+
+    data.index = OPTION_NIL;
+ 
     count = inputWindow(rows, columns, WNEWTITLE_MSG, WSAVELABEL_MSG, tempFile); 
     if (count>0) {       
-       //Check whether file exists.
-       if (file_exists(fileName)) {
-         ok=yesnoWindow(mylist,rows,columns, WFILEEXISTS_MSG);
-         if(ok==CONFIRMATION){
-           //Overwrite anyway.
-          clearString(fileName, MAX_TEXT);
-          strcpy(fileName,tempFile);
-          openFile(&filePtr, fileName, "w");
-          writeBuffertoFile(filePtr, editBuffer);
-        }
-         else {
-           //Do nothing.
-         }
-       } else
-       {
-          //File does not exist.
-          clearString(fileName, MAX_TEXT);
-          strcpy(fileName,tempFile);
-          openFile(&filePtr, fileName, "w");
-          writeBuffertoFile(filePtr, editBuffer); 
+       //Check whether file exists and create file.
+       ok=createnewFile(filePtr, tempFile, 1);
+       if (ok ==1) {
+         strcpy(fileName, tempFile);
        }
-      ok=1;
+       ok=1;
    }
    return ok;
 }
@@ -1124,3 +1101,76 @@ int ok;
   return ok;
 }
 
+/*------------------*/
+/* Open file checks */
+/*------------------*/
+
+
+int handleopenFile(FILE **filePtr, char *fileName, char *oldFileName){      
+  long checkF=0;
+  int ok=0;
+  
+  openFile(filePtr, fileName, "r");
+  //Check for binary characters to determine filetype
+  checkF = checkFile(*filePtr);
+  if (checkF>5) {
+  //File doesn't seem to be a text file. Open anyway?  
+     ok=yesnoWindow(mylist, rows, columns, WCHECKFILE_MSG);
+     if (ok==1) {
+         filetoBuffer(*filePtr, editBuffer);
+     } else{
+         //Go back to previous file
+         ok = -1;
+         clearString(fileName, MAX_TEXT);
+         strcpy(fileName, oldFileName);
+         //Open file again and dump first page to buffer - temporary
+         openFile(filePtr, currentFile, "r");           
+         filetoBuffer(*filePtr, editBuffer);
+      }
+   } else
+   {
+      //Dump file into edit buffer.
+      filetoBuffer(*filePtr, editBuffer);
+   } 
+  refresh_screen(1);
+  return ok;
+}
+
+/*-----------------*/
+/* New file checks */
+/*-----------------*/
+
+
+int createnewFile(FILE *filePtr, char *fileName, int checkFile){
+int ok;
+
+//Check if file exists if indicated.
+ if (checkFile == 1){
+  if (file_exists(fileName)) {
+    ok=yesnoWindow(mylist,rows,columns, WFILEEXISTS_MSG);
+    if(ok==CONFIRMATION){
+        //Overwrite anyway.
+        openFile(&filePtr, fileName, "w");
+        ok=1;
+    }
+    else {
+       //Do nothing. Don't overwrite.
+       ok=0;
+    }
+  } else
+    {
+    //File does not exist.
+      //clearString(fileName, MAX_TEXT);
+      //strcpy(fileName,tempFile);
+      openFile(&filePtr, fileName, "w");
+      ok=1;
+    }
+ 
+  }
+  else{
+  //Don't check if file exists.
+    openFile(&filePtr, fileName, "w");
+    refresh_screen(1);
+  }
+  return ok;
+}

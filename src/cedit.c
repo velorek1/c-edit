@@ -3,7 +3,7 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 05/08/2018                                           
+Last modified : 06/08/2018                                           
 ======================================================================*/
 
 /*====================================================================*/
@@ -58,7 +58,7 @@ Last modified : 05/08/2018
 #define TAB_DISTANCE 8 //How many spaces TAB key will send.
 #define START_CURSOR_X 2
 #define START_CURSOR_Y 3
-#define TIME_MS 5000
+#define TIME_MS 3000
 #define LIMIT_TIMER 10
 #define ROWS_FAILSAFE 25
 #define COLUMNS_FAILSAFE 80
@@ -72,9 +72,15 @@ Last modified : 05/08/2018
 #define K_BACKSPACE 127
 #define K_TAB 9
 #define K_ESCAPE 27
-#define K_F2 81
-#define K_F3 82
-#define ARROWKEYS_FLAG 91 //When cursor keys are being used, the scancode 91 is obtained 
+#define K_F2_TRAIL "\eOQ\0\0"
+#define K_F2_TRAIL2 "\e[[B\0"
+#define K_UP_TRAIL "\e[A\0\0"
+#define K_DOWN_TRAIL "\e[B\0\0"
+#define K_RIGHT_TRAIL "\e[C\0\0"
+#define K_LEFT_TRAIL "\e[D\0\0"
+#define K_F3_TRAIL "\eOR\0\0"
+#define K_F3_TRAIL2 "\e[[C\0"
+
 #define K_CTRL_C 0x03
 #define K_CTRL_D 0x04
 #define K_CTRL_J 0x0A
@@ -175,6 +181,7 @@ int refresh_screen(int force_refresh);
 
 //Key handling prototypes
 int special_keys(int *whereX, int *whereY,char ch);
+//int special_keys(int *whereX, int *whereY,char ch, char chartrail[5], int *counter);
 void draw_cursor(int *whereX, int *whereY, int *timer);
 int timer_1(int *timer1);
 
@@ -203,11 +210,11 @@ int createnewFile(FILE **filePtr, char *fileName, int checkFile);
 /*====================================================================*/
 
 int main(int argc, char *argv[]) {
-  char    ch=0;
+  char    ch=0, oldchar=0;
   int esc_key =0; //To control key input and scan for keycodes.
   int keypressed =0;
   int timer1 =0; // Timer to display animation
- 
+   
   //Initial values
   hidecursor(); 
   pushTerm(); //Save current terminal settings in failsafe
@@ -245,23 +252,27 @@ int main(int argc, char *argv[]) {
     keypressed = kbhit();
     /* Timer for animation to show system time and clean cursor */
     timer_1(&timer1); 
-
+    
     if (keypressed==1){ 
   
-        /* Process SPECIAL KEYS and other ESC-related issues */
-        esc_key=special_keys(&cursorX,&cursorY,ch);
-       
-        
-        ch=readch();
+        /* Process SPECIAL KEYS and other ESC-related issues */          
 
-        /* EDIT */
+       esc_key=special_keys(&cursorX,&cursorY,ch);
+       
+       if (ch == K_ESCAPE || oldchar == K_ESCAPE) esc_key = 1; //If arrow keys are used repeatedly
+
+       oldchar = ch;
+
+       ch=readch();
+    
+      
+       /* EDIT */
         if (esc_key == 0) {
           //Process input and get rid of extra characters
           process_input(editBuffer, &cursorX,&cursorY, ch); //Edit
           keypressed=0;
         } 
-
-     } //end if keypressed
+    } //end if keypressed
  } while(exitp != EXIT_FLAG); //exit flag for the whole program
   if (filePtr != NULL) {
     closeFile(filePtr);
@@ -368,50 +379,68 @@ int timer_1(int *timer1){
 
 int special_keys(int *whereX, int *whereY,char ch){
 /* MANAGE SPECIAL KEYS */
-  int esc_key=0;
+/* 
+   New implementation: Trail of chars.
+   If K_ESCAPE is captured read a trail up to 5 characters from the console.
+   This is to control the fact that some keys may change
+   according to the terminal and expand the editor's possibilities.
+   Eg: F2 can be either 27 79 81 or 27 91 91 82.  
+*/
+  int esc_key=0; int i=0; 
+  char chartrail[5];
+  
 if (ch==K_ESCAPE){
-  switch (getch()){
-    case 'D':
-    //Left-arrow key  
-      if (*whereX > 2) *whereX=*whereX-1;
-       break;
-    case 'C':
-    //Left-arrow key  
-      if (*whereX < columns-1) *whereX=*whereX+1;
-      break;
-    case 'A':
-    //Up-arrow key  
-      if (*whereY > 3) *whereY=*whereY-1;
-      break;
-    case 'B':
-    //Down-arrow key  
-      if (*whereY < rows-2) *whereY=*whereY+1;
-      break;
-    case K_F2: 
-    //F2 -> open drop-down menus
-      if (horizontal_menu()==K_ESCAPE) 
-      {
-        //Exit horizontal menu with ESC 3x
-        kglobal=K_ESCAPE;
-        main_screen();
-      } 
-      /*  Drop-down menu loop */       
-      drop_down(&kglobal); //animation
-     break;
-    case K_F3:
-    //F3 -> Refresh screen
-     refresh_screen(1);
-     break;      
-    default:
-      break;
-    }
-   esc_key = 1;
- } else {
-   if (ch==ARROWKEYS_FLAG)  
-   esc_key = 1;
-   else
-   esc_key = 0;
+
+  chartrail[0] = ch;
+//Read up to 4 characters of trail after K_ESCAPE.
+ for (i=1; i<5;i++) {
+   if (kbhit() == 1) {
+     ch=readch();
+     chartrail[i] = ch;
+   } else {
+     //*ch=0;
+     chartrail[i] = 0;
+   }
  }
+
+ resetch(); //clear keyboard buffer and don't wait for keypressed.
+
+ //Check key trails for special keys.
+
+    //FUNCTION KEYS
+    if (strcmp(chartrail, K_F2_TRAIL) == 0 || 
+       strcmp(chartrail, K_F2_TRAIL2) == 0) {
+        if (horizontal_menu()==K_ESCAPE) 
+        {
+          //Exit horizontal menu with ESC 3x
+          kglobal=K_ESCAPE;
+          main_screen();
+        } 
+        //  Drop-down menu loop */       
+        drop_down(&kglobal); //animation
+    } else if (strcmp(chartrail, K_F3_TRAIL) == 0 || 
+     strcmp(chartrail, K_F3_TRAIL2) == 0) {
+      refresh_screen(1);
+    // ARROW KEYS  
+    } else if (strcmp(chartrail, K_LEFT_TRAIL) ==0) {
+      //Left-arrow key  
+      if (*whereX > 2) *whereX=*whereX-1;
+    } else if (strcmp(chartrail, K_RIGHT_TRAIL) ==0) {
+      //Right-arrow key  
+      if (*whereX < columns-1) *whereX=*whereX+1;
+    } else if (strcmp(chartrail, K_UP_TRAIL) ==0) {
+      //Up-arrow key  
+      if (*whereY > 3) *whereY=*whereY-1;
+    } else if (strcmp(chartrail, K_DOWN_TRAIL) ==0) {
+      //Down-arrow key  
+      if (*whereY < rows-2) *whereY=*whereY+1;
+    } 
+   esc_key = 1; 
+} else {
+  //This avoid printing unwanted chars to screen when arrow keys 
+  //are used repeatedly.
+  esc_key = 0;
+}
 return esc_key;
 }
 

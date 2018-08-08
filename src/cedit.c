@@ -3,7 +3,7 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 06/08/2018                                           
+Last modified : 08/08/2018                                           
 ======================================================================*/
 
 /*====================================================================*/
@@ -107,13 +107,6 @@ Last modified : 06/08/2018
 
 // DISPLAY CONSTANTS
 #define FILL_CHAR 32
-#define UP_BOXCHAR -120
-#define HOR_BOXCHAR -113
-#define UPLEFT_BOXCHAR -108
-#define LOWER_LEFT_CORNER -109
-#define UPPER_RIGHT_CORNER -107
-#define LOWER_RIGHT_CORNER -106
-
 
 //EDIT AREA CONSTANTS
 //Temporary implementation : 
@@ -256,23 +249,22 @@ int main(int argc, char *argv[]) {
     if (keypressed==1){ 
   
         /* Process SPECIAL KEYS and other ESC-related issues */          
-
        esc_key=special_keys(&cursorX,&cursorY,ch);
        
-       if (ch == K_ESCAPE || oldchar == K_ESCAPE) esc_key = 1; //If arrow keys are used repeatedly
+       //If arrow keys are used repeatedly. It avoids printing unwanted chars.
+       if (ch == K_ESCAPE || oldchar == K_ESCAPE) esc_key = 1;
 
        oldchar = ch;
 
        ch=readch();
-    
-      
+          
        /* EDIT */
         if (esc_key == 0) {
           //Process input and get rid of extra characters
           process_input(editBuffer, &cursorX,&cursorY, ch); //Edit
           keypressed=0;
         } 
-    } //end if keypressed
+     } 
  } while(exitp != EXIT_FLAG); //exit flag for the whole program
   if (filePtr != NULL) {
     closeFile(filePtr);
@@ -304,13 +296,30 @@ void update_position()
 
 int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY,char ch)
 {
- if (ch != K_ESCAPE) {
+  char tempchar[2];
+if (ch != K_ESCAPE) {
    if (ch>31 && ch<127) {
-    //only print ASCII characters to screen.
+    //Only print standard ASCII characters to screen.
      write_ch(*whereX,*whereY,ch,B_BLUE,F_WHITE);
      writetoBuffer(editBuffer, *whereX-START_CURSOR_X,*whereY-START_CURSOR_Y,ch);
      *whereX = *whereX + 1;
    }
+   //Accents and special chars
+   if (ch == -61) {
+     tempchar[0] = -61; //Accents
+     tempchar[1] = readch();
+     write_ch(*whereX,*whereY,tempchar[1],B_BLUE,F_WHITE);
+     writetoBuffer(editBuffer, *whereX-START_CURSOR_X,*whereY-START_CURSOR_Y,tempchar[1]);     
+     *whereX = *whereX +1;
+   }
+ /* if (ch == -62) {
+     tempchar[0] = -62; //Special chars
+     tempchar[1] = readch();
+     write_ch(*whereX,*whereY,tempchar[1],B_BLUE,F_WHITE);
+     writetoBuffer(editBuffer, *whereX-START_CURSOR_X,*whereY-START_CURSOR_Y,tempchar[1]);     
+     *whereX = *whereX +1;
+   }*/
+   
   if (ch==K_ENTER) {
     //RETURN - ENTER
       if (*whereY < rows -2) {
@@ -329,10 +338,9 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY,cha
       if (*whereX < columns-TAB_DISTANCE) *whereX = *whereX + TAB_DISTANCE;
    }
    //*ch=0;
- if (ch==FAILSAFE || ch==K_CTRL_L) {
-   /*'$' Failsafe menu for some terminals */
-    //F2 -> open drop-down menus
-      if (horizontal_menu()==K_ESCAPE) 
+ if (ch==K_CTRL_L) {
+   //Akin to F2
+    if (horizontal_menu()==K_ESCAPE) 
       {
         //Exit horizontal menu with ESC 3x
         kglobal=K_ESCAPE;
@@ -346,6 +354,7 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY,cha
    //Ask for confirmations CTRL-C -> Exit
     exitp = confirmation(); //Shall we exit? Global variable! 
  }
+ 
  }
   return 0;
 }
@@ -437,8 +446,7 @@ if (ch==K_ESCAPE){
     } 
    esc_key = 1; 
 } else {
-  //This avoid printing unwanted chars to screen when arrow keys 
-  //are used repeatedly.
+  //Reset esc_key
   esc_key = 0;
 }
 return esc_key;
@@ -528,13 +536,13 @@ int main_screen() {
   //window appearance and scroll bar
   for (i=2; i<rows; i++){
     write_ch(columns,i,' ',B_WHITE,F_BLACK);
-    write_ch(1,i,UP_BOXCHAR,B_BLACK,F_WHITE); //upper vertical line box-like char 
+    write_ch(1,i,NVER_LINE,B_BLACK,F_WHITE); //upper vertical line box-like char 
   }
   for(i = 2; i < columns; i++) {
-    write_ch(i, 2, HOR_BOXCHAR, B_BLACK, F_WHITE);//horizontal line box-like char
+    write_ch(i, 2, NHOR_LINE, B_BLACK, F_WHITE);//horizontal line box-like char
     write_ch(i, rows-1, ' ', B_BLACK, F_WHITE);
   }
-  write_ch(1,2,UPLEFT_BOXCHAR,B_BLACK,F_WHITE); //upper-left box-like char
+  write_ch(1,2,NUPPER_LEFT_CORNER,B_BLACK,F_WHITE); //upper-left box-like char
   //horizontal scroll bar
    for(i = 2; i < columns; i++) {
     write_ch(i, rows-1, FILL_CHAR, B_WHITE, F_WHITE);
@@ -583,9 +591,9 @@ int refresh_editarea() {
       write_ch(i,j,FILL_CHAR, B_BLUE,F_BLUE);
 
   for(i = 2; i < columns; i++) {
-    write_ch(i, 2, HOR_BOXCHAR, B_BLACK, F_WHITE);//horizontal line box-like char
+    write_ch(i, 2, NHOR_LINE, B_BLACK, F_WHITE);//horizontal line box-like char
   }
-  write_ch(1,2,UPLEFT_BOXCHAR,B_BLACK,F_WHITE); //upper-left box-like char
+  write_ch(1,2,NUPPER_LEFT_CORNER,B_BLACK,F_WHITE); //upper-left box-like char
  
   //Center and diplay file name
   write_str((columns/2)-(strlen(currentFile)/2),2,currentFile,B_WHITE,F_BLACK); 
@@ -961,7 +969,13 @@ int writeBuffertoFile(FILE *filePtr, EDITBUFFER editBuffer[MAX_LINES])
         inlineChar = 0;
         lineCounter++;
       }
-      fprintf(filePtr, "%c", tempChar);	//escribimos la primera linea en el fichero con los nombres de los campos
+      if (tempChar >0){
+        fprintf(filePtr, "%c", tempChar);	
+      } else if (tempChar >= -128 && tempChar <= -65)
+      {
+        //Special accents
+        fprintf(filePtr, "%c%c", -61,tempChar);	
+      }
     }while (tempChar != CHAR_NIL);
     //Check if last line finishes in 0x0A - oldChar = 0x0A
     if (oldChar != END_LINE_CHAR) fprintf(filePtr, "%c", END_LINE_CHAR);
@@ -1105,7 +1119,12 @@ int filetoBuffer(FILE *filePtr, EDITBUFFER editBuffer[MAX_LINES])
       if (ch != CHAR_NIL){
         //Temporary restrictions until scroll is implemented.
         if (lineCounter == rows-4) break;
-        editBuffer[lineCounter].charBuf[inlineChar] = ch;
+        if (ch != -61) editBuffer[lineCounter].charBuf[inlineChar] = ch;
+        else {
+          //Read accents
+          ch=getc(filePtr);
+          editBuffer[lineCounter].charBuf[inlineChar] = ch;
+        }
         inlineChar++;
         if (ch == END_LINE_CHAR) {
           inlineChar = 0;
@@ -1167,7 +1186,8 @@ long checkFile(FILE *filePtr)
     ch = getc(filePtr);		//Peek ahead in the file
     while(!feof(filePtr)) {      
         if (ch < 9) {
-          counterA++;
+          //discard accents
+          if (ch>-60) counterA++;
         }
       ch=getc(filePtr);
     }

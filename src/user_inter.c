@@ -6,7 +6,7 @@ windows, textbox, etc.
 @author : Velorek
 @version : 1.0
  
-LAST MODIFIED : 05/08/2018
+LAST MODIFIED : 08/08/2018
 ======================================================================
 */
 
@@ -50,12 +50,6 @@ LAST MODIFIED : 05/08/2018
 
 // DISPLAY CONSTANTS
 #define FILL_CHAR 32
-#define UP_BOXCHAR -120
-#define HOR_BOXCHAR -113
-#define UPLEFT_BOXCHAR -108
-#define LOWER_LEFT_CORNER -109
-#define UPPER_RIGHT_CORNER -107
-#define LOWER_RIGHT_CORNER -106
 
 
 /*====================================================================*/
@@ -242,11 +236,11 @@ int alertWindow(LISTCHOICE *mylist, int rows, int columns, char *title, char *me
 
     for (i=window_x1+1;i<window_x2;i++){
     //Draw a horizontal line
-    write_ch(i,window_y1+2, HOR_BOXCHAR,B_WHITE,F_BLACK);
+    write_ch(i,window_y1+2, NHOR_LINE,B_WHITE,F_BLACK);
     }
     //Corners of lines
-    write_ch(window_x1,window_y1+2, LOWER_LEFT_CORNER, B_WHITE,F_BLACK);
-    write_ch(window_x2,window_y1+2, LOWER_RIGHT_CORNER, B_WHITE,F_BLACK);
+    write_ch(window_x1,window_y1+2, NLOWER_LEFT_CORNER, B_WHITE,F_BLACK);
+    write_ch(window_x2,window_y1+2, NLOWER_RIGHT_CORNER, B_WHITE,F_BLACK);
    update_screen();
 
    //Write message to alert window  
@@ -331,11 +325,11 @@ int inputWindow(int rows, int columns, char *title, char *label, char *tempFile)
 
     for (i=window_x1+1;i<window_x2;i++){
     //Draw a horizontal line
-    write_ch(i,window_y1+2, HOR_BOXCHAR,B_WHITE,F_BLACK);
+    write_ch(i,window_y1+2, NHOR_LINE,B_WHITE,F_BLACK);
     }
     //Corners of lines
-    write_ch(window_x1,window_y1+2, LOWER_LEFT_CORNER, B_WHITE,F_BLACK);
-    write_ch(window_x2,window_y1+2, LOWER_RIGHT_CORNER, B_WHITE,F_BLACK);
+    write_ch(window_x1,window_y1+2, NLOWER_LEFT_CORNER, B_WHITE,F_BLACK);
+    write_ch(window_x2,window_y1+2, NLOWER_RIGHT_CORNER, B_WHITE,F_BLACK);
     update_screen();
     count = textbox(window_x1+1,window_y1+3, 12, label, tempFile, B_WHITE, F_BLACK, F_BLACK); 
     close_window();

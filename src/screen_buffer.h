@@ -5,7 +5,7 @@ are displayed on the terminal.
 
 @author : Velorek
 @version : 1.0
-Last modified : 4/8/2018
+Last modified : 8/8/2018
 ======================================================================
 */
 
@@ -22,7 +22,19 @@ Last modified : 4/8/2018
 #include <strings.h>
 #include "c_cool.h"
 
+#define NHOR_LINE -50
+#define NVER_LINE -51
+#define NUPPER_LEFT_CORNER -52
+#define NLOWER_LEFT_CORNER -53
+#define NUPPER_RIGHT_CORNER -54
+#define NLOWER_RIGHT_CORNER -55
 
+#define HOR_LINE 50
+#define VER_LINE 51
+#define UPPER_LEFT_CORNER 52
+#define LOWER_LEFT_CORNER 53
+#define UPPER_RIGHT_CORNER 54
+#define LOWER_RIGHT_CORNER 55
 /*====================================================================*/
 /* TYPE DEFINITIONS                                                   */
 /*====================================================================*/

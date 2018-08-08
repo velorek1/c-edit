@@ -5,7 +5,7 @@ Module to open a file by showing a dialogue that allows you to navigate
 through directories with a list with scroll.
 @author : Velorek
 @version : 1.0  
-Last modified: 4/08/2018                                                                
+Last modified: 8/08/2018                                                                
 ========================================================================
 */
 

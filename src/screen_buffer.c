@@ -13,7 +13,7 @@ composition to the user.
 
 @author : Velorek
 @version : 1.0
-Last modified : 2/08/2018
+Last modified : 8/08/2018
 =====================================================================
 */
 
@@ -41,13 +41,20 @@ Last modified : 2/08/2018
 #define SECONDARYBUFFER_OFF 0
 #define MAX_STR 100
 #define MAX_TEXT 200
-//Special characters (VT100 - ANSI CHARS).
-#define HOR_LINE 113
-#define VER_LINE 120
-#define UPPER_LEFT_CORNER 108
-#define LOWER_LEFT_CORNER 109
-#define UPPER_RIGHT_CORNER 107
-#define LOWER_RIGHT_CORNER 106
+//Special characters (VT100 - ANSI CHARS)
+#define NHOR_LINE -50
+#define NVER_LINE -51
+#define NUPPER_LEFT_CORNER -52
+#define NLOWER_LEFT_CORNER -53
+#define NUPPER_RIGHT_CORNER -54
+#define NLOWER_RIGHT_CORNER -55
+
+#define HOR_LINE 50
+#define VER_LINE 51
+#define UPPER_LEFT_CORNER 52
+#define LOWER_LEFT_CORNER 53
+#define UPPER_RIGHT_CORNER 54
+#define LOWER_RIGHT_CORNER 55
 
 //Unicode characters
 #define HOR_LINE_UNICODE 9472
@@ -394,13 +401,19 @@ void update_screen() {
     {
       /* 
       For convention, if we have negative chars that means that we 
-      are printing box-like characters to screen.
+      are printing box-like characters or accents to screen.
       These characters are mappped to Unicode */
       //printf("%c(0",27); //Deprecated - Activate box-like characters in vt-100
-      setlocale(LC_ALL, "");
-      tempchar = aux->item * -1; //Change negative values to positive.
-      printf("%lc",(wint_t)mapChartoU8(tempchar)); //unicode     
-     // printf("%c(B",27); //Deactivate box-like characters
+      // printf("%c(B",27); //Deactivate box-like characters
+      if (aux->item >=-55 && aux->item <=-50){
+        //Box chars.
+        setlocale(LC_ALL, "");
+        tempchar = aux->item * -1; //Change negative values to positive.
+        printf("%lc",(wint_t)mapChartoU8(tempchar)); //unicode
+      }
+      if (aux->item >= -128 && aux->item <= -65)
+        //Accents -61 + char
+        printf("%c%c:%d", -61,aux->item,aux->item);
     }
   }
 }
@@ -482,18 +495,18 @@ void draw_window(int x1, int y1, int x2, int y2, int backcolor,
     //with borders. ANSI-ASCII 106-121
     for(i = x1; i <= x2; i++) {
       //upper and lower borders
-      write_ch(i, y1, HOR_LINE * -1, backcolor, bordercolor); //horizontal line box-like char
-      write_ch(i, y2, HOR_LINE * -1, backcolor, bordercolor);
+      write_ch(i, y1, NHOR_LINE, backcolor, bordercolor); //horizontal line box-like char
+      write_ch(i, y2, NHOR_LINE, backcolor, bordercolor);
     }
     for(j = y1; j <= y2; j++) {
       //left and right borders
-      write_ch(x1, j, VER_LINE * -1, backcolor, bordercolor); //vertical line box-like char
-      write_ch(x2, j, VER_LINE * -1, backcolor, bordercolor);
+      write_ch(x1, j, NVER_LINE, backcolor, bordercolor); //vertical line box-like char
+      write_ch(x2, j, NVER_LINE, backcolor, bordercolor);
     }
-    write_ch(x1, y1, UPPER_LEFT_CORNER * -1, backcolor, bordercolor);	//upper-left corner box-like char
-    write_ch(x1, y2, LOWER_LEFT_CORNER * -1, backcolor, bordercolor);	//lower-left corner box-like char
-    write_ch(x2, y1, UPPER_RIGHT_CORNER * -1, backcolor, bordercolor);	//upper-right corner box-like char
-    write_ch(x2, y2, LOWER_RIGHT_CORNER * -1, backcolor, bordercolor);	//lower-right corner box-like char
+    write_ch(x1, y1, NUPPER_LEFT_CORNER, backcolor, bordercolor);	//upper-left corner box-like char
+    write_ch(x1, y2, NLOWER_LEFT_CORNER, backcolor, bordercolor);	//lower-left corner box-like char
+    write_ch(x2, y1, NUPPER_RIGHT_CORNER, backcolor, bordercolor);	//upper-right corner box-like char
+    write_ch(x2, y2, NLOWER_RIGHT_CORNER, backcolor, bordercolor);	//lower-right corner box-like char
   }
   //update_smart();
 }

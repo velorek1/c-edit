@@ -7,7 +7,7 @@
    are drawn to the terminal on raw mode to have a better scrolling
    animation. Once the file is selected, the window is closed and the
    previous screen is painted to the terminal again.
-   Last modified : 05/8/2018
+   Last modified : 08/8/2018
    Coded by Velorek.
    Target OS: Linux.                                                  */
 /*====================================================================*/
@@ -40,12 +40,6 @@
 #define CIRCULAR_INACTIVE 0
 
 //Special characters (VT100 - ANSI CHARS).
-#define HOR_LINE 113
-#define VER_LINE 120
-#define UPPER_LEFT_CORNER 108
-#define LOWER_LEFT_CORNER 109
-#define UPPER_RIGHT_CORNER 107
-#define LOWER_RIGHT_CORNER 106
 #define FILL_CHAR 32
 
 //Keys used.
@@ -690,11 +684,11 @@ void openFileDialog(int rows, int columns, SCROLLDATA *openFileData) {
   
   for (i=window_x1+1;i<window_x2;i++){
     //Draw a horizontal line
-    write_ch(i,window_y1+2, HOR_LINE * -1,B_WHITE,F_BLACK);
+    write_ch(i,window_y1+2, NHOR_LINE,B_WHITE,F_BLACK);
   }
   //Corners of lines
-  write_ch(window_x1,window_y1+2, LOWER_LEFT_CORNER*-1, B_WHITE,F_BLACK);
-  write_ch(window_x2,window_y1+2, LOWER_RIGHT_CORNER*-1, B_WHITE,F_BLACK);
+  write_ch(window_x1,window_y1+2, NLOWER_LEFT_CORNER, B_WHITE,F_BLACK);
+  write_ch(window_x2,window_y1+2, NLOWER_RIGHT_CORNER, B_WHITE,F_BLACK);
 
   update_screen();
   do {

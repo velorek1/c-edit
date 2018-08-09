@@ -28,6 +28,8 @@ Last modified : 8/8/2018
 #define NLOWER_LEFT_CORNER -53
 #define NUPPER_RIGHT_CORNER -54
 #define NLOWER_RIGHT_CORNER -55
+#define SPECIAL_CHARS_SET1 -61
+#define SPECIAL_CHARS_SET2 -62
 
 #define HOR_LINE 50
 #define VER_LINE 51
@@ -35,6 +37,7 @@ Last modified : 8/8/2018
 #define LOWER_LEFT_CORNER 53
 #define UPPER_RIGHT_CORNER 54
 #define LOWER_RIGHT_CORNER 55
+
 /*====================================================================*/
 /* TYPE DEFINITIONS                                                   */
 /*====================================================================*/
@@ -45,7 +48,8 @@ typedef struct _screencell {
   int     forecolor0;
   int     rows;                 //Save screen dimensions
   int     columns;
-  char    item;			// Item string
+  char    item;	 // Item string
+  int     specialchar;          // Control for accents and special chars   
   struct _screencell *next;	// Pointer to next item
 } SCREENCELL;
 

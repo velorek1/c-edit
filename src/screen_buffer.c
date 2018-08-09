@@ -63,6 +63,8 @@ Last modified : 8/08/2018
 #define LOWER_LEFT_CORNER_UNICODE 9492
 #define UPPER_RIGHT_CORNER_UNICODE 9488
 #define LOWER_RIGHT_CORNER_UNICODE 9496
+#define SPECIAL_CHARS_SET1 -61
+#define SPECIAL_CHARS_SET2 -62
 
 //KEYS
 #define K_ENTER 13
@@ -83,6 +85,7 @@ typedef struct _screencell {
   int     rows;                 //Save screen dimensions
   int     columns;
   char    item;			// Item char
+  int     specialchar;          // Control for accents and special chars 
   struct _screencell *next;	// Pointer to next cell
 } SCREENCELL;
 
@@ -297,7 +300,11 @@ void write_ch(int x, int y, char ch, int backcolor, int forecolor) {
       aux = aux->next;
     }
     //Update cell info at position selected.
-    aux->item = ch;
+    //Manage special charaters as well.
+    if (ch != SPECIAL_CHARS_SET1 && ch != SPECIAL_CHARS_SET2) aux->item = ch;
+    else{
+      aux->specialchar = ch;
+    }
     aux->backcolor0 = backcolor;
     aux->forecolor0 = forecolor;
   }
@@ -412,8 +419,8 @@ void update_screen() {
         printf("%lc",(wint_t)mapChartoU8(tempchar)); //unicode
       }
       if (aux->item >= -128 && aux->item <= -65)
-        //Accents -61 + char
-        printf("%c%c:%d", -61,aux->item,aux->item);
+        //Accents -61/-62 + char
+        printf("%c%c:%d", aux->specialchar,aux->item,aux->item);
     }
   }
 }

@@ -127,10 +127,13 @@ Last modified : 08/08/2018
 /* TYPEDEF DEFINITIONS                                                */
 /*====================================================================*/
 
+typedef struct _charint{
+  char ch;
+  int specialChar;
+} CHARINT;
+
 typedef struct _editbuffer{
-
-  char charBuf[MAX_LINES];
-
+  CHARINT charBuf[MAX_LINES];
 }EDITBUFFER;
 
 
@@ -305,21 +308,24 @@ if (ch != K_ESCAPE) {
      *whereX = *whereX + 1;
    }
    //Accents and special chars
-   if (ch == -61) {
-     tempchar[0] = -61; //Accents
+   if (ch == SPECIAL_CHARS_SET1) {
+     tempchar[0] = SPECIAL_CHARS_SET1; //Accents
      tempchar[1] = readch();
+     write_ch(*whereX,*whereY,tempchar[0],B_BLUE,F_WHITE);
      write_ch(*whereX,*whereY,tempchar[1],B_BLUE,F_WHITE);
+     writetoBuffer(editBuffer, *whereX-START_CURSOR_X,*whereY-START_CURSOR_Y,tempchar[0]);     
      writetoBuffer(editBuffer, *whereX-START_CURSOR_X,*whereY-START_CURSOR_Y,tempchar[1]);     
      *whereX = *whereX +1;
    }
- /* if (ch == -62) {
-     tempchar[0] = -62; //Special chars
+  if (ch == SPECIAL_CHARS_SET2) {
+     tempchar[0] = SPECIAL_CHARS_SET2; //Special chars
      tempchar[1] = readch();
+     write_ch(*whereX,*whereY,tempchar[0],B_BLUE,F_WHITE);
      write_ch(*whereX,*whereY,tempchar[1],B_BLUE,F_WHITE);
+     writetoBuffer(editBuffer, *whereX-START_CURSOR_X,*whereY-START_CURSOR_Y,tempchar[0]);     
      writetoBuffer(editBuffer, *whereX-START_CURSOR_X,*whereY-START_CURSOR_Y,tempchar[1]);     
      *whereX = *whereX +1;
-   }*/
-   
+   }  
   if (ch==K_ENTER) {
     //RETURN - ENTER
       if (*whereY < rows -2) {
@@ -887,13 +893,33 @@ void cleanBuffer(EDITBUFFER editBuffer[MAX_LINES])
   int i,j;
 
   for (j=0; j<MAX_LINES; j++)
-    for(i=0; i<MAX_CHARS; i++)
-      editBuffer[j].charBuf[i] = CHAR_NIL; 
+    for(i=0; i<MAX_CHARS; i++){
+      editBuffer[j].charBuf[i].specialChar = 0;
+      editBuffer[j].charBuf[i].ch = CHAR_NIL;
+    }
 }
 
 int writetoBuffer(EDITBUFFER editBuffer[MAX_LINES], int whereX, int whereY, char ch)
 {
-  editBuffer[whereY].charBuf[whereX] = ch;
+  int oldValue;
+  oldValue=editBuffer[whereY].charBuf[whereX].specialChar;
+  if (ch==SPECIAL_CHARS_SET1){
+    editBuffer[whereY].charBuf[whereX].specialChar = SPECIAL_CHARS_SET1;
+    editBuffer[whereY].charBuf[whereX].ch = ch;
+  }
+  else if (ch==SPECIAL_CHARS_SET2){
+    editBuffer[whereY].charBuf[whereX].specialChar = SPECIAL_CHARS_SET2;
+    editBuffer[whereY].charBuf[whereX].ch = ch;
+  }else {
+    //Special char example -61 -95 : á
+    if (oldValue == SPECIAL_CHARS_SET1 || 
+        oldValue == SPECIAL_CHARS_SET2) 
+     editBuffer[whereY].charBuf[whereX].specialChar = oldValue;
+    else
+     editBuffer[whereY].charBuf[whereX].specialChar = 0;
+   
+    editBuffer[whereY].charBuf[whereX].ch = ch;    
+  }
   return 1;
 }
 
@@ -955,6 +981,7 @@ int writeBuffertoFile(FILE *filePtr, EDITBUFFER editBuffer[MAX_LINES])
   char tempChar,oldChar;
   int lineCounter=0;
   int inlineChar=0;
+  int specialChar=0;
 
   //Check if pointer is valid
   if(filePtr != NULL) {
@@ -963,7 +990,8 @@ int writeBuffertoFile(FILE *filePtr, EDITBUFFER editBuffer[MAX_LINES])
     inlineChar=0;
     do{
       oldChar = tempChar;
-      tempChar = editBuffer[lineCounter].charBuf[inlineChar];
+      tempChar = editBuffer[lineCounter].charBuf[inlineChar].ch;
+      specialChar =  editBuffer[lineCounter].charBuf[inlineChar].specialChar;
       inlineChar++;
       if (tempChar == END_LINE_CHAR) {
         inlineChar = 0;
@@ -974,7 +1002,7 @@ int writeBuffertoFile(FILE *filePtr, EDITBUFFER editBuffer[MAX_LINES])
       } else if (tempChar >= -128 && tempChar <= -65)
       {
         //Special accents
-        fprintf(filePtr, "%c%c", -61,tempChar);	
+        fprintf(filePtr, "%c%c", specialChar,tempChar);	
       }
     }while (tempChar != CHAR_NIL);
     //Check if last line finishes in 0x0A - oldChar = 0x0A
@@ -1081,15 +1109,19 @@ int newDialog(char fileName[MAX_TEXT])
 int writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES])
 {
    int i=0,j=0;
-   char tempChar;
+   char tempChar, specialChar;
 
    //Dump edit buffer to screen.
       do{ 
-         tempChar = editBuffer[j].charBuf[i];         
+         tempChar = editBuffer[j].charBuf[i].ch;
+         specialChar = editBuffer[j].charBuf[i].specialChar;
          if (tempChar != CHAR_NIL) {
            if (tempChar != END_LINE_CHAR) 
-             write_ch(i+START_CURSOR_X,j+START_CURSOR_Y, editBuffer[j].charBuf[i], B_BLUE, F_WHITE);
-           i++;
+            {
+               write_ch(i+START_CURSOR_X,j+START_CURSOR_Y, specialChar, B_BLUE, F_WHITE);
+               write_ch(i+START_CURSOR_X,j+START_CURSOR_Y, tempChar, B_BLUE, F_WHITE);
+            i++;
+            }
            if (tempChar == END_LINE_CHAR){
              i=0;
              j++;
@@ -1119,11 +1151,14 @@ int filetoBuffer(FILE *filePtr, EDITBUFFER editBuffer[MAX_LINES])
       if (ch != CHAR_NIL){
         //Temporary restrictions until scroll is implemented.
         if (lineCounter == rows-4) break;
-        if (ch != -61) editBuffer[lineCounter].charBuf[inlineChar] = ch;
-        else {
+        
+        if (ch==SPECIAL_CHARS_SET1 || ch ==SPECIAL_CHARS_SET2){
+          writetoBuffer(editBuffer, inlineChar, lineCounter, ch);
           //Read accents
           ch=getc(filePtr);
-          editBuffer[lineCounter].charBuf[inlineChar] = ch;
+          writetoBuffer(editBuffer, inlineChar, lineCounter, ch);
+        } else{
+          if (ch>0) writetoBuffer(editBuffer, inlineChar, lineCounter, ch);
         }
         inlineChar++;
         if (ch == END_LINE_CHAR) {

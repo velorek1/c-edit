@@ -35,7 +35,7 @@ Last modified : 09/08/2018
 //MESSAGES
 #define UNKNOWN "UNTITLED"
 #define STATUS_BAR_MSG1  ">[C-Edit] | F2 / CTRL-L -> MENU | CTRL-C EXIT"
-#define STATUS_BAR_MSG2 ">[C-Edit] Press ESC to exit menu.  "
+#define STATUS_BAR_MSG2 ">[C-Edit] Press ESC to exit menu.             "
 #define WLEAVE_MSG "\n       Are you sure\n    you want to quit?"
 #define WSAVE_MSG ":\nFile saved successfully!"
 #define WSAVELABEL_MSG "[-] File:"

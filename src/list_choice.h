@@ -5,7 +5,7 @@ Module to create vertical and horizontal selection menus with
 double linked list. 
 @author : Velorek
 @version : 1.0
--LAST MODIFIED : 30/07/2018
+-LAST MODIFIED : 09/08/2018
 ======================================================================
 */
 

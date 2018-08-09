@@ -3,7 +3,7 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 08/08/2018                                           
+Last modified : 09/08/2018                                           
 ======================================================================*/
 
 /*====================================================================*/
@@ -35,7 +35,7 @@ Last modified : 08/08/2018
 //MESSAGES
 #define UNKNOWN "UNTITLED"
 #define STATUS_BAR_MSG1  ">[C-Edit] | F2 / CTRL-L -> MENU | CTRL-C EXIT"
-#define STATUS_BAR_MSG2 ">[C-Edit] Press ESC thrice [3x] to exit menu.  "
+#define STATUS_BAR_MSG2 ">[C-Edit] Press ESC to exit menu.  "
 #define WLEAVE_MSG "\n       Are you sure\n    you want to quit?"
 #define WSAVE_MSG ":\nFile saved successfully!"
 #define WSAVELABEL_MSG "[-] File:"
@@ -618,7 +618,7 @@ char horizontal_menu(){
   char temp_char;
   write_str(1, rows, STATUS_BAR_MSG2, B_CYAN, FH_WHITE);
   update_screen();
-  loadmenus(mylist, rows,columns, HOR_MENU);		
+  loadmenus(mylist, HOR_MENU);		
   temp_char=start_hmenu(&data);
   free_list(mylist);
   return temp_char;
@@ -635,7 +635,7 @@ void filemenu()
 
   data.index = OPTION_NIL;
   write_str(1, rows, STATUS_BAR_MSG2, B_CYAN, FH_WHITE);
-  loadmenus(mylist, rows,columns, FILE_MENU);
+  loadmenus(mylist, FILE_MENU);
   write_str(1, 1, "File", B_BLACK, F_WHITE);
   draw_window(1, 2, 13, 8, B_WHITE, F_BLACK, 1);
   kglobal = start_vmenu(&data);
@@ -646,14 +646,13 @@ void filemenu()
 
   if (data.index == OPTION_1){
    //New file option
-    cleanBuffer(editBuffer);
     newDialog(currentFile);
     //Update new global file name
     refresh_screen(-1);  
   }
   if (data.index == OPTION_2){
     //External Module - Open file dialog.
-    openFileDialog(rows, columns, &openFileData); 
+    openFileDialog(&openFileData); 
     //Update new global file name
     if (openFileData.itemIndex != 0) {
       //Change current File Name 
@@ -709,7 +708,7 @@ void optionsmenu() {
   char tempMsg[50];
   data.index = OPTION_NIL;
   write_str(1, rows, STATUS_BAR_MSG2, B_CYAN, FH_WHITE);
-  loadmenus(mylist, rows,columns, OPT_MENU);
+  loadmenus(mylist, OPT_MENU);
   write_str(7, 1, "Options", B_BLACK, F_WHITE);
   draw_window(7, 2, 20, 6, B_WHITE, F_BLACK, 1);
   kglobal = start_vmenu(&data);
@@ -736,9 +735,9 @@ void optionsmenu() {
         strcat(tempMsg, " lines.\n");
         //strcat(WINFO_SIZE3, currentFile);
         //strcat(tempMsg, currentFile);
-        alertWindow(mylist, rows, columns, currentFile, tempMsg);
+        alertWindow(mylist, currentFile, tempMsg);
       } else{
-        infoWindow(mylist, rows, columns, WINFO_NOPEN);
+        infoWindow(mylist, WINFO_NOPEN);
       }
   }
   if(data.index == OPTION_3) {
@@ -762,7 +761,7 @@ void helpmenu() {
   int i;
   data.index = OPTION_NIL;
   write_str(1, rows, STATUS_BAR_MSG2, B_CYAN, FH_WHITE);
-  loadmenus(mylist, rows,columns, HELP_MENU);
+  loadmenus(mylist, HELP_MENU);
   write_str(16, 1, "Help", B_BLACK, F_WHITE);
   draw_window(16, 2, 26, 5, B_WHITE, F_BLACK, 1);
   kglobal = start_vmenu(&data);
@@ -790,7 +789,7 @@ void helpmenu() {
 /* Displays a window to asks user for confirmation */
 int confirmation(){
     int ok=0;
-    ok=yesnoWindow(mylist, rows, columns, WLEAVE_MSG);
+    ok=yesnoWindow(mylist, WLEAVE_MSG);
     data.index = OPTION_NIL;
    return ok; 
 }
@@ -801,7 +800,7 @@ int confirmation(){
 
 int about_info(){
     int ok=0;
-    alertWindow(mylist, rows, columns, WTITLEABOUT_MSG, WABOUT_MSG);
+    alertWindow(mylist, WTITLEABOUT_MSG, WABOUT_MSG);
     return ok; 
 }
 
@@ -820,9 +819,8 @@ void drop_down(char *kglobal){
   
 do {     
   if (*kglobal==K_ESCAPE) {
-    //Exit drop-down menu with ESC 3x          
+    //Exit drop-down menu with ESC           
     *kglobal=0;          
-    main_screen();          
     break;     
   }
   if(data.index == FILE_MENU) {
@@ -1025,7 +1023,7 @@ int saveDialog(char fileName[MAX_TEXT])
     writeBuffertoFile(filePtr, editBuffer);       
     strcpy(tempMsg, fileName);
     strcat(tempMsg, WSAVE_MSG);
-    ok=infoWindow(mylist, rows, columns, tempMsg);
+    ok=infoWindow(mylist, tempMsg);
    
 return ok;
 }
@@ -1038,7 +1036,7 @@ int saveasDialog(char fileName[MAX_TEXT])
 
     clearString(tempFile, MAX_TEXT);
 
-    count = inputWindow(rows, columns, WSAVETITLE_MSG, WSAVELABEL_MSG, tempFile); 
+    count = inputWindow(WSAVETITLE_MSG, WSAVELABEL_MSG, tempFile); 
 
     if (count>0) {       
        //Save file
@@ -1048,14 +1046,14 @@ int saveasDialog(char fileName[MAX_TEXT])
       
        //Check whether file exists.
        if (file_exists(fileName)) {
-         ok=yesnoWindow(mylist,rows,columns, WFILEEXISTS_MSG);
+         ok=yesnoWindow(mylist, WFILEEXISTS_MSG);
          if(ok==CONFIRMATION){
            //Save anyway.
            openFile(&filePtr, fileName, "w");
            writeBuffertoFile(filePtr, editBuffer);       
            strcpy(tempMsg, fileName);
            strcat(tempMsg, WSAVE_MSG);
-           ok=infoWindow(mylist, rows, columns, tempMsg);
+           ok=infoWindow(mylist, tempMsg);
          }
          else {
            //Do nothing.
@@ -1066,7 +1064,7 @@ int saveasDialog(char fileName[MAX_TEXT])
          writeBuffertoFile(filePtr, editBuffer);       
          strcpy(tempMsg, fileName);
          strcat(tempMsg, WSAVE_MSG);
-         ok=infoWindow(mylist, rows, columns, tempMsg);
+         ok=infoWindow(mylist, tempMsg);
        }
    }
 return ok;
@@ -1088,11 +1086,12 @@ int newDialog(char fileName[MAX_TEXT])
  
     data.index = OPTION_NIL;
  
-    count = inputWindow(rows, columns, WNEWTITLE_MSG, WSAVELABEL_MSG, tempFile); 
+    count = inputWindow(WNEWTITLE_MSG, WSAVELABEL_MSG, tempFile); 
     if (count>0) {       
        //Check whether file exists and create file.
        ok=createnewFile(&filePtr, tempFile, 1);
        if (ok ==1) {
+         cleanBuffer(editBuffer);
          strcpy(fileName, tempFile);
        }
        ok=1;
@@ -1258,7 +1257,7 @@ int handleopenFile(FILE **filePtr, char *fileName, char *oldFileName){
   checkF = checkFile(*filePtr);
   if (checkF>5) {
   //File doesn't seem to be a text file. Open anyway?  
-     ok=yesnoWindow(mylist, rows, columns, WCHECKFILE_MSG);
+     ok=yesnoWindow(mylist, WCHECKFILE_MSG);
      if (ok==1) {
          filetoBuffer(*filePtr, editBuffer);
          refresh_screen(-1);
@@ -1291,7 +1290,7 @@ int ok;
 //Check if file exists if indicated.
  if (checkFile == 1){
   if (file_exists(fileName)) {
-    ok=yesnoWindow(mylist,rows,columns, WFILEEXISTS_MSG);
+    ok=yesnoWindow(mylist, WFILEEXISTS_MSG);
     if(ok==CONFIRMATION){
         //Overwrite anyway.
         openFile(filePtr, fileName, "w");

@@ -4,7 +4,7 @@
 Module to show user interface windows, textbox, etc.
 @author : Velorek
 @version : 1.0  
-Last modified: 08/08/2018                                                                
+Last modified: 09/08/2018                                                                
 ========================================================================
 */
 
@@ -52,12 +52,12 @@ Last modified: 08/08/2018
 /* User Interface - Text Box. */
 /*----------------------------*/
 
-void loadmenus(LISTCHOICE *mylist, int rows, int columns, int choice);
+void loadmenus(LISTCHOICE *mylist, int choice);
 
 int textbox(int wherex, int wherey, int displayLength, char label[MAX_TEXT], 
     char text[MAX_TEXT], int backcolor, int labelcolor, int textcolor);
-int alertWindow(LISTCHOICE *mylist, int rows, int columns,char *title, char *message);
-int infoWindow(LISTCHOICE *mylist, int rows, int columns, char *message);
-int inputWindow(int rows, int columns, char *title, char *label, char *tempFile);
-int yesnoWindow(LISTCHOICE *mylist, int rows, int columns, char *message);
+int alertWindow(LISTCHOICE *mylist, char *title, char *message);
+int infoWindow(LISTCHOICE *mylist, char *message);
+int inputWindow(char *title, char *label, char *tempFile);
+int yesnoWindow(LISTCHOICE *mylist, char *message);
 #endif

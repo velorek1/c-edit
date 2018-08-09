@@ -6,7 +6,7 @@ windows, textbox, etc.
 @author : Velorek
 @version : 1.0
  
-LAST MODIFIED : 08/08/2018
+LAST MODIFIED : 09/08/2018
 ======================================================================
 */
 
@@ -64,8 +64,11 @@ LAST MODIFIED : 08/08/2018
 /* Load current menu into circular linked list*/ 
 /*--------------------------------------------*/
 
-void loadmenus(LISTCHOICE *mylist, int rows, int columns, int choice) {
-  if(choice == HOR_MENU) {
+void loadmenus(LISTCHOICE *mylist, int choice) {
+  int rows, columns;
+  get_terminal_dimensions(&rows,&columns);
+
+ if(choice == HOR_MENU) {
     add_item(mylist, "File", 1, 1, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
     add_item(mylist, "Options", 7, 1, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
     add_item(mylist, "Help", 16, 1, B_WHITE, F_BLACK, B_BLACK, F_WHITE);
@@ -175,18 +178,21 @@ resetch();
 return charCount;
 }
 
-int infoWindow(LISTCHOICE *mylist, int rows, int columns, char *message)
+int infoWindow(LISTCHOICE *mylist, char *message)
 {
    int window_x1=0, window_y1=0, window_x2 = 0, window_y2 =0;
    int ok=0; int i=0; int ix=0; int j=0;
    char tempChar;
    LISTCHOICE data;
+   int rows, columns;
+
+   get_terminal_dimensions(&rows,&columns);
 
    window_y1 = (rows / 2) - 3;
    window_y2 = (rows/2) + 3;
    window_x1 = (columns/2) -14;
    window_x2 = (columns/2) +14;
-   loadmenus(mylist, rows, columns, OK_MENU);
+   loadmenus(mylist, OK_MENU);
    
    draw_window(window_x1, window_y1, window_x2, window_y2, B_WHITE, F_BLACK, 1);
   //Write message to info window  
@@ -213,19 +219,22 @@ int infoWindow(LISTCHOICE *mylist, int rows, int columns, char *message)
 }
 
 
-int alertWindow(LISTCHOICE *mylist, int rows, int columns, char *title, char *message)
+int alertWindow(LISTCHOICE *mylist, char *title, char *message)
 {
    int window_x1=0, window_y1=0, window_x2 = 0, window_y2 =0;
    int tempx=0; int titlex=0;int ok=0; int i=0; int ix=0; int j=0;
    char tempChar;
    LISTCHOICE data;
+   int rows, columns;
+   get_terminal_dimensions(&rows,&columns);
+
 
    window_y1 = (rows / 2) - 4;
    window_y2 = (rows/2) + 4;
    window_x1 = (columns/2) -16;
    window_x2 = (columns/2) +16;
 
-   loadmenus(mylist, rows, columns, OK_MENU2);
+   loadmenus(mylist, OK_MENU2);
    
    draw_window(window_x1, window_y1, window_x2, window_y2, B_WHITE, F_BLACK, 1);
    //Window title
@@ -267,19 +276,23 @@ int alertWindow(LISTCHOICE *mylist, int rows, int columns, char *title, char *me
 }
 
 
-int yesnoWindow(LISTCHOICE *mylist, int rows, int columns, char *message)
+int yesnoWindow(LISTCHOICE *mylist, char *message)
 {
 
    int window_x1=0, window_y1=0, window_x2 = 0, window_y2 =0;
    int ok=0; int i=0; int ix=0; int j=0;
    char tempChar;
    LISTCHOICE data;
+   int rows, columns;
  
+   get_terminal_dimensions(&rows,&columns);
+
+
     window_y1 = (rows / 2) - 3;
     window_y2 = (rows/2) + 3;
     window_x1 = (columns/2) - 13;
     window_x2 = (columns/2) +13;
-    loadmenus(mylist, rows,columns, YESNO_MENU);
+    loadmenus(mylist, YESNO_MENU);
     draw_window(window_x1, window_y1, window_x2, window_y2, B_WHITE, F_BLACK, 1);
 
    //Write message to yes/no window  
@@ -306,10 +319,14 @@ int yesnoWindow(LISTCHOICE *mylist, int rows, int columns, char *message)
 }
 
 
-int inputWindow(int rows, int columns, char *title, char *label, char *tempFile)
+int inputWindow(char *title, char *label, char *tempFile)
 {
    int window_x1=0, window_y1=0, window_x2 = 0, window_y2 =0;
    int i; int tempx=0; int titlex=0; int count=0;
+   int rows, columns;
+
+   get_terminal_dimensions(&rows,&columns);
+
 
    window_y1 = (rows / 2) - 2;
    window_y2 = (rows/2) + 2;

@@ -5,7 +5,7 @@ Module to open a file by showing a dialogue that allows you to navigate
 through directories with a list with scroll.
 @author : Velorek
 @version : 1.0  
-Last modified: 8/08/2018                                                                
+Last modified: 9/08/2018                                                                
 ========================================================================
 */
 
@@ -103,6 +103,6 @@ void    cleanString(char *string, int max);
 void    changeDir(SCROLLDATA * scrollData, char fullPath[MAX],
 		  char newDir[MAX]);
 //OPEN FILE DIALOG
-void openFileDialog(int rows, int columns, SCROLLDATA *openFileData);
+void openFileDialog(SCROLLDATA *openFileData);
 
 #endif

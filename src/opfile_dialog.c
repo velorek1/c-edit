@@ -7,7 +7,7 @@
    are drawn to the terminal on raw mode to have a better scrolling
    animation. Once the file is selected, the window is closed and the
    previous screen is painted to the terminal again.
-   Last modified : 08/8/2018
+   Last modified : 09/8/2018
    Coded by Velorek.
    Target OS: Linux.                                                  */
 /*====================================================================*/
@@ -659,14 +659,16 @@ backcolor1, forecolor1, displayLimit); */
 
 /*========================================================================*/
 
-void openFileDialog(int rows, int columns, SCROLLDATA *openFileData) {
+void openFileDialog(SCROLLDATA *openFileData) {
   SCROLLDATA scrollData;
   char    ch;
   char    fullPath[MAX];
   char    newDir[MAX];
   int     exitFlag=0;
   int i;
+  int rows, columns;
 
+  get_terminal_dimensions(&rows,&columns);
   //Check if the screen is active in memory first.
 
     window_y1 = (rows / 2) - 7;

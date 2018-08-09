@@ -4,7 +4,7 @@ Module to make a circular linked list to make a selection menu in C.
 
 @author : Velorek
 @version : 1.0
-Last modified : 30/07/2018
+Last modified : 09/08/2018
 ======================================================================
 */
 
@@ -233,7 +233,7 @@ char start_vmenu(LISTCHOICE * list_data) {
   if(exitwhile == EXIT_FLAG)
      break;
   }
- if(ch == K_ENTER||esc_key==ESC_KEY) {
+ if(ch == K_ENTER) {
     //Pass data of last item by value.
     *list_data = aux;
   }

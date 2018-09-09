@@ -24,6 +24,8 @@
 #include <sys/ioctl.h>
 #include "screen_buffer.h"
 #include "c_cool.h"
+#include "user_inter.h"
+#include "list_choice.h"
 
 /*====================================================================*/
 /* CONSTANTS */
@@ -58,14 +60,14 @@
 /*====================================================================*/
 /* TYPEDEF STRUCTS DEFINITIONS */
 /*====================================================================*/
-typedef struct _listchoice {
+typedef struct _listbox {
   unsigned index;		// Item number
   char   *item;			// Item string
   char   *path;			// Item path
   unsigned isDirectory;		// Kind of item
-  struct _listchoice *next;	// Pointer to next item
-  struct _listchoice *back;	// Pointer to previous item
-} LISTCHOICE;
+  struct _listbox *next;	// Pointer to next item
+  struct _listbox *back;	// Pointer to previous item
+} LISTBOX;
 
 typedef struct _scrolldata {
   unsigned scrollActive;	//To know whether scroll is active or not.
@@ -84,17 +86,17 @@ typedef struct _scrolldata {
   unsigned isDirectory;		// Kind of item
   char   *item;
   char   *path;
-  char   fullPath[MAX];
+  char    fullPath[MAX];
   unsigned itemIndex;
-  LISTCHOICE *head;		//store head of the list
+  LISTBOX *head;		//store head of the list
 } SCROLLDATA;
 
 /*====================================================================*/
 /* GLOBAL VARIABLES */
 /*====================================================================*/
 
-LISTCHOICE *listBox1 = NULL;	//Head pointer.
-int window_x1=0, window_y1=0, window_x2 = 0, window_y2 =0;
+LISTBOX *listBox1 = NULL;	//Head pointer.
+int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
 
 /*====================================================================*/
 /* CODE */
@@ -103,7 +105,8 @@ int window_x1=0, window_y1=0, window_x2 = 0, window_y2 =0;
 /* ------------------------------ */
 /* Terminal manipulation routines */
 /* ------------------------------ */
-void cleanLine(int line, int backcolor, int forecolor, int startx, int numchars) {
+void cleanLine(int line, int backcolor, int forecolor, int startx,
+	       int numchars) {
 //Cleans line of console.
   int     i;
   for(i = startx; i < numchars; i++) {
@@ -111,20 +114,20 @@ void cleanLine(int line, int backcolor, int forecolor, int startx, int numchars)
     outputcolor(forecolor, backcolor);
     gotoxy(i, line);
     printf("%c", FILL_CHAR);	//space
- }
+  }
 }
 
 /* --------------------- */
 /* Dynamic List routines */
 /* --------------------- */
 
-// create new list element of type LISTCHOICE from the supplied text string
-LISTCHOICE *newelement(char *text, char *itemPath, unsigned itemType) {
-  LISTCHOICE *newp;
-  newp = (LISTCHOICE *) malloc(sizeof(LISTCHOICE));
+// create new list element of type LISTBOX from the supplied text string
+LISTBOX *newelement(char *text, char *itemPath, unsigned itemType) {
+  LISTBOX *newp;
+  newp = (LISTBOX *) malloc(sizeof(LISTBOX));
 
-  newp->item = (char *)malloc(sizeof(char) *strlen(text) + 1);
-  newp->path = (char *)malloc(sizeof(char) *strlen(itemPath) + 1);
+  newp->item = (char *)malloc(sizeof(char) * strlen(text) + 1);
+  newp->path = (char *)malloc(sizeof(char) * strlen(itemPath) + 1);
   strcpy(newp->item, text);
   strcpy(newp->path, itemPath);
   newp->isDirectory = itemType;
@@ -134,8 +137,8 @@ LISTCHOICE *newelement(char *text, char *itemPath, unsigned itemType) {
 }
 
 // deleleteList: remove list from memory
-void deleteList(LISTCHOICE ** head) {
-  LISTCHOICE *p, *aux;
+void deleteList(LISTBOX ** head) {
+  LISTBOX *p, *aux;
   aux = *head;
   while(aux->next != NULL) {
     p = aux;
@@ -146,10 +149,10 @@ void deleteList(LISTCHOICE ** head) {
   *head = NULL;
 }
 
-/* addend: add new LISTCHOICE to the end of a list  */
+/* addend: add new LISTBOX to the end of a list  */
 /* usage example: listBox1 = (addend(listBox1, newelement("Item")); */
-LISTCHOICE *addend(LISTCHOICE * head, LISTCHOICE * newp) {
-  LISTCHOICE *p2;
+LISTBOX *addend(LISTBOX * head, LISTBOX * newp) {
+  LISTBOX *p2;
   if(head == NULL) {
     newp->index = 0;
     newp->back = NULL;
@@ -166,7 +169,7 @@ LISTCHOICE *addend(LISTCHOICE * head, LISTCHOICE * newp) {
 /* ---------------- */
 /* Listbox routines */
 /* ---------------- */
-void displayItem2(LISTCHOICE * aux, SCROLLDATA * scrollData, int select)
+void displayItem2(LISTBOX * aux, SCROLLDATA * scrollData, int select)
 //Select or unselect item animation
 {
   switch (select) {
@@ -185,11 +188,11 @@ void displayItem2(LISTCHOICE * aux, SCROLLDATA * scrollData, int select)
   }
 }
 
-void gotoIndex(LISTCHOICE ** aux, SCROLLDATA * scrollData,
+void gotoIndex(LISTBOX ** aux, SCROLLDATA * scrollData,
 	       unsigned indexAt)
 //Go to a specific location on the list.
 {
-  LISTCHOICE *aux2;
+  LISTBOX *aux2;
   unsigned counter = 0;
   *aux = listBox1;
   aux2 = *aux;
@@ -205,13 +208,13 @@ void gotoIndex(LISTCHOICE ** aux, SCROLLDATA * scrollData,
   *aux = aux2;
 }
 
-void loadlist(LISTCHOICE * head, SCROLLDATA * scrollData, unsigned indexAt) {
+void loadlist(LISTBOX * head, SCROLLDATA * scrollData, unsigned indexAt) {
 /*
 Displays the items contained in the list with the properties specified
 in scrollData.
 */
 
-  LISTCHOICE *aux;
+  LISTBOX *aux;
   unsigned wherey, counter = 0;
 
   aux = head;
@@ -228,10 +231,10 @@ in scrollData.
   scrollData->selector = wherey;	//restore value
 }
 
-int query_length(LISTCHOICE ** head) {
+int query_length(LISTBOX ** head) {
 //Return no. items in a list.
   {
-    LISTCHOICE *aux;
+    LISTBOX *aux;
 
     unsigned itemCount = 0;
     aux = *head;
@@ -244,13 +247,13 @@ int query_length(LISTCHOICE ** head) {
 
 }
 
-int move_display(LISTCHOICE ** selector, SCROLLDATA * scrollData) {
+int move_display(LISTBOX ** selector, SCROLLDATA * scrollData) {
 /* 
 Creates animation by moving a selector highlighting next item and
 unselecting previous item
 */
 
-  LISTCHOICE *aux;
+  LISTBOX *aux;
   unsigned scrollControl = 0, continueScroll = 0, circular =
       CIRCULAR_INACTIVE;
   //Auxiliary pointer points to selector.
@@ -337,15 +340,14 @@ unselecting previous item
 
       //Metrics
 
-      cleanLine(window_y1+1, B_WHITE, F_BLACK, window_x1+1,window_x2);
-      outputcolor(F_BLACK, B_WHITE);
-      gotoxy(window_x1+2, window_y1+1);
-      printf("OPEN FILE|%d/%d", aux->index,
-	     scrollData->listLength - 1);
-      
+      cleanLine(window_y1 + 1, MENU_PANEL, MENU_FOREGROUND0, window_x1 + 1, window_x2);
+      outputcolor(MENU_FOREGROUND0, MENU_PANEL);
+      gotoxy(window_x1 + 2, window_y1 + 1);
+      printf("OPEN FILE|%d/%d", aux->index, scrollData->listLength - 1);
+
       //Highlight new item
       displayItem2(aux, scrollData, SELECT_ITEM);
-    
+
       //Update selector pointer
       *selector = aux;
     }
@@ -354,7 +356,7 @@ unselecting previous item
   return continueScroll;
 }
 
-char selectorMenu(LISTCHOICE * aux, SCROLLDATA * scrollData) {
+char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
   char    ch;
   unsigned control = 0;
   unsigned continueScroll;
@@ -364,12 +366,11 @@ char selectorMenu(LISTCHOICE * aux, SCROLLDATA * scrollData) {
 
   gotoIndex(&aux, scrollData, scrollData->currentListIndex);
   //Metrics
-  cleanLine(window_y1+1, B_WHITE, F_BLACK, window_x1+1,window_x2);
-  outputcolor(F_BLACK, B_WHITE);
-  gotoxy(window_x1+2, window_y1+1);
-  printf("OPEN FILE|%d/%d", aux->index,
-	     scrollData->listLength - 1);
- 
+  cleanLine(window_y1 + 1, MENU_PANEL, MENU_FOREGROUND0, window_x1 + 1, window_x2);
+  outputcolor(MENU_FOREGROUND0, MENU_PANEL);
+  gotoxy(window_x1 + 2, window_y1 + 1);
+  printf("OPEN FILE|%d/%d", aux->index, scrollData->listLength - 1);
+
   if(scrollData->scrollDirection == DOWN_SCROLL
      && scrollData->currentListIndex != 0) {
     //If we are going down we'll select the last item 
@@ -437,7 +438,8 @@ char selectorMenu(LISTCHOICE * aux, SCROLLDATA * scrollData) {
   if(ch == K_ENTER)		// enter key
   {
     //Pass data of last item selected.
-    scrollData->item = (char *)malloc(sizeof(char) *strlen(aux->item) + 1);
+    scrollData->item =
+	(char *)malloc(sizeof(char) * strlen(aux->item) + 1);
     //scrollData->path = (char *)malloc(sizeof(char) *strlen(aux->path) + 1);
     scrollData->item = aux->item;
     scrollData->itemIndex = aux->index;
@@ -449,7 +451,7 @@ char selectorMenu(LISTCHOICE * aux, SCROLLDATA * scrollData) {
   return ch;
 }
 
-char listBox(LISTCHOICE * head,
+char listBox(LISTBOX * head,
 	     unsigned whereX, unsigned whereY,
 	     SCROLLDATA * scrollData, unsigned bColor0,
 	     unsigned fColor0, unsigned bColor1, unsigned fColor1,
@@ -460,7 +462,7 @@ char listBox(LISTCHOICE * head,
   int     scrollLimit = 0;
   unsigned currentListIndex = 0;
   char    ch;
-  LISTCHOICE *aux;
+  LISTBOX *aux;
 
   // Query size of the list
   list_length = query_length(&head) + 1;
@@ -533,7 +535,7 @@ void cleanString(char *string, int max) {
     string[i] = ' ';
   }
 }
-int listFiles(LISTCHOICE ** listBox1, char *directory) {
+int listFiles(LISTBOX ** listBox1, char *directory) {
   DIR    *d;
   struct dirent *dir;
   int     i;
@@ -544,7 +546,8 @@ int listFiles(LISTCHOICE ** listBox1, char *directory) {
   strcpy(temp, "|CLOSE WINDOW|");
   //Add spaces
   addSpaces(temp);
-  *listBox1 = addend(*listBox1, newelement(temp, "|CLOSE WINDOW|", DIRECTORY));
+  *listBox1 =
+      addend(*listBox1, newelement(temp, "|CLOSE WINDOW|", DIRECTORY));
   strcpy(temp, CHANGEDIR);
   //Add spaces
   addSpaces(temp);
@@ -659,22 +662,22 @@ backcolor1, forecolor1, displayLimit); */
 
 /*========================================================================*/
 
-void openFileDialog(SCROLLDATA *openFileData) {
+void openFileDialog(SCROLLDATA * openFileData) {
   SCROLLDATA scrollData;
   char    ch;
   char    fullPath[MAX];
   char    newDir[MAX];
-  int     exitFlag=0;
-  int i;
-  int rows, columns;
+  int     exitFlag = 0;
+  int     i;
+  int     rows, columns;
 
-  get_terminal_dimensions(&rows,&columns);
+  get_terminal_dimensions(&rows, &columns);
   //Check if the screen is active in memory first.
 
-    window_y1 = (rows / 2) - 7;
-    window_y2 = (rows/2) + 7;
-    window_x1 = (columns/2) -10;
-    window_x2 = (columns/2) +10;
+  window_y1 = (rows / 2) - 7;
+  window_y2 = (rows / 2) + 7;
+  window_x1 = (columns / 2) - 10;
+  window_x2 = (columns / 2) + 10;
 
   //Change background color
 
@@ -682,52 +685,57 @@ void openFileDialog(SCROLLDATA *openFileData) {
   getcwd(fullPath, sizeof(fullPath));	//Get path
 
   //Directories loop
-  draw_window(window_x1, window_y1, window_x2, window_y2, B_WHITE,F_BLACK,1);	//shadow
-  
-  for (i=window_x1+1;i<window_x2;i++){
+  draw_window(window_x1, window_y1, window_x2, window_y2, MENU_PANEL, MENU_FOREGROUND0, 1);	
+
+  for(i = window_x1 + 1; i < window_x2; i++) {
     //Draw a horizontal line
-    write_ch(i,window_y1+2, NHOR_LINE,B_WHITE,F_BLACK);
+    write_ch(i, window_y1 + 2, NHOR_LINE, MENU_PANEL, MENU_FOREGROUND0);
   }
   //Corners of lines
-  write_ch(window_x1,window_y1+2, NLOWER_LEFT_CORNER, B_WHITE,F_BLACK);
-  write_ch(window_x2,window_y1+2, NLOWER_RIGHT_CORNER, B_WHITE,F_BLACK);
+  write_ch(window_x1, window_y1 + 2, NLOWER_LEFT_CORNER, MENU_PANEL, MENU_FOREGROUND0);
+  write_ch(window_x2, window_y1 + 2, NLOWER_RIGHT_CORNER, MENU_PANEL,
+	   MENU_FOREGROUND0);
 
   update_screen();
   do {
     //Add items to list
     listFiles(&listBox1, newDir);
-    ch = listBox(listBox1, window_x1+3, window_y1+3, &scrollData, B_WHITE, F_BLACK, B_BLACK,
-		 F_WHITE, 10);
+    ch = listBox(listBox1, window_x1 + 3, window_y1 + 3, &scrollData,
+		 MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1, 10);
     deleteList(&listBox1);
 
     //Clean all lines on the window
-    for(i=window_y1+3;i<window_y2;i++){
-        cleanLine(i, B_WHITE, F_BLACK, window_x1+1,window_x2);
+    for(i = window_y1 + 3; i < window_y2; i++) {
+      cleanLine(i, MENU_PANEL, MENU_FOREGROUND0, window_x1 + 1, window_x2);
     }
     //Change Dir. New directory is copied in newDir
     changeDir(&scrollData, fullPath, newDir);
 
     //Display current path
-    write_str(window_x1+1,window_y1+1, fullPath, B_WHITE,F_BLACK);
-    
+    write_str(window_x1 + 1, window_y1 + 1, fullPath, MENU_PANEL, MENU_FOREGROUND0);
+
     //Scroll Loop exit conditions
-    if (scrollData.itemIndex == 0) exitFlag = 1; //First item is selected
-    if (ch == K_ENTER && scrollData.isDirectory == FILEITEM) exitFlag = 1; //File selected 
+    if(scrollData.itemIndex == 0)
+      exitFlag = 1;		//First item is selected
+    if(ch == K_ENTER && scrollData.isDirectory == FILEITEM)
+      exitFlag = 1;		//File selected 
 
   } while(exitFlag != 1);
 
   //Return file selected by copying into fileToOpen -> currentFile
   close_window();
-  openFileData->item = (char *)malloc(sizeof(char) *strlen(scrollData.item) + 1);
-  openFileData->path = (char *)malloc(sizeof(char) *strlen(scrollData.path) + 1);
+  openFileData->item =
+      (char *)malloc(sizeof(char) * strlen(scrollData.item) + 1);
+  openFileData->path =
+      (char *)malloc(sizeof(char) * strlen(scrollData.path) + 1);
   openFileData->item = scrollData.item;
   openFileData->itemIndex = scrollData.itemIndex;
   openFileData->path = scrollData.path;
   //Save full path
-  strcpy(openFileData->fullPath,fullPath);
-  strcat(openFileData->fullPath,"/");
-  strcat(openFileData->fullPath,scrollData.path);
+  strcpy(openFileData->fullPath, fullPath);
+  strcat(openFileData->fullPath, "/");
+  strcat(openFileData->fullPath, scrollData.path);
   openFileData->isDirectory = scrollData.isDirectory;
- //strcpy(filetoOpen, scrollData.path);
+  //strcpy(filetoOpen, scrollData.path);
 
 }

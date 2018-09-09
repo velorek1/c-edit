@@ -10,27 +10,26 @@ Last modified: 9/08/2018
 */
 
 #ifndef _OPFILE_DIALOG_H_
-#define _OPFILE_DIALOG_H_
+# define _OPFILE_DIALOG_H_
 
 /*====================================================================*/
 /* COMPILER DIRECTIVES AND INCLUDES                                   */
 /*====================================================================*/
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <dirent.h>
-#include <termios.h>
-#include <unistd.h>
-#include <sys/ioctl.h>
-#include "c_cool.h"
-#include "screen_buffer.h"
-
+# include <stdio.h>
+# include <stdlib.h>
+# include <string.h>
+# include <dirent.h>
+# include <termios.h>
+# include <unistd.h>
+# include <sys/ioctl.h>
+# include "c_cool.h"
+# include "screen_buffer.h"
 
 /*====================================================================*/
 /* CONSTANTS */
 /*====================================================================*/
-#define MAX_ITEM_LENGTH 15
-#define MAX 150
+# define MAX_ITEM_LENGTH 15
+# define MAX 150
 /*====================================================================*/
 /* TYPEDEF STRUCTS DEFINITIONS */
 /*====================================================================*/
@@ -60,7 +59,7 @@ typedef struct _scrolldata {
   unsigned isDirectory;		// Kind of item
   char   *item;
   char   *path;
-  char fullPath[MAX];
+  char    fullPath[MAX];
   unsigned itemIndex;
   LISTBOX *head;		//store head of the list
 } SCROLLDATA;
@@ -74,7 +73,8 @@ typedef struct _scrolldata {
 /*====================================================================*/
 
 //CONSOLE DISPLAY FUNCTIONS 
-void cleanLine(int line, int backcolor, int forecolor, int startx, int numchars);
+void    cleanLine(int line, int backcolor, int forecolor, int startx,
+		  int numchars);
 
 //DYNAMIC LINKED LIST FUNCTIONS
 void    deleteList(LISTBOX ** head);
@@ -103,6 +103,6 @@ void    cleanString(char *string, int max);
 void    changeDir(SCROLLDATA * scrollData, char fullPath[MAX],
 		  char newDir[MAX]);
 //OPEN FILE DIALOG
-void openFileDialog(SCROLLDATA *openFileData);
+void    openFileDialog(SCROLLDATA * openFileData);
 
 #endif

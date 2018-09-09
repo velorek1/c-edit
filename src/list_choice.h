@@ -10,21 +10,20 @@ double linked list.
 */
 
 #ifndef _LIST_CHOICE_H_
-#define _LIST_CHOICE_H_
+# define _LIST_CHOICE_H_
 
 /*====================================================================*/
 /* COMPILER DIRECTIVES AND INCLUDES                                   */
 /*====================================================================*/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <strings.h>
-#include "c_cool.h"
+# include <stdio.h>
+# include <stdlib.h>
+# include <strings.h>
+# include "c_cool.h"
 
 /*====================================================================*/
 /* TYPE DEFINITIONS                                                   */
 /*====================================================================*/
-
 
 typedef struct _listchoice {
   int     index;		// Item number
@@ -38,7 +37,6 @@ typedef struct _listchoice {
   struct _listchoice *next;	// Pointer to next item
   struct _listchoice *back;	// Pointer to previous item.
 } LISTCHOICE;
-
 
 /*====================================================================*/
 /* FUNCTION PROTOTYPES                                                */

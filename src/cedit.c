@@ -156,6 +156,7 @@ char    currentFile[MAX_TEXT];
 int     exitp = 0;		// Exit flag for main loop
 int     fileModified = FILE_UNMODIFIED;	//Have we modified the buffer?
 
+
 /*====================================================================*/
 /* PROTOTYPES OF FUNCTIONS                                            */
 /*====================================================================*/
@@ -220,6 +221,7 @@ int main(int argc, char *argv[]) {
   cleanBuffer(editBuffer);
   clearString(currentFile, MAX_TEXT);
   strcpy(currentFile, UNKNOWN);
+  setColorScheme(0);
   main_screen();		//Draw screen
   resetch();			//Clear keyboard and sets ENTER = 13
 
@@ -750,7 +752,8 @@ void optionsmenu() {
     }
   }
   if(data.index == OPTION_3) {
-    //Refresh screen
+    //Colors
+    setColorScheme(colorsWindow(mylist));
     refresh_screen(1);
   }
   data.index = OPTION_NIL;

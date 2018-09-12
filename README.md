@@ -11,13 +11,13 @@ So far I have implemented:
 * Kbhit and getch so that I can loop without blocking the program.
 * Automatic display resizing.
 * Open file dialog with a Listbox and SCROLL capabilities to navigate and find the file to open.
-
-New August 2018:
 * Rudimentary Edit buffer. 
 * File handling functions. 
 * Save file option. 
 * User interface: Text box.
 * Open file - in progress.
+New:
+ * Color schemes.
 
 Files in /src/:
 ===============

@@ -16,7 +16,8 @@ So far I have implemented:
 * Save file option. 
 * User interface: Text box.
 * Open file - in progress.
-New:
+
+*New:
  * Color schemes.
 
 Files in /src/:

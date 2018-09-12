@@ -39,6 +39,7 @@ LAST MODIFIED : 09/08/2018
 #define YESNO_MENU 3
 #define OK_MENU 4
 #define OK_MENU2 5
+#define COLORS_MENU 6
 #define MAX_FILENAME 100
 
 //DROP-DOWN MENUS
@@ -57,7 +58,21 @@ LAST MODIFIED : 09/08/2018
 /*====================================================================*/
 /* GLOBAL VARIABLES                                                   */
 /*====================================================================*/
-
+//Classic color scheme
+int EDITAREACOL= B_BLUE;
+int EDIT_FORECOLOR=FH_WHITE;
+int STATUSBAR =B_CYAN;
+int STATUSMSG =F_WHITE;
+int MENU_PANEL =B_WHITE;
+int MENU_SELECTOR =B_BLACK;
+int MENU_FOREGROUND0 =F_BLACK;
+int MENU_FOREGROUND1= F_WHITE;
+int EDITWINDOW_BACK= B_BLACK;
+int EDITWINDOW_FORE= F_WHITE;
+int SCROLLBAR_BACK= B_WHITE;
+int SCROLLBAR_FORE= F_WHITE;
+int SCROLLBAR_SEL= B_CYAN;
+int SCROLLBAR_ARR= B_BLACK;
 /*====================================================================*/
 /* FUNCTIONS - CODE                                                   */
 /*====================================================================*/
@@ -86,7 +101,7 @@ void loadmenus(LISTCHOICE * mylist, int choice) {
   if(choice == OPT_MENU) {
     add_item(mylist, "File Info.", 9, 3, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
     add_item(mylist, "Find...", 9, 4, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
-    add_item(mylist, "Refresh", 9, 5, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "Colors", 9, 5, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
   }
   if(choice == HELP_MENU) {
     add_item(mylist, "Help...", 18, 3, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
@@ -102,6 +117,14 @@ void loadmenus(LISTCHOICE * mylist, int choice) {
   }
   if(choice == OK_MENU2) {
     add_item(mylist, "<OK>", (columns / 2) - 1, (rows / 2) + 3, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+  }
+  if(choice == COLORS_MENU) {
+    add_item(mylist, "Classic Theme", (columns / 2) - 6, (rows / 2) - 2, 
+        MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "Blue Theme", (columns / 2) - 6, (rows / 2) -1, 
+        MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "Dark Theme", (columns / 2) - 6, (rows / 2), 
+        MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
   }
 
 }
@@ -370,3 +393,83 @@ int inputWindow(char *title, char *label, char *tempFile) {
   close_window();
   return count;
 }
+
+void setColorScheme(int colorCode)
+{
+
+  switch (colorCode){
+
+    case 0: //Classic color scheme
+      EDITAREACOL= B_BLUE;
+      EDIT_FORECOLOR=FH_WHITE;
+      STATUSBAR =B_CYAN;
+      STATUSMSG =F_WHITE;
+      MENU_PANEL =B_WHITE;
+      MENU_SELECTOR =B_BLACK;
+      MENU_FOREGROUND0 =F_BLACK;
+      MENU_FOREGROUND1= F_WHITE;
+      EDITWINDOW_BACK= B_BLACK;
+      EDITWINDOW_FORE= F_WHITE;
+      SCROLLBAR_BACK= B_WHITE;
+      SCROLLBAR_FORE= F_WHITE;
+      SCROLLBAR_SEL= B_CYAN;
+      SCROLLBAR_ARR= B_BLACK;
+      break;
+    case 1: //Blue color scheme
+      EDITAREACOL= B_BLUE;
+      EDIT_FORECOLOR=FH_WHITE;
+      STATUSBAR =B_CYAN;
+      STATUSMSG =F_WHITE;
+      MENU_PANEL =B_WHITE;
+      MENU_SELECTOR =B_CYAN;
+      MENU_FOREGROUND0 =F_BLACK;
+      MENU_FOREGROUND1= F_WHITE;
+      EDITWINDOW_BACK= B_BLUE;
+      EDITWINDOW_FORE= F_WHITE;
+      SCROLLBAR_BACK= B_WHITE;
+      SCROLLBAR_FORE= F_WHITE;
+      SCROLLBAR_SEL= B_CYAN;
+      SCROLLBAR_ARR= B_BLACK;
+      break;
+   case 2: //Dark color scheme
+      EDITAREACOL= B_BLACK;
+      EDIT_FORECOLOR=FH_YELLOW;
+      STATUSBAR =B_BLUE;
+      STATUSMSG =F_WHITE;
+      MENU_PANEL =B_WHITE;
+      MENU_SELECTOR =B_BLUE;
+      MENU_FOREGROUND0 =F_BLACK;
+      MENU_FOREGROUND1= FH_WHITE;
+      EDITWINDOW_BACK= B_BLACK;
+      EDITWINDOW_FORE= F_WHITE;
+      SCROLLBAR_BACK= B_WHITE;
+      SCROLLBAR_FORE= F_BLACK;
+      SCROLLBAR_SEL= B_BLUE;
+      SCROLLBAR_ARR= B_WHITE;
+      break;
+   default:
+      break;
+  }
+}
+
+int colorsWindow(LISTCHOICE * mylist) {
+  int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
+  LISTCHOICE data;
+  int     rows, columns;
+
+  get_terminal_dimensions(&rows, &columns);
+
+  window_y1 = (rows / 2) - 3;
+  window_y2 = (rows / 2) + 1;
+  window_x1 = (columns / 2) - 8;
+  window_x2 = (columns / 2) + 8;
+  loadmenus(mylist, COLORS_MENU);
+
+  draw_window(window_x1, window_y1, window_x2, window_y2, MENU_PANEL, MENU_FOREGROUND0,
+	      1);
+  start_vmenu(&data);
+  free_list(mylist);
+  close_window();
+  return data.index;
+}
+

@@ -44,60 +44,22 @@ Last modified: 09/08/2018
 # define OPTION_NIL -1		//Reset option
 # define CONFIRMATION 1
 
-// COLOR SCHEME - THEME 1
+//GLOBAL VARIABLES - COLOR SCHEME
+extern int EDITAREACOL;
+extern int EDIT_FORECOLOR;
+extern int STATUSBAR;
+extern int STATUSMSG;
+extern int MENU_PANEL;
+extern int MENU_SELECTOR;
+extern int MENU_FOREGROUND0;
+extern int MENU_FOREGROUND1;
+extern int EDITWINDOW_BACK;
+extern int EDITWINDOW_FORE;
+extern int SCROLLBAR_BACK;
+extern int SCROLLBAR_FORE;
+extern int SCROLLBAR_SEL;
+extern int SCROLLBAR_ARR;
 
-#define EDITAREACOL B_BLUE
-#define EDIT_FORECOLOR FH_WHITE
-#define STATUSBAR B_CYAN
-#define STATUSMSG F_WHITE
-#define MENU_PANEL B_WHITE
-#define MENU_SELECTOR B_BLACK
-#define MENU_FOREGROUND0 F_BLACK
-#define MENU_FOREGROUND1 F_WHITE
-#define EDITWINDOW_BACK B_BLACK
-#define EDITWINDOW_FORE F_WHITE
-#define SCROLLBAR_BACK B_WHITE
-#define SCROLLBAR_FORE F_WHITE
-#define SCROLLBAR_SEL B_CYAN
-#define SCROLLBAR_ARR B_BLACK
-
-
-// COLOR SCHEME - THEME 2
-/*
-#define EDITAREACOL B_BLUE
-#define EDIT_FORECOLOR FH_WHITE
-#define STATUSBAR B_CYAN
-#define STATUSMSG F_WHITE
-#define MENU_PANEL B_WHITE
-#define MENU_SELECTOR B_CYAN
-#define MENU_FOREGROUND0 F_BLACK
-#define MENU_FOREGROUND1 F_WHITE
-#define EDITWINDOW_BACK B_BLUE
-#define EDITWINDOW_FORE F_WHITE
-#define SCROLLBAR_BACK B_WHITE
-#define SCROLLBAR_FORE F_WHITE
-#define SCROLLBAR_SEL B_CYAN
-#define SCROLLBAR_ARR B_BLACK
-*/
-
-
-// COLOR SCHEME - THEME 3
-/*
-#define EDITAREACOL B_BLACK
-#define EDIT_FORECOLOR FH_YELLOW
-#define STATUSBAR B_BLUE
-#define STATUSMSG F_WHITE
-#define MENU_PANEL B_BLUE
-#define MENU_SELECTOR B_CYAN
-#define MENU_FOREGROUND0 F_WHITE
-#define MENU_FOREGROUND1 FH_WHITE
-#define EDITWINDOW_BACK B_BLACK
-#define EDITWINDOW_FORE F_WHITE
-#define SCROLLBAR_BACK B_WHITE
-#define SCROLLBAR_FORE F_BLACK
-#define SCROLLBAR_SEL B_BLUE
-#define SCROLLBAR_ARR B_WHITE
-*/
 
 
 /*====================================================================*/
@@ -117,4 +79,7 @@ int     alertWindow(LISTCHOICE * mylist, char *title, char *message);
 int     infoWindow(LISTCHOICE * mylist, char *message);
 int     inputWindow(char *title, char *label, char *tempFile);
 int     yesnoWindow(LISTCHOICE * mylist, char *message);
+void    setColorScheme(int colorCode);
+int     colorsWindow(LISTCHOICE * mylist);
+
 #endif

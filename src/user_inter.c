@@ -6,7 +6,7 @@ windows, textbox, etc.
 @author : Velorek
 @version : 1.0
  
-LAST MODIFIED : 09/08/2018
+LAST MODIFIED : 20/10/2018
 ======================================================================
 */
 
@@ -24,6 +24,7 @@ LAST MODIFIED : 09/08/2018
 #include "c_cool.h"
 #include "list_choice.h"
 #include "user_inter.h"
+#include "keyboard.h"
 
 /*====================================================================*/
 /* CONSTANT VALUES                                                    */
@@ -141,11 +142,16 @@ int textbox(int wherex, int wherey, int displayLength,
   int     cursorON = 1;
   long    cursorCount = 0;
   int     i;
+  int     limitCursor = 0;
   int     positionx = 0;
+  int     posCursor = 0;
   int     keypressed = 0;
-
+  char    chartrail[5];
+  char    accentchar[2];
+  char    displayChar;
   char    ch;
   positionx = wherex + strlen(label);
+  limitCursor = wherex+strlen(label)+displayLength+1;
   write_str(wherex, wherey, label, backcolor, labelcolor);
   write_ch(positionx, wherey, '[', backcolor, textcolor);
   for(i = positionx + 1; i <= positionx + displayLength; i++) {
@@ -157,32 +163,49 @@ int textbox(int wherex, int wherey, int displayLength,
   if(kbhit() == 1)
     ch = readch();
   ch = 0;
+
   do {
-    if(keypressed == 0)
       keypressed = kbhit();
     //Cursor Animation
+   if (keypressed == 0){
     cursorCount++;
-
     if(cursorCount == 100) {
       cursorCount = 0;
       switch (cursorON) {
 	case 1:
-	  write_ch(positionx + 1, wherey, '.', backcolor, textcolor);
-	  update_screen();
-	  cursorON = 0;
+	  posCursor = positionx + 1;
+          displayChar = '.';
+          if (posCursor == limitCursor) {
+            posCursor = posCursor - 1;
+            displayChar = ch;
+          }
+          write_ch(posCursor, wherey, displayChar, backcolor, textcolor);
+          update_screen();
+          cursorON = 0;
 	  break;
 	case 0:
-	  write_ch(positionx + 1, wherey, '|', backcolor, textcolor);
-	  update_screen();
-	  cursorON = 1;
+          posCursor = positionx + 1;
+          if (posCursor == limitCursor) posCursor = posCursor - 1;
+	  write_ch(posCursor, wherey, '|', backcolor, textcolor);
+          update_screen();
+          cursorON = 1;
 	  break;
       }
-      //update_screen();
+     }
     }
     //Process keys     
     if(keypressed == 1) {
       ch = readch();
       keypressed = 0;
+      
+      //Read special keys
+      if (ch==K_ESCAPE) {
+               read_keytrail(chartrail);    
+      }
+      //Read accents
+      //if (ch==SPECIAL_CHARSET_1) read_accentchar(&ch, accentchar);
+      //if (ch==SPECIAL_CHARSET_2) read_accentchar(&ch, accentchar);
+
       if(charCount < displayLength) {
 	if(ch > 31 && ch < 127) {
 	  write_ch(positionx + 1, wherey, ch, backcolor, textcolor);
@@ -191,6 +214,16 @@ int textbox(int wherex, int wherey, int displayLength,
 	  charCount++;
 	  update_screen();
 	}
+      }
+    }
+    if (ch==K_BACKSPACE){
+      if (positionx>0 && charCount>0){
+       positionx--;
+       charCount--;
+       write_ch(positionx + 1, wherey, '.', backcolor, textcolor);
+       if (positionx < limitCursor-2) write_ch(positionx + 2, wherey, '.', backcolor, textcolor);
+       update_screen();
+       resetch();
       }
     }
     if(ch == K_ENTER || ch == K_TAB)
@@ -433,13 +466,13 @@ void setColorScheme(int colorCode)
       break;
    case 2: //Dark color scheme
       EDITAREACOL= B_BLACK;
-      EDIT_FORECOLOR=FH_YELLOW;
+      EDIT_FORECOLOR=F_WHITE;
       STATUSBAR =B_BLUE;
       STATUSMSG =F_WHITE;
-      MENU_PANEL =B_WHITE;
-      MENU_SELECTOR =B_BLUE;
-      MENU_FOREGROUND0 =F_BLACK;
-      MENU_FOREGROUND1= FH_WHITE;
+      MENU_PANEL =B_BLUE;
+      MENU_SELECTOR =B_CYAN;
+      MENU_FOREGROUND0 = FH_WHITE;
+      MENU_FOREGROUND1 = FH_YELLOW;
       EDITWINDOW_BACK= B_BLACK;
       EDITWINDOW_FORE= F_WHITE;
       SCROLLBAR_BACK= B_WHITE;

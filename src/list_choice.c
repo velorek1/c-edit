@@ -23,8 +23,8 @@ Last modified : 09/08/2018
 /*====================================================================*/
 
 //DROP-DOWN MENU VALUES
-#define K_LEFTMENU -1 //Left arrow key pressed while in menu
-#define K_RIGHTMENU -2 //Right arrow key pressed while in menu
+#define K_LEFTMENU -1		//Left arrow key pressed while in menu
+#define K_RIGHTMENU -2		//Right arrow key pressed while in menu
 #define ESC_KEY 1
 #define EXIT_FLAG 1
 
@@ -135,7 +135,6 @@ void free_list(LISTCHOICE * list_identifier) {
   current = NULL;
 }
 
-
 /*-----------------------------------------*/
 /* Displays the items contained in the list 
    with the properties specified.          */
@@ -160,21 +159,28 @@ First item is equal to tail->next.
 
 }
 
-
 /*---------------------------------------*/
 /*Unmark previous item and mark next item*/
 /*---------------------------------------*/
 
-void move_selector(LISTCHOICE * aux,short direction) {
+void move_selector(LISTCHOICE * aux, short direction) {
   //Unmark previous iten
   write_str(aux->wherex, aux->wherey, aux->item, aux->backcolor0,
 	    aux->forecolor0);
   //Highlight current item
-   switch (direction){     
-     case DIR_UP: *aux = *aux->back; break; //Go to next item
-     case DIR_DOWN: *aux = *aux->next; break; //Go to next item
-     case DIR_LEFT: *aux = *aux->next; break; //Go to next item
-     case DIR_RIGHT: *aux = *aux->back; break; //Go to next item
+  switch (direction) {
+    case DIR_UP:
+      *aux = *aux->back;
+      break;			//Go to next item
+    case DIR_DOWN:
+      *aux = *aux->next;
+      break;			//Go to next item
+    case DIR_LEFT:
+      *aux = *aux->next;
+      break;			//Go to next item
+    case DIR_RIGHT:
+      *aux = *aux->back;
+      break;			//Go to next item
   }
   write_str(aux->wherex, aux->wherey, aux->item, aux->backcolor1,
 	    aux->forecolor1);
@@ -189,51 +195,51 @@ char start_vmenu(LISTCHOICE * list_data) {
   char    ch;
   LISTCHOICE aux;
   int     exitwhile = 0;
-  int esc_key=0;
+  int     esc_key = 0;
   display_list(list_data);	//display whole list
 
   //Highlight first item on the list
   aux = *tail;			//Auxiliary variable points to last item
-  move_selector(&aux, DIR_DOWN);		//Move down to point to highlight first item.
+  move_selector(&aux, DIR_DOWN);	//Move down to point to highlight first item.
 
   ch = 0;			//init ch value
   while(ch != K_ENTER)		// escape key or enter
   {
     ch = getch();
     if(ch == K_ESCAPE) {
-      esc_key=ESC_KEY;
+      esc_key = ESC_KEY;
       getch();
       switch (getch()) {
 	case 'A':
 	  move_selector(&aux, DIR_UP);
-          esc_key=0;
+	  esc_key = 0;
 	  break;
 	case 'B':
 	  move_selector(&aux, DIR_DOWN);
-          esc_key=0;
+	  esc_key = 0;
 	  break;
 	case 'C':
-	  ch = K_LEFTMENU;		// this will be used in top-down menu. Mark for left arrow key
+	  ch = K_LEFTMENU;	// this will be used in top-down menu. Mark for left arrow key
 	  exitwhile = EXIT_FLAG;
-          esc_key=0;
+	  esc_key = 0;
 	  break;
 	case 'D':
-	  ch = K_RIGHTMENU;		// this will be used in top-down menu. Mark for right arrow key
+	  ch = K_RIGHTMENU;	// this will be used in top-down menu. Mark for right arrow key
 	  exitwhile = EXIT_FLAG;
-          esc_key=0;
+	  esc_key = 0;
 	  break;
-        default:
-          esc_key=ESC_KEY;
-          break;
+	default:
+	  esc_key = ESC_KEY;
+	  break;
       }
-     }
-  if (esc_key==ESC_KEY){
-     break;
-     }
-  if(exitwhile == EXIT_FLAG)
-     break;
+    }
+    if(esc_key == ESC_KEY) {
+      break;
+    }
+    if(exitwhile == EXIT_FLAG)
+      break;
   }
- if(ch == K_ENTER) {
+  if(ch == K_ENTER) {
     //Pass data of last item by value.
     *list_data = aux;
   }
@@ -246,38 +252,39 @@ char start_vmenu(LISTCHOICE * list_data) {
 /*--------------------------------------*/
 char start_hmenu(LISTCHOICE * list_data) {
   char    ch;
-  int exitloop=0;
+  int     exitloop = 0;
   LISTCHOICE aux;
 
   display_list(list_data);	//display whole list
 
   //Highlight first item on the list
   aux = *tail;			//Auxiliary variable points to last item
-  move_selector(&aux, DIR_LEFT);//Move down to point to highlight first item.
+  move_selector(&aux, DIR_LEFT);	//Move down to point to highlight first item.
 
   ch = 0;			//init ch value
   while(ch != K_ENTER)		// escape key or enter
   {
-    ch=getch();
-   if (exitloop==EXIT_FLAG) break;
-     if(ch == '\033') {
+    ch = getch();
+    if(exitloop == EXIT_FLAG)
+      break;
+    if(ch == '\033') {
       getch();
       switch (getch()) {
 	case 'C':
-	  move_selector(&aux,DIR_LEFT);
+	  move_selector(&aux, DIR_LEFT);
 	  break;
 	case 'D':
 	  move_selector(&aux, DIR_RIGHT);
 	  break;
-        default:
-          exitloop=EXIT_FLAG;
-          break;
+	default:
+	  exitloop = EXIT_FLAG;
+	  break;
       }
-   } 
+    }
   }
   if(ch == K_ENTER) {
     //Pass data of last item by value.
     *list_data = aux;
   }
- return ch;
+  return ch;
 }

@@ -3,7 +3,7 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 09/08/2018                                           
+Last modified : 20/10/2018                                           
 ======================================================================*/
 
 /*====================================================================*/
@@ -19,6 +19,7 @@ Last modified : 09/08/2018
 #include "screen_buffer.h"
 #include "opfile_dialog.h"
 #include "user_inter.h"
+#include "keyboard.h"
 
 /*====================================================================*/
 /* CONSTANT VALUES                                                    */
@@ -32,7 +33,7 @@ Last modified : 09/08/2018
 #define cedit_ascii_5 "| |____     | |___| (_| | | |_ \n"
 #define cedit_ascii_6 " \\_____|    |______\\__,_|_|\\__|\n"
 
-//MESSAGES
+//USER-DEFINED MESSAGES
 #define UNKNOWN "UNTITLED"
 #define STATUS_BAR_MSG1  ">[C-Edit] | F2 / CTRL-L -> MENU | CTRL-C EXIT"
 #define STATUS_BAR_MSG2 ">[C-Edit] Press ESC to exit menu.             "
@@ -65,26 +66,6 @@ Last modified : 09/08/2018
 #define K_LEFTMENU -1		//Left arrow key pressed while in menu
 #define K_RIGHTMENU -2		//Right arrow key pressed while in menu
 #define MAX_TEXT 150
-
-//KEYS 
-#define K_ENTER 13
-#define K_CAPS 91
-#define K_BACKSPACE 127
-#define K_TAB 9
-#define K_ESCAPE 27
-#define K_F2_TRAIL "\eOQ\0\0"
-#define K_F2_TRAIL2 "\e[[B\0"
-#define K_UP_TRAIL "\e[A\0\0"
-#define K_DOWN_TRAIL "\e[B\0\0"
-#define K_RIGHT_TRAIL "\e[C\0\0"
-#define K_LEFT_TRAIL "\e[D\0\0"
-#define K_F3_TRAIL "\eOR\0\0"
-#define K_F3_TRAIL2 "\e[[C\0"
-
-#define K_CTRL_C 0x03
-#define K_CTRL_D 0x04
-#define K_CTRL_J 0x0A
-#define K_CTRL_L 0x0C
 
 //MENU CONSTANTS
 #define HOR_MENU -1
@@ -256,9 +237,9 @@ int main(int argc, char *argv[]) {
       /* Process SPECIAL KEYS and other ESC-related issues */
       esc_key = special_keys(&cursorX, &cursorY, ch);
 
-      //If arrow keys are used repeatedly. It avoids printing unwanted chars.
+      //If arrow keys are used repeatedly. This avoids printing unwanted chars.
       if(ch == K_ESCAPE || oldchar == K_ESCAPE)
-	esc_key = 1;
+	 esc_key = 1;
 
       oldchar = ch;
 
@@ -300,8 +281,9 @@ void update_position() {
 
 int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX,
 		  int *whereY, char ch) {
-  char    tempchar[2];
+  char    accentchar[2];
   if(ch != K_ESCAPE) {
+    
     if(ch > 31 && ch < 127) {
       //Only print standard ASCII characters to screen.
       write_ch(*whereX, *whereY, ch, EDITAREACOL, EDIT_FORECOLOR);
@@ -309,29 +291,32 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX,
 		    *whereY - START_CURSOR_Y, ch);
       *whereX = *whereX + 1;
     }
-    //Accents and special chars
-    if(ch == SPECIAL_CHARS_SET1) {
-      tempchar[0] = SPECIAL_CHARS_SET1;	//Accents
-      tempchar[1] = readch();
-      write_ch(*whereX, *whereY, tempchar[0], EDITAREACOL, EDIT_FORECOLOR);
-      write_ch(*whereX, *whereY, tempchar[1], EDITAREACOL, EDIT_FORECOLOR);
+
+    /* -------------------------------- */
+    /* Handle accents and special chars */
+    /* -------------------------------- */
+
+    //SET 1 : Char -61
+    if(read_accent(&ch, accentchar) == 1) {
+      write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL, EDIT_FORECOLOR);
+      write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL, EDIT_FORECOLOR);
       writetoBuffer(editBuffer, *whereX - START_CURSOR_X,
-		    *whereY - START_CURSOR_Y, tempchar[0]);
+		    *whereY - START_CURSOR_Y, accentchar[0]);
       writetoBuffer(editBuffer, *whereX - START_CURSOR_X,
-		    *whereY - START_CURSOR_Y, tempchar[1]);
+		    *whereY - START_CURSOR_Y, accentchar[1]);
       *whereX = *whereX + 1;
     }
-    if(ch == SPECIAL_CHARS_SET2) {
-      tempchar[0] = SPECIAL_CHARS_SET2;	//Special chars
-      tempchar[1] = readch();
-      write_ch(*whereX, *whereY, tempchar[0], EDITAREACOL, EDIT_FORECOLOR);
-      write_ch(*whereX, *whereY, tempchar[1], EDITAREACOL, EDIT_FORECOLOR);
+    //SET 2: Char -62
+    if(read_accent(&ch, accentchar) == 2) {
+      write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL, EDIT_FORECOLOR);
+      write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL, EDIT_FORECOLOR);
       writetoBuffer(editBuffer, *whereX - START_CURSOR_X,
-		    *whereY - START_CURSOR_Y, tempchar[0]);
+		    *whereY - START_CURSOR_Y, accentchar[0]);
       writetoBuffer(editBuffer, *whereX - START_CURSOR_X,
-		    *whereY - START_CURSOR_Y, tempchar[1]);
+		    *whereY - START_CURSOR_Y, accentchar[1]);
       *whereX = *whereX + 1;
     }
+
     if(ch == K_ENTER) {
       //RETURN - ENTER
       if(*whereY < rows - 2) {
@@ -401,32 +386,19 @@ int timer_1(int *timer1) {
 int special_keys(int *whereX, int *whereY, char ch) {
 /* MANAGE SPECIAL KEYS */
 /* 
-   New implementation: Trail of chars.
+   New implementation: Trail of chars found in keyboard.c
    If K_ESCAPE is captured read a trail up to 5 characters from the console.
    This is to control the fact that some keys may change
    according to the terminal and expand the editor's possibilities.
    Eg: F2 can be either 27 79 81 or 27 91 91 82.  
 */
+
   int     esc_key = 0;
-  int     i = 0;
   char    chartrail[5];
 
   if(ch == K_ESCAPE) {
-
-    chartrail[0] = ch;
-//Read up to 4 characters of trail after K_ESCAPE.
-    for(i = 1; i < 5; i++) {
-      if(kbhit() == 1) {
-	ch = readch();
-	chartrail[i] = ch;
-      } else {
-	//*ch=0;
-	chartrail[i] = 0;
-      }
-    }
-
-    resetch();			//clear keyboard buffer and don't wait for keypressed.
-
+        read_keytrail(chartrail); //Read trail after ESC key
+ 
     //Check key trails for special keys.
 
     //FUNCTION KEYS
@@ -599,7 +571,7 @@ int refresh_editarea() {
     columns = COLUMNS_FAILSAFE;
 
   //Paint blue edit area
-  for(j = START_CURSOR_Y; j < rows - 2; j++)
+  for(j = START_CURSOR_Y; j < rows - 1; j++)
     for(i = START_CURSOR_X; i < columns - 1; i++)
       write_ch(i, j, FILL_CHAR, EDITAREACOL, EDITAREACOL);
 

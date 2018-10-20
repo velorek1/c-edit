@@ -5,13 +5,12 @@ are displayed on the terminal.
 
 @author : Velorek
 @version : 1.0
-Last modified : 8/8/2018
+Last modified : 20/10/2018
 ======================================================================
 */
 
 #ifndef _SCREEN_BUFFER_H_
-#define _SCREEN_BUFFER_H_
-
+# define _SCREEN_BUFFER_H_
 
 /*====================================================================*/
 /* COMPILER DIRECTIVES AND INCLUDES                                   */
@@ -21,6 +20,7 @@ Last modified : 8/8/2018
 #include <stdlib.h>
 #include <strings.h>
 #include "c_cool.h"
+#include "keyboard.h" 
 
 #define NHOR_LINE -50
 #define NVER_LINE -51
@@ -28,9 +28,6 @@ Last modified : 8/8/2018
 #define NLOWER_LEFT_CORNER -53
 #define NUPPER_RIGHT_CORNER -54
 #define NLOWER_RIGHT_CORNER -55
-#define SPECIAL_CHARS_SET1 -61
-#define SPECIAL_CHARS_SET2 -62
-
 #define HOR_LINE 50
 #define VER_LINE 51
 #define UPPER_LEFT_CORNER 52
@@ -46,10 +43,10 @@ typedef struct _screencell {
   int     index;		// Item number
   int     backcolor0;		// Back and Fore colors of each cell
   int     forecolor0;
-  int     rows;                 //Save screen dimensions
+  int     rows;			//Save screen dimensions
   int     columns;
-  char    item;	 // Item string
-  int     specialchar;          // Control for accents and special chars   
+  char    item;			// Item string
+  int     specialchar;		// Control for accents and special chars   
   struct _screencell *next;	// Pointer to next item
 } SCREENCELL;
 

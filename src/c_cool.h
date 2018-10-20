@@ -26,14 +26,14 @@ Last modified: 04/08/2018
 /*====================================================================*/
 
 // Background colors low intensity                                                                         
-# define B_BLACK 40
-# define B_RED 41
-# define B_GREEN 42
-# define B_YELLOW 43
-# define B_BLUE 44
-# define B_MAGENTA 45
-# define B_CYAN 46
-# define B_WHITE 47
+#define B_BLACK 40
+#define B_RED 41
+#define B_GREEN 42
+#define B_YELLOW 43
+#define B_BLUE 44
+#define B_MAGENTA 45
+#define B_CYAN 46
+#define B_WHITE 47
 
 // Foreground colors low intensity                                                                                                                                 
 #define F_BLACK 30
@@ -72,13 +72,13 @@ Last modified: 04/08/2018
 void    pushTerm();
 void    resetTerm();
 int     kbhit();
-int 	readch();
+int     readch();
 int     resetch();
 char    getch(void);
 void    gotoxy(int x, int y);
 void    outputcolor(int foreground, int background);
 void    screencol(int x);
 int     get_terminal_dimensions(int *rows, int *columns);
-void 	showcursor();
-void	hidecursor();
+void    showcursor();
+void    hidecursor();
 #endif

@@ -33,6 +33,11 @@ Last modified : 20/10/2018
 #define cedit_ascii_5 "| |____     | |___| (_| | | |_ \n"
 #define cedit_ascii_6 " \\_____|    |______\\__,_|_|\\__|\n"
 
+//ABOUT - ASCII ART
+#define ABOUT_ASC_1 "        _   __       \n"   
+#define ABOUT_ASC_2 "       /  _|__ _|.___\n"
+#define ABOUT_ASC_3 "       \\_  |__(_]| |  v0.1 \n       Coded   by  V3l0rek\n " 
+
 //USER-DEFINED MESSAGES
 #define UNKNOWN "UNTITLED"
 #define STATUS_BAR_MSG1  ">[C-Edit] | F2 / CTRL-L -> MENU | CTRL-C EXIT"
@@ -42,7 +47,7 @@ Last modified : 20/10/2018
 #define WSAVELABEL_MSG "[-] File:"
 #define WSAVETITLE_MSG "[C-EDIT SAVE AS]"
 #define WNEWTITLE_MSG "[C-EDIT NEW FILE]"
-#define WTITLEABOUT_MSG "[C-EDIT : ABOUT]"
+#define WTITLEABOUT_MSG "[ABOUT]"
 #define WABOUT_MSG "Coded by v3l0r3k.\n - 2018 - \n Spukhafte Fernwirkungen!"
 #define WINFO_NOPEN "Error:\nThere isn't any file open!"
 #define WINFO_SIZE "-File size: "
@@ -808,7 +813,11 @@ int confirmation() {
 
 int about_info() {
   int     ok = 0;
-  alertWindow(mylist, WTITLEABOUT_MSG, WABOUT_MSG);
+  char  msg[100];
+  strcat(msg, ABOUT_ASC_1);
+  strcat(msg, ABOUT_ASC_2);
+  strcat(msg, ABOUT_ASC_3);
+  alertWindow(mylist,  WTITLEABOUT_MSG, msg);
   return ok;
 }
 

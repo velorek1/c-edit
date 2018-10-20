@@ -50,11 +50,11 @@ Last modified : 20/10/2018
 #define WINFO_SIZE3 "\n-File name: "
 #define WCHECKFILE_MSG " This file isn't a  \n text file. Program \n may crash. Open anyway?"
 #define WINFONOTYET_MSG "Not implemented yet!"
-#define WMODIFIED_MSG "File has been modified\n Save current buffer?"
+#define WMODIFIED_MSG " File has been modified\n Save current buffer?"
 #define WFILEEXISTS_MSG " File exists. \n Overwrite?"
 
 //MISC. CONSTANTS
-#define EXIT_FLAG 1
+#define EXIT_FLAG -1
 #define FAILSAFE '$'		//Failsafe char to activate menus.
 #define TAB_DISTANCE 8		//How many spaces TAB key will send.
 #define START_CURSOR_X 2
@@ -290,6 +290,7 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX,
       writetoBuffer(editBuffer, *whereX - START_CURSOR_X,
 		    *whereY - START_CURSOR_Y, ch);
       *whereX = *whereX + 1;
+      fileModified = FILE_MODIFIED;
     }
 
     /* -------------------------------- */
@@ -305,6 +306,7 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX,
       writetoBuffer(editBuffer, *whereX - START_CURSOR_X,
 		    *whereY - START_CURSOR_Y, accentchar[1]);
       *whereX = *whereX + 1;
+      fileModified = FILE_MODIFIED;
     }
     //SET 2: Char -62
     if(read_accent(&ch, accentchar) == 2) {
@@ -315,6 +317,7 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX,
       writetoBuffer(editBuffer, *whereX - START_CURSOR_X,
 		    *whereY - START_CURSOR_Y, accentchar[1]);
       *whereX = *whereX + 1;
+      fileModified = FILE_MODIFIED;
     }
 
     if(ch == K_ENTER) {
@@ -324,6 +327,7 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX,
 		      *whereY - START_CURSOR_Y, END_LINE_CHAR);
 	*whereY = *whereY + 1;
 	*whereX = START_CURSOR_X;
+        fileModified = FILE_MODIFIED;
       }
     }
     if(ch == K_BACKSPACE) {
@@ -666,7 +670,10 @@ void filemenu() {
 
   if(data.index == OPTION_5) {
     //Exit option
-    exitp = confirmation();	//Shall we exit? Global variable! 
+    if (fileModified == 1)
+      exitp = confirmation();	//Shall we exit? Global variable!
+    else
+      exitp = EXIT_FLAG;
   }
   data.index = OPTION_NIL;
   //Restore message in status bar
@@ -773,8 +780,25 @@ void helpmenu() {
 /* Displays a window to asks user for confirmation */
 int confirmation() {
   int     ok = 0;
-  ok = yesnoWindow(mylist, WLEAVE_MSG);
-  data.index = OPTION_NIL;
+  if (fileModified == 1){
+    ok = yesnoWindow(mylist, WMODIFIED_MSG);
+    data.index = OPTION_NIL;
+    //save file if modified?
+    if (ok == 1) {
+        if(strcmp(currentFile, UNKNOWN) == 0)
+          saveasDialog(currentFile);
+        else {
+          saveDialog(currentFile);
+        }
+        ok = EXIT_FLAG;
+    }
+    else {
+      ok = EXIT_FLAG;
+    }
+  } else
+  {
+    ok = -1; //Exit without asking.
+  }
   return ok;
 }
 

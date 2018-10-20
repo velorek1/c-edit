@@ -147,7 +147,7 @@ int textbox(int wherex, int wherey, int displayLength,
   int     posCursor = 0;
   int     keypressed = 0;
   char    chartrail[5];
-  char    accentchar[2];
+ // char    accentchar[2];
   char    displayChar;
   char    ch;
   positionx = wherex + strlen(label);

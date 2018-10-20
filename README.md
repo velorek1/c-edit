@@ -19,6 +19,8 @@ So far I have implemented:
 
 *New:
  * Color schemes.
+ * Added Keyboard module.
+ * Improved Text box.
 
 Files in /src/:
 ===============

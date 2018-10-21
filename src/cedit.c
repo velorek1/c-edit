@@ -3,7 +3,7 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 20/10/2018                                           
+Last modified : 21/10/2018                                           
 ======================================================================*/
 
 /*====================================================================*/
@@ -814,9 +814,11 @@ int confirmation() {
 int about_info() {
   int     ok = 0;
   char  msg[100];
+  msg[0]='\0';
   strcat(msg, ABOUT_ASC_1);
   strcat(msg, ABOUT_ASC_2);
   strcat(msg, ABOUT_ASC_3);
+  strcat(msg, "\0");
   alertWindow(mylist,  WTITLEABOUT_MSG, msg);
   return ok;
 }

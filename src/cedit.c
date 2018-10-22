@@ -3,7 +3,7 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 21/10/2018                                           
+Last modified : 22/10/2018 - Inline edit (work in progress)                                           
 ======================================================================*/
 
 /*====================================================================*/
@@ -137,7 +137,9 @@ int     rows = 0, columns = 0, old_rows = 0, old_columns = 0;	// Terminal dimens
 int     cursorX = START_CURSOR_X, cursorY = START_CURSOR_Y, timerCursor = 0;	// Cursor position and Timer
 char    kglobal = 0;		// Global variable for menu animation
 char    currentFile[MAX_TEXT];
+int     limitRow = 0, limitCol = 0; // These variables account for the current limits of the buffer.
 //char    fullPathStr[MAX_TEXT];
+
 //FLAGS
 int     exitp = 0;		// Exit flag for main loop
 int     fileModified = FILE_UNMODIFIED;	//Have we modified the buffer?
@@ -160,6 +162,7 @@ void    helpmenu();
 int     confirmation();
 int     about_info();
 int     refresh_screen(int force_refresh);
+int     refresh_line(int line);
 
 //Key handling prototypes
 int     special_keys(int *whereX, int *whereY, char ch);
@@ -173,6 +176,7 @@ int     writetoBuffer(EDITBUFFER editBuffer[MAX_LINES], int whereX,
 		      int whereY, char ch);
 int     process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX,
 		      int *whereY, char ch);
+int     findEndline(EDITBUFFER editBuffer[MAX_LINES], int line);
 
 //File-handling prototypes
 int     openFile(FILE ** filePtr, char fileName[], char *mode);
@@ -237,25 +241,34 @@ int main(int argc, char *argv[]) {
     /* Timer for animation to show system time and clean cursor */
     timer_1(&timer1);
 
+    //update_screen();
     if(keypressed == 1) {
 
       /* Process SPECIAL KEYS and other ESC-related issues */
       esc_key = special_keys(&cursorX, &cursorY, ch);
 
-      //If arrow keys are used repeatedly. This avoids printing unwanted chars.
-      if(ch == K_ESCAPE || oldchar == K_ESCAPE)
-	 esc_key = 1;
-
+      //If arrow keys are used repeatedly. This avoids printing unwanted chars.   
+      if(oldchar == K_ESCAPE)
+	 esc_key = 1; 
+      
+      //if (ch != 27 && oldchar == 7) esc_key = 0;
+      
       oldchar = ch;
 
       ch = readch();
 
+         
       /* EDIT */
       if(esc_key == 0) {
 	//Process input and get rid of extra characters
 	process_input(editBuffer, &cursorX, &cursorY, ch);	//Edit
 	keypressed = 0;
       }
+    } else{
+      //Keypressed = 0 - Reset values
+      esc_key = 0;
+      ch=0;
+      oldchar=0;
     }
   } while(exitp != EXIT_FLAG);	//exit flag for the whole program
   if(filePtr != NULL) {
@@ -284,19 +297,71 @@ void update_position() {
 /* EDIT Section */
 /*------------- */
 
-int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX,
-		  int *whereY, char ch) {
+
+int findEndline(EDITBUFFER editBuffer[MAX_LINES], int line){
+   char ch=0;
+   int i=0; 
+   int result=0;
+
+   do{
+      ch = editBuffer[line].charBuf[i].ch;
+      i++;
+      if (ch == CHAR_NIL) break;
+    } while (i<MAX_CHARS);
+   result = i;
+   ch=0;
+   return result;
+}
+int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, char ch) {
   char    accentchar[2];
+  int     locateY=0;
+  int     counter = 0;
+  int     newPosition = 0;
+  int     oldPosition = 0;
+  int     positionX=0; 
+  int     positionY=0;
   if(ch != K_ESCAPE) {
     
+      //Calculate position values 
+      limitCol  = findEndline(editBuffer, *whereY - START_CURSOR_Y);
+      positionX = *whereX - START_CURSOR_X; //Buffer position (x,y)
+      positionY = *whereY - START_CURSOR_Y;
+
     if(ch > 31 && ch < 127) {
       //Only print standard ASCII characters to screen.
-      write_ch(*whereX, *whereY, ch, EDITAREACOL, EDIT_FORECOLOR);
-      writetoBuffer(editBuffer, *whereX - START_CURSOR_X,
-		    *whereY - START_CURSOR_Y, ch);
-      *whereX = *whereX + 1;
-      fileModified = FILE_MODIFIED;
-    }
+      
+      //INSERT CHARS AT THE END OF LINE
+      if (*whereX < MAX_CHARS && positionX >= limitCol-1){
+         write_ch(*whereX, *whereY, ch, EDITAREACOL, EDIT_FORECOLOR);
+         writetoBuffer(editBuffer, positionX, positionY, ch);
+         *whereX = *whereX + 1;
+      }
+
+      //INSERT CHAR IN THE MIDDLE OF THE LINE
+      if (*whereX < MAX_CHARS && positionX < limitCol-1){
+         //move all chars one space to the side
+         counter = 0;
+
+        //move characters to the side
+        while (counter <= (limitCol - positionX)){
+            newPosition = limitCol - counter + 1;
+            oldPosition = limitCol - counter;
+            editBuffer[locateY].charBuf[newPosition].ch =  
+            editBuffer[locateY].charBuf[oldPosition].ch;
+           // refresh_line(*whereY);
+            write_ch(newPosition + START_CURSOR_X, *whereY, editBuffer[locateY].charBuf[newPosition].ch,
+               EDITAREACOL,EDIT_FORECOLOR);
+            counter++;
+         }
+
+         //insert new char
+         write_ch(*whereX, *whereY, ch, EDITAREACOL, EDIT_FORECOLOR);
+         writetoBuffer(editBuffer, positionX, positionY, ch); //write new char at correct position
+         *whereX = *whereX + 1;
+
+       } 
+        fileModified = FILE_MODIFIED;
+    } 
 
     /* -------------------------------- */
     /* Handle accents and special chars */
@@ -306,10 +371,8 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX,
     if(read_accent(&ch, accentchar) == 1) {
       write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL, EDIT_FORECOLOR);
       write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL, EDIT_FORECOLOR);
-      writetoBuffer(editBuffer, *whereX - START_CURSOR_X,
-		    *whereY - START_CURSOR_Y, accentchar[0]);
-      writetoBuffer(editBuffer, *whereX - START_CURSOR_X,
-		    *whereY - START_CURSOR_Y, accentchar[1]);
+      writetoBuffer(editBuffer, positionX, positionY, accentchar[0]);
+      writetoBuffer(editBuffer, positionX,positionY, accentchar[1]);
       *whereX = *whereX + 1;
       fileModified = FILE_MODIFIED;
     }
@@ -317,10 +380,8 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX,
     if(read_accent(&ch, accentchar) == 2) {
       write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL, EDIT_FORECOLOR);
       write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL, EDIT_FORECOLOR);
-      writetoBuffer(editBuffer, *whereX - START_CURSOR_X,
-		    *whereY - START_CURSOR_Y, accentchar[0]);
-      writetoBuffer(editBuffer, *whereX - START_CURSOR_X,
-		    *whereY - START_CURSOR_Y, accentchar[1]);
+      writetoBuffer(editBuffer, positionX,positionY, accentchar[0]);
+      writetoBuffer(editBuffer, positionX,positionY, accentchar[1]);
       *whereX = *whereX + 1;
       fileModified = FILE_MODIFIED;
     }
@@ -328,8 +389,7 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX,
     if(ch == K_ENTER) {
       //RETURN - ENTER
       if(*whereY < rows - 2) {
-	writetoBuffer(editBuffer, *whereX - START_CURSOR_X,
-		      *whereY - START_CURSOR_Y, END_LINE_CHAR);
+	writetoBuffer(editBuffer, positionX, positionY, END_LINE_CHAR);
 	*whereY = *whereY + 1;
 	*whereX = START_CURSOR_X;
         fileModified = FILE_MODIFIED;
@@ -560,6 +620,33 @@ int main_screen() {
 
   return 0;
 }
+/*----------------------------*/
+/* Only refresh current line  */
+/*----------------------------*/
+
+int refresh_line(int line) {
+  int     i;
+  get_terminal_dimensions(&rows, &columns);
+  old_rows = rows;
+  old_columns = columns;
+  cursorX = START_CURSOR_X;
+  cursorY = START_CURSOR_Y;
+  draw_cursor(&cursorX, &cursorY, &timerCursor);
+
+  //Failsafe just in case it can't find the terminal dimensions
+  if(rows == 0)
+    rows = ROWS_FAILSAFE;
+  if(columns == 0)
+    columns = COLUMNS_FAILSAFE;
+
+  //Paint blue line
+    for(i = START_CURSOR_X; i < columns - 1; i++)
+      write_ch(i, line, FILL_CHAR, EDITAREACOL, EDITAREACOL);
+
+  update_screen();
+  return 0;
+}
+
 
 /*-------------------------*/
 /* Only refresh edit Area  */
@@ -894,9 +981,9 @@ void credits() {
 
 }
 
-/*===============*/
-/*EDIT functions */
-/*===============*/
+/*=================*/
+/*BUFFER functions */
+/*=================*/
 
 /*----------------------------------*/
 /* Initialize and clean edit buffer */
@@ -1033,6 +1120,7 @@ int saveDialog(char fileName[MAX_TEXT]) {
   strcpy(tempMsg, fileName);
   strcat(tempMsg, WSAVE_MSG);
   ok = infoWindow(mylist, tempMsg);
+  fileModified = 0; //reset modified flag
 
   return ok;
 }
@@ -1062,6 +1150,7 @@ int saveasDialog(char fileName[MAX_TEXT]) {
 	strcpy(tempMsg, fileName);
 	strcat(tempMsg, WSAVE_MSG);
 	ok = infoWindow(mylist, tempMsg);
+        fileModified = 0;
       } else {
 	//Do nothing.
       }
@@ -1071,6 +1160,7 @@ int saveasDialog(char fileName[MAX_TEXT]) {
       strcpy(tempMsg, fileName);
       strcat(tempMsg, WSAVE_MSG);
       ok = infoWindow(mylist, tempMsg);
+      fileModified = 0;
     }
   }
   return ok;

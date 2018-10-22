@@ -4,7 +4,7 @@ Module to make a circular linked list to make a selection menu in C.
 
 @author : Velorek
 @version : 1.0
-Last modified : 09/08/2018
+Last modified : 22/10/2018 - REM Added Tab Key
 ======================================================================
 */
 
@@ -17,6 +17,7 @@ Last modified : 09/08/2018
 #include <string.h>
 #include "c_cool.h"
 #include "screen_buffer.h"
+#include "keyboard.h"
 
 /*====================================================================*/
 /* CONSTANT VALUES                                                    */
@@ -27,10 +28,6 @@ Last modified : 09/08/2018
 #define K_RIGHTMENU -2		//Right arrow key pressed while in menu
 #define ESC_KEY 1
 #define EXIT_FLAG 1
-
-//KEYS 
-#define K_ENTER 13
-#define K_ESCAPE 27
 
 //DIRECTIONS
 #define DIR_LEFT 2
@@ -267,7 +264,7 @@ char start_hmenu(LISTCHOICE * list_data) {
     ch = getch();
     if(exitloop == EXIT_FLAG)
       break;
-    if(ch == '\033') {
+    if(ch == K_ESCAPE) {
       getch();
       switch (getch()) {
 	case 'C':
@@ -281,6 +278,7 @@ char start_hmenu(LISTCHOICE * list_data) {
 	  break;
       }
     }
+    if (ch == K_TAB) move_selector(&aux, DIR_LEFT);
   }
   if(ch == K_ENTER) {
     //Pass data of last item by value.

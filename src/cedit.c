@@ -3,7 +3,7 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 22/10/2018 - Inline edit (work in progress)                                           
+Last modified : 27/10/2018 - Inline edit (work in progress)                                           
 ======================================================================*/
 
 /*====================================================================*/
@@ -313,19 +313,24 @@ int findEndline(EDITBUFFER editBuffer[MAX_LINES], int line){
    return result;
 }
 int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, char ch) {
+/* EDIT FUNCTIONS */
   char    accentchar[2];
-  int     locateY=0;
   int     counter = 0;
   int     newPosition = 0;
   int     oldPosition = 0;
   int     positionX=0; 
   int     positionY=0;
-  if(ch != K_ESCAPE) {
+ 
+ if(ch != K_ESCAPE) {
     
       //Calculate position values 
       limitCol  = findEndline(editBuffer, *whereY - START_CURSOR_Y);
       positionX = *whereX - START_CURSOR_X; //Buffer position (x,y)
       positionY = *whereY - START_CURSOR_Y;
+
+   /* ---------------------------------------- */   
+   /* REGULAR CHARS - OCCUPY 1 SPACE IN BUFFER */
+   /* ---------------------------------------- */   
 
     if(ch > 31 && ch < 127) {
       //Only print standard ASCII characters to screen.
@@ -336,20 +341,20 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, ch
          writetoBuffer(editBuffer, positionX, positionY, ch);
          *whereX = *whereX + 1;
       }
-
+ 
       //INSERT CHAR IN THE MIDDLE OF THE LINE
       if (*whereX < MAX_CHARS && positionX < limitCol-1){
          //move all chars one space to the side
          counter = 0;
-
+        
         //move characters to the side
         while (counter <= (limitCol - positionX)){
             newPosition = limitCol - counter + 1;
             oldPosition = limitCol - counter;
-            editBuffer[locateY].charBuf[newPosition].ch =  
-            editBuffer[locateY].charBuf[oldPosition].ch;
+            editBuffer[positionY].charBuf[newPosition].ch =  
+            editBuffer[positionY].charBuf[oldPosition].ch;
            // refresh_line(*whereY);
-            write_ch(newPosition + START_CURSOR_X, *whereY, editBuffer[locateY].charBuf[newPosition].ch,
+            write_ch(newPosition + START_CURSOR_X, *whereY, editBuffer[positionY].charBuf[newPosition].ch,
                EDITAREACOL,EDIT_FORECOLOR);
             counter++;
          }
@@ -358,32 +363,49 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, ch
          write_ch(*whereX, *whereY, ch, EDITAREACOL, EDIT_FORECOLOR);
          writetoBuffer(editBuffer, positionX, positionY, ch); //write new char at correct position
          *whereX = *whereX + 1;
-
        } 
+     
         fileModified = FILE_MODIFIED;
-    } 
-
-    /* -------------------------------- */
-    /* Handle accents and special chars */
-    /* -------------------------------- */
-
-    //SET 1 : Char -61
-    if(read_accent(&ch, accentchar) == 1) {
-      write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL, EDIT_FORECOLOR);
-      write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL, EDIT_FORECOLOR);
-      writetoBuffer(editBuffer, positionX, positionY, accentchar[0]);
-      writetoBuffer(editBuffer, positionX,positionY, accentchar[1]);
-      *whereX = *whereX + 1;
-      fileModified = FILE_MODIFIED;
     }
-    //SET 2: Char -62
-    if(read_accent(&ch, accentchar) == 2) {
-      write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL, EDIT_FORECOLOR);
-      write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL, EDIT_FORECOLOR);
-      writetoBuffer(editBuffer, positionX,positionY, accentchar[0]);
-      writetoBuffer(editBuffer, positionX,positionY, accentchar[1]);
-      *whereX = *whereX + 1;
-      fileModified = FILE_MODIFIED;
+
+   /* ----------------------------------------- */   
+   /* SPECIAL CHARS - OCCUPY 2 SPACES IN BUFFER */
+   /* ----------------------------------------- */   
+
+    //SET 1 : Char -61 or SET 2: Char -62
+    if(read_accent(&ch, accentchar) == 1 || read_accent(&ch, accentchar) == 2) {
+
+      //INSERT CHARS AT THE END OF LINE
+      if (*whereX < MAX_CHARS && positionX >= limitCol-1){
+         write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL, EDIT_FORECOLOR);
+        write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL, EDIT_FORECOLOR);
+        writetoBuffer(editBuffer, positionX, positionY, accentchar[0]);
+        writetoBuffer(editBuffer, positionX,positionY, accentchar[1]);
+        *whereX = *whereX + 1;
+     }
+      //INSERT CHARS IN THE MIDDLE OF THE LINE
+      if (*whereX < MAX_CHARS && positionX < limitCol-1){
+         //move all chars one space to the side
+         counter = 0;
+        //move characters to the side
+        while (counter <= (limitCol - positionX)){
+            newPosition = limitCol - counter + 1;
+            oldPosition = limitCol - counter;
+            editBuffer[positionY].charBuf[newPosition].ch =  
+            editBuffer[positionY].charBuf[oldPosition].ch;
+           // refresh_line(*whereY);
+            write_ch(newPosition + START_CURSOR_X, *whereY, editBuffer[positionY].charBuf[newPosition].ch,
+               EDITAREACOL,EDIT_FORECOLOR);
+            counter++;
+         }
+         //insert new SPECIAL char
+        write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL, EDIT_FORECOLOR);
+        write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL, EDIT_FORECOLOR);
+        writetoBuffer(editBuffer, positionX, positionY, accentchar[0]);
+        writetoBuffer(editBuffer, positionX,positionY, accentchar[1]);
+        *whereX = *whereX + 1;
+      } 
+     fileModified = FILE_MODIFIED;
     }
 
     if(ch == K_ENTER) {
@@ -515,16 +537,43 @@ int special_keys(int *whereX, int *whereY, char ch) {
 
 void draw_cursor(int *whereX, int *whereY, int *timer) {
 /* CURSOR is drawn directly to screen and not to buffer */
+int positionX=0, limitCol = 0, positionY = 0;
+char currentChar = FILL_CHAR;
+char specialChar;
+
   *timer = *timer + 1;		//increase timer counter for animation
+
+  //Calculate position
+  limitCol  = findEndline(editBuffer, *whereY - START_CURSOR_Y);
+  positionX = *whereX - START_CURSOR_X; //Buffer position (x,y)
+  positionY = *whereY - START_CURSOR_Y;
+  
   if(*timer < LIMIT_TIMER) {
     gotoxy(*whereX, *whereY);
     outputcolor(EDIT_FORECOLOR, EDITAREACOL);
     printf("|");
   } else {
     *timer = 0;			//reset timer
+    //Is the cursor at the end or in the middle of text?
+    if (positionX <= limitCol){ 
+      currentChar = editBuffer[positionY].charBuf[positionX].ch;
+   } else
+    {
+      currentChar = FILL_CHAR;
+    }
+
+    //Display character in yellow.
     gotoxy(*whereX, *whereY);
-    outputcolor(EDITAREACOL, EDITAREACOL);
-    printf(" ");
+    outputcolor(EDITAREACOL, FH_YELLOW);
+    //Is it an accent or special char?
+    if (currentChar < 0)
+      {
+        specialChar = editBuffer[positionY].charBuf[positionX].specialChar;
+        printf("%c%c",specialChar, editBuffer[positionY].charBuf[positionX].ch);
+      }
+    else{
+      printf("%c",currentChar);
+    }
   }
 }
 

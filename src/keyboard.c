@@ -5,7 +5,7 @@ Module to control keyboard input.
 @author : Velorek
 @version : 1.0
  
-LAST MODIFIED : 20/10/2018
+LAST MODIFIED : 28/10/2018 + Improved read_accent
 ======================================================================
 */
 
@@ -66,6 +66,8 @@ Input Ref: ch, accentchar
   int result;
   result = 0;
     //Accents and special chars
+   accentchar[0] = 0;
+   accentchar[1] = *ch;
     if(*ch == SPECIAL_CHARS_SET1) {
       accentchar[0] = SPECIAL_CHARS_SET1;	//Accents and special chars SET1
       accentchar[1] = readch();

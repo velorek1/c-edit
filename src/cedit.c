@@ -3,7 +3,7 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 27/10/2018 - Inline edit (work in progress)                                           
+Last modified : 28/10/2018 - Inline edit (work in progress)                                           
 ======================================================================*/
 
 /*====================================================================*/
@@ -329,84 +329,82 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, ch
       positionY = *whereY - START_CURSOR_Y;
 
    /* ---------------------------------------- */   
-   /* REGULAR CHARS - OCCUPY 1 SPACE IN BUFFER */
+   /* 
+      READ CHARS WITH AND WITHOUT ACCENTS.
+      Accent value is stored in the
+      specialChar field of every item in the 
+      buffer.
+      Example:
+              á : specialChar  = -61
+                  Char = -95
+              a : specialChar = 0
+                  Char = 97                
+   */
+    
    /* ---------------------------------------- */   
 
-    if(ch > 31 && ch < 127) {
-      //Only print standard ASCII characters to screen.
-      
+   if ((ch > 31 && ch < 127) || ch<0) {
+     //if a char has been read.
+
+      read_accent(&ch, accentchar);
       //INSERT CHARS AT THE END OF LINE
       if (*whereX < MAX_CHARS && positionX >= limitCol-1){
-         write_ch(*whereX, *whereY, ch, EDITAREACOL, EDIT_FORECOLOR);
-         writetoBuffer(editBuffer, positionX, positionY, ch);
-         *whereX = *whereX + 1;
+       if (accentchar[0]!=0) {
+          //Special char ? print the two values to screen buffer.
+          write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL, EDIT_FORECOLOR);
+          write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL, EDIT_FORECOLOR);
+        } else
+        {
+          write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL, EDIT_FORECOLOR);
+        }
+        writetoBuffer(editBuffer, positionX, positionY, accentchar[0]);
+        writetoBuffer(editBuffer, positionX, positionY, accentchar[1]);
+        *whereX = *whereX + 1;
       }
  
       //INSERT CHAR IN THE MIDDLE OF THE LINE
       if (*whereX < MAX_CHARS && positionX < limitCol-1){
          //move all chars one space to the side
-         counter = 0;
-        
+       counter = 0;        
         //move characters to the side
-        while (counter <= (limitCol - positionX)){
+       while (counter <= (limitCol - positionX)){
             newPosition = limitCol - counter + 1;
             oldPosition = limitCol - counter;
             editBuffer[positionY].charBuf[newPosition].ch =  
             editBuffer[positionY].charBuf[oldPosition].ch;
+            editBuffer[positionY].charBuf[newPosition].specialChar =  
+            editBuffer[positionY].charBuf[oldPosition].specialChar;
            // refresh_line(*whereY);
+             if (accentchar[0]!=0 || editBuffer[positionY].charBuf[oldPosition].specialChar != 0)
+             {
+              //Special char ? print the two values to screen buffer.
+              write_ch(newPosition + START_CURSOR_X, *whereY, editBuffer[positionY].charBuf[newPosition].specialChar,
+               EDITAREACOL,EDIT_FORECOLOR);
+              write_ch(newPosition + START_CURSOR_X, *whereY, editBuffer[positionY].charBuf[newPosition].ch,
+               EDITAREACOL,EDIT_FORECOLOR);
+            } else{
             write_ch(newPosition + START_CURSOR_X, *whereY, editBuffer[positionY].charBuf[newPosition].ch,
                EDITAREACOL,EDIT_FORECOLOR);
-            counter++;
-         }
-
-         //insert new char
-         write_ch(*whereX, *whereY, ch, EDITAREACOL, EDIT_FORECOLOR);
-         writetoBuffer(editBuffer, positionX, positionY, ch); //write new char at correct position
-         *whereX = *whereX + 1;
-       } 
-     
-        fileModified = FILE_MODIFIED;
-    }
-
-   /* ----------------------------------------- */   
-   /* SPECIAL CHARS - OCCUPY 2 SPACES IN BUFFER */
-   /* ----------------------------------------- */   
-
-    //SET 1 : Char -61 or SET 2: Char -62
-    if(read_accent(&ch, accentchar) == 1 || read_accent(&ch, accentchar) == 2) {
-
-      //INSERT CHARS AT THE END OF LINE
-      if (*whereX < MAX_CHARS && positionX >= limitCol-1){
-         write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL, EDIT_FORECOLOR);
-        write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL, EDIT_FORECOLOR);
-        writetoBuffer(editBuffer, positionX, positionY, accentchar[0]);
-        writetoBuffer(editBuffer, positionX,positionY, accentchar[1]);
-        *whereX = *whereX + 1;
-     }
-      //INSERT CHARS IN THE MIDDLE OF THE LINE
-      if (*whereX < MAX_CHARS && positionX < limitCol-1){
-         //move all chars one space to the side
-         counter = 0;
-        //move characters to the side
-        while (counter <= (limitCol - positionX)){
-            newPosition = limitCol - counter + 1;
-            oldPosition = limitCol - counter;
-            editBuffer[positionY].charBuf[newPosition].ch =  
-            editBuffer[positionY].charBuf[oldPosition].ch;
-           // refresh_line(*whereY);
-            write_ch(newPosition + START_CURSOR_X, *whereY, editBuffer[positionY].charBuf[newPosition].ch,
-               EDITAREACOL,EDIT_FORECOLOR);
+            }
+            
             counter++;
          }
          //insert new SPECIAL char
-        write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL, EDIT_FORECOLOR);
-        write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL, EDIT_FORECOLOR);
+        if (accentchar[0]!=0) {
+          //Special char ? print the two values to screen buffer.
+          write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL, EDIT_FORECOLOR);
+          write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL, EDIT_FORECOLOR);
+        } else
+        {
+          write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL, EDIT_FORECOLOR);
+        }
         writetoBuffer(editBuffer, positionX, positionY, accentchar[0]);
         writetoBuffer(editBuffer, positionX,positionY, accentchar[1]);
+        
         *whereX = *whereX + 1;
-      } 
-     fileModified = FILE_MODIFIED;
-    }
+        }    
+      fileModified = FILE_MODIFIED;  
+    } 
 
     if(ch == K_ENTER) {
       //RETURN - ENTER
@@ -417,6 +415,7 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, ch
         fileModified = FILE_MODIFIED;
       }
     }
+
     if(ch == K_BACKSPACE) {
       //BACKSPACE key
       write_ch(*whereX, *whereY, ' ', EDITAREACOL, EDITAREACOL);

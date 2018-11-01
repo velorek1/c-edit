@@ -322,6 +322,7 @@ void write_str(int x, int y, char *str, int backcolor, int forecolor) {
   for(i = 0; i <= strlen(str) - 1; i++) {
     write_ch(wherex, y, astr[i], backcolor, forecolor);
     wherex = wherex + 1;
+  
   }
 }
 

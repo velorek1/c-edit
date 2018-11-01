@@ -4,7 +4,7 @@
 Module to show user interface windows, textbox, etc.
 @author : Velorek
 @version : 1.0  
-Last modified: 09/08/2018                                                                
+Last modified: 1/11/2018 + Custom OK window                                                                
 ========================================================================
 */
 
@@ -24,25 +24,41 @@ Last modified: 09/08/2018
 #include "c_cool.h"
 #include "list_choice.h"
 
-# define MAX_TEXT 150
+//HELP MESSAGE
+#define HELP0 "Here is a list of the most common keys: \n\n"
+#define HELP1 "CTRL-L OPEN MENUS   |   F2 - OPEN MENUS \n"
+#define HELP2 "CTRL-C EXIT         |   F3 - REFRESH SCREEN \n"
+#define HELP3 "CTRL-L OPEN MENUS   |   F2 - OPEN MENUS \n"
+#define HELP4 "CTRL-L OPEN MENUS   |   F2 - OPEN MENUS \n"
+#define HELP5 "CTRL-L OPEN MENUS   |   F2 - OPEN MENUS \n"
+#define HELP6 "CTRL-L OPEN MENUS   |   F2 - OPEN MENUS \n"
+#define HELP7 "CTRL-L OPEN MENUS   |   F2 - OPEN MENUS \n"
+#define HELP8 "CTRL-L OPEN MENUS   |   F2 - OPEN MENUS \n"
+#define HELP9 "CTRL-L OPEN MENUS   |   F2 - OPEN MENUS \n"
+#define HELP10 "\nFor more info visit  \n [http://oldstuff286.blogspot.com]"
+
+//END
+
+
+#define MAX_TEXT 150
 
 //MENU CONSTANTS
-# define HOR_MENU -1
-# define FILE_MENU 0
-# define OPT_MENU 1
-# define HELP_MENU 2
-# define YESNO_MENU 3
-# define OK_MENU 4
-# define MAX_FILENAME 100
+#define HOR_MENU -1
+#define FILE_MENU 0
+#define OPT_MENU 1
+#define HELP_MENU 2
+#define YESNO_MENU 3
+#define OK_MENU 4
+#define MAX_FILENAME 100
 
 //DROP-DOWN MENUS
-# define OPTION_1 0
-# define OPTION_2 1
-# define OPTION_3 2
-# define OPTION_4 3
-# define OPTION_5 4
-# define OPTION_NIL -1		//Reset option
-# define CONFIRMATION 1
+#define OPTION_1 0
+#define OPTION_2 1
+#define OPTION_3 2
+#define OPTION_4 3
+#define OPTION_5 4
+#define OPTION_NIL -1		//Reset option
+#define CONFIRMATION 1
 
 //GLOBAL VARIABLES - COLOR SCHEME
 extern int EDITAREACOL;
@@ -79,6 +95,7 @@ int     alertWindow(LISTCHOICE * mylist, char *title, char *message);
 int     infoWindow(LISTCHOICE * mylist, char *message);
 int     inputWindow(char *title, char *label, char *tempFile);
 int     yesnoWindow(LISTCHOICE * mylist, char *message);
+int     helpWindow(LISTCHOICE * mylist, char *message);
 void    setColorScheme(int colorCode);
 int     colorsWindow(LISTCHOICE * mylist);
 

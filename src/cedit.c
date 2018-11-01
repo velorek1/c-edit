@@ -3,7 +3,7 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 28/10/2018 - Inline edit (work in progress)                                           
+Last modified : 1/11/2018 - Inline edit (work in progress)                                           
 ======================================================================*/
 
 /*====================================================================*/
@@ -37,6 +37,7 @@ Last modified : 28/10/2018 - Inline edit (work in progress)
 #define ABOUT_ASC_1 "        _   __       \n"   
 #define ABOUT_ASC_2 "       /  _|__ _|.___\n"
 #define ABOUT_ASC_3 "       \\_  |__(_]| |  v0.1 \n       Coded   by  V3l0rek\n " 
+#define ANIMATION "||//--\\\\"
 
 //USER-DEFINED MESSAGES
 #define UNKNOWN "UNTITLED"
@@ -138,6 +139,8 @@ int     cursorX = START_CURSOR_X, cursorY = START_CURSOR_Y, timerCursor = 0;	// 
 char    kglobal = 0;		// Global variable for menu animation
 char    currentFile[MAX_TEXT];
 int     limitRow = 0, limitCol = 0; // These variables account for the current limits of the buffer.
+int     c_animation=0; //Counter for animation 
+
 //char    fullPathStr[MAX_TEXT];
 
 //FLAGS
@@ -161,6 +164,7 @@ void    optionsmenu();
 void    helpmenu();
 int     confirmation();
 int     about_info();
+int     help_info();
 int     refresh_screen(int force_refresh);
 int     refresh_line(int line);
 
@@ -211,7 +215,9 @@ int main(int argc, char *argv[]) {
   cleanBuffer(editBuffer);
   clearString(currentFile, MAX_TEXT);
   strcpy(currentFile, UNKNOWN);
-  setColorScheme(0);
+  setColorScheme(0);            //Until config file is added
+  
+
   main_screen();		//Draw screen
   resetch();			//Clear keyboard and sets ENTER = 13
 
@@ -455,13 +461,21 @@ int timer_1(int *timer1) {
 /* Timer for animations - Display time and clean cursor */
   time_t  mytime = time(NULL);
   char   *time_str = ctime(&mytime);
+  char temp[2];
+
+  temp[0] = ANIMATION[c_animation];
+  temp[1] = '\0';
+
   if(*timer1 == TIME_MS) {
     *timer1 = 0;
     time_str[strlen(time_str) - 1] = '\0';
     //display system time
     write_str(columns - strlen(time_str), 1, time_str, MENU_PANEL, MENU_FOREGROUND0);
+    write_str(columns - strlen(time_str) - 5,1, temp, MENU_PANEL, MENU_FOREGROUND0);
     update_position();		//update position display
     update_screen();
+    c_animation++; 
+    if (c_animation > 6) c_animation = 0;
     return 0;
   } else {
     *timer1 = *timer1 + 1;
@@ -900,6 +914,10 @@ void helpmenu() {
   write_str(1, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0);
   update_screen();
   free_list(mylist);
+  if(data.index == OPTION_1) {
+    //About info
+    help_info();
+  }
   if(data.index == OPTION_2) {
     //About info
     about_info();
@@ -954,7 +972,31 @@ int about_info() {
   strcat(msg, ABOUT_ASC_2);
   strcat(msg, ABOUT_ASC_3);
   strcat(msg, "\0");
-  alertWindow(mylist,  WTITLEABOUT_MSG, msg);
+  alertWindow(mylist,  WTITLEABOUT_MSG, msg); 
+  return ok;
+}
+/*--------------------------*/
+/* Display About Dialog     */
+/*--------------------------*/
+
+
+int help_info() {
+  int     ok = 0;
+  char  msg[500];
+  msg[0]='\0';
+  strcat(msg, HELP0); //located in user_inter.h
+  strcat(msg, HELP1); //located in user_inter.h
+  strcat(msg, HELP2); //located in user_inter.h
+  strcat(msg, HELP3); //located in user_inter.h
+  strcat(msg, HELP4); //located in user_inter.h
+  strcat(msg, HELP5); //located in user_inter.h
+  strcat(msg, HELP6); //located in user_inter.h
+  strcat(msg, HELP7); //located in user_inter.h
+  strcat(msg, HELP8); //located in user_inter.h
+  strcat(msg, HELP9); //located in user_inter.h
+  strcat(msg, HELP10); //located in user_inter.h
+  strcat(msg, "\0");
+  helpWindow(mylist, msg);
   return ok;
 }
 

@@ -6,7 +6,7 @@ windows, textbox, etc.
 @author : Velorek
 @version : 1.0
  
-LAST MODIFIED : 20/10/2018
+LAST MODIFIED : 1/11/2018 - Help dialog added / custom ok Window
 ======================================================================
 */
 
@@ -504,5 +504,49 @@ int colorsWindow(LISTCHOICE * mylist) {
   free_list(mylist);
   close_window();
   return data.index;
+}
+
+int helpWindow(LISTCHOICE * mylist, char *message) {
+  int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
+  int     ok = 0;
+  int     i = 0;
+  int     ix = 0;
+  int     j = 0;
+  char    tempChar;
+  LISTCHOICE data;
+  int     rows, columns;
+
+  get_terminal_dimensions(&rows, &columns);
+
+  window_y1 = (rows / 2) - 8;
+  window_y2 = (rows / 2) + 8;
+  window_x1 = (columns / 2) - 25;
+  window_x2 = (columns / 2) + 25;
+
+  draw_window(window_x1, window_y1, window_x2, window_y2, MENU_PANEL, MENU_FOREGROUND0,
+	      1);
+  //Write message to info window  
+  for(i = 0; i < strlen(message); i++) {
+    tempChar = message[i];
+    //Maximum four lines
+    if(j < window_y2-2) {
+      //Split message if \n
+      if(tempChar == '\n') {
+	j++;
+	ix = 0;
+      } else {
+	write_ch(window_x1 + 2 + ix, window_y1 + 1 + j, tempChar, MENU_FOREGROUND0,
+		 MENU_PANEL);
+	ix++;
+      }
+    }
+  }
+  add_item(mylist, "<OK>", (columns / 2)-2, window_y2-1, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+  start_hmenu(&data);
+  free_list(mylist);
+  close_window();
+  if(data.index == OPTION_1)
+    ok = CONFIRMATION;		//Confirmation has been given 
+  return ok;
 }
 

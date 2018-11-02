@@ -6,7 +6,7 @@ windows, textbox, etc.
 @author : Velorek
 @version : 1.0
  
-LAST MODIFIED : 1/11/2018 - Help dialog added / custom ok Window
+LAST MODIFIED : 2/11/2018 - Help dialog added / custom ok Window
 ======================================================================
 */
 
@@ -63,13 +63,13 @@ LAST MODIFIED : 1/11/2018 - Help dialog added / custom ok Window
 int EDITAREACOL= B_BLUE;
 int EDIT_FORECOLOR=FH_WHITE;
 int STATUSBAR =B_CYAN;
-int STATUSMSG =F_WHITE;
+int STATUSMSG =FH_WHITE;
 int MENU_PANEL =B_WHITE;
 int MENU_SELECTOR =B_BLACK;
 int MENU_FOREGROUND0 =F_BLACK;
 int MENU_FOREGROUND1= F_WHITE;
 int EDITWINDOW_BACK= B_BLACK;
-int EDITWINDOW_FORE= F_WHITE;
+int EDITWINDOW_FORE= FH_WHITE;
 int SCROLLBAR_BACK= B_WHITE;
 int SCROLLBAR_FORE= F_WHITE;
 int SCROLLBAR_SEL= B_CYAN;
@@ -434,7 +434,7 @@ void setColorScheme(int colorCode)
 
     case 0: //Classic color scheme
       EDITAREACOL= B_BLUE;
-      EDIT_FORECOLOR=FH_WHITE;
+      EDIT_FORECOLOR=F_WHITE;
       STATUSBAR =B_CYAN;
       STATUSMSG =F_WHITE;
       MENU_PANEL =B_WHITE;

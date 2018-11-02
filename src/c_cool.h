@@ -4,7 +4,7 @@
 Module to control some display routines that implement ANSI functions.
 @author : Velorek
 @version : 1.0  
-Last modified: 04/08/2018                                                                
+Last modified: 02/11/2018 + Added resetAnsi                                                                
 ========================================================================
 */
 
@@ -78,6 +78,7 @@ char    getch(void);
 void    gotoxy(int x, int y);
 void    outputcolor(int foreground, int background);
 void    screencol(int x);
+void    resetAnsi(int x);
 int     get_terminal_dimensions(int *rows, int *columns);
 void    showcursor();
 void    hidecursor();

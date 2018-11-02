@@ -5,7 +5,7 @@ Module to control some display routines that implement ANSI functions.
 @author : Velorek
 @version : 1.0
  
-LAST MODIFIED : 04/08/2018
+LAST MODIFIED : 02/11/2018 + Added resetAnsi
 ======================================================================
 */
 
@@ -128,6 +128,30 @@ void screencol(int x) {
   printf("%c[2J", 0x1b);
   outputcolor(0, 0);
 }
+
+
+/*-----------------------*/
+/* Reset ANSI ATTRIBUTES */
+/*-----------------------*/
+void resetAnsi(int x) {
+  switch (x){
+    case 0: //reset all colors and attributes
+      printf("%c[0m", 0x1b);
+      break;
+    case 1: //reset only attributes
+      printf("%c[20m", 0x1b);
+      break;
+    case 2: //reset foreg. colors and not attrib.
+      printf("%c[39m", 0x1b);
+      break;
+    case 3: //reset back. colors and not attrib.
+      printf("%c[49m", 0x1b);
+      break;
+    default:
+      break;
+  }
+}
+
 
 /*------------------------*/
 /* Get terminal dimensions*/

@@ -3,7 +3,7 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 1/11/2018 - Inline edit (work in progress)                                           
+Last modified : 2/11/2018 - Inline edit (work in progress)                                           
 ======================================================================*/
 
 /*====================================================================*/
@@ -461,10 +461,12 @@ int timer_1(int *timer1) {
 /* Timer for animations - Display time and clean cursor */
   time_t  mytime = time(NULL);
   char   *time_str = ctime(&mytime);
-  char temp[2];
+  char temp[4];
 
-  temp[0] = ANIMATION[c_animation];
-  temp[1] = '\0';
+  temp[0] = '[';
+  temp[1] = ANIMATION[c_animation];
+  temp[2] = ']';
+  temp[3] = '\0';
 
   if(*timer1 == TIME_MS) {
     *timer1 = 0;
@@ -577,7 +579,8 @@ char specialChar;
 
     //Display character in yellow.
     gotoxy(*whereX, *whereY);
-    outputcolor(EDITAREACOL, FH_YELLOW);
+    //outputcolor(FH_YELLOW, 1);
+    outputcolor(F_YELLOW, EDITAREACOL);
     //Is it an accent or special char?
     if (currentChar < 0)
       {
@@ -587,6 +590,7 @@ char specialChar;
     else{
       printf("%c",currentChar);
     }
+    resetAnsi(0);
   }
 }
 
@@ -1057,6 +1061,7 @@ void credits() {
   free_buffer();
   resetTerm();			//restore terminal settings from failsafe
   showcursor();
+  resetAnsi(0);
   screencol(0);
   outputcolor(7, 0);
 

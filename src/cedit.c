@@ -3,7 +3,7 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 2/11/2018 - Inline edit (work in progress)                                           
+Last modified : 4/11/2018 - Inline edit (work in progress)                                           
 ======================================================================*/
 
 /*====================================================================*/
@@ -41,8 +41,8 @@ Last modified : 2/11/2018 - Inline edit (work in progress)
 
 //USER-DEFINED MESSAGES
 #define UNKNOWN "UNTITLED"
-#define STATUS_BAR_MSG1  ">[C-Edit] | F2 / CTRL-L -> MENU | CTRL-C EXIT"
-#define STATUS_BAR_MSG2 ">[C-Edit] Press ESC to exit menu.             "
+#define STATUS_BAR_MSG1  " [C-Edit] | F2 / CTRL-L -> MENU | F1 / ALT-H HELP | ALT-X EXIT"
+#define STATUS_BAR_MSG2 " [C-Edit] Press ESC to exit menu.             "
 #define WLEAVE_MSG "\n       Are you sure\n    you want to quit?"
 #define WSAVE_MSG ":\nFile saved successfully!"
 #define WSAVELABEL_MSG "[-] File:"
@@ -173,7 +173,6 @@ int     special_keys(int *whereX, int *whereY, char ch);
 //int special_keys(int *whereX, int *whereY,char ch, char chartrail[5], int *counter);
 void    draw_cursor(int *whereX, int *whereY, int *timer);
 int     timer_1(int *timer1);
-
 //Edit prototypes
 void    cleanBuffer(EDITBUFFER editBuffer[MAX_LINES]);
 int     writetoBuffer(EDITBUFFER editBuffer[MAX_LINES], int whereX,
@@ -190,6 +189,8 @@ int     writeBuffertoFile(FILE * filePtr,
 int     newDialog(char fileName[MAX_TEXT]);
 int     saveDialog(char fileName[MAX_TEXT]);
 int     saveasDialog(char fileName[MAX_TEXT]);
+int     openFileHandler();
+int     fileInfoDialog();
 int     writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES]);
 int     filetoBuffer(FILE * filePtr, EDITBUFFER editBuffer[MAX_LINES]);
 long    getfileSize(FILE * filePtr);
@@ -207,7 +208,6 @@ int main(int argc, char *argv[]) {
   int     esc_key = 0;		//To control key input and scan for keycodes.
   int     keypressed = 0;
   int     timer1 = 0;		// Timer to display animation
-
   //Initial values
   hidecursor();
   pushTerm();			//Save current terminal settings in failsafe
@@ -262,7 +262,6 @@ int main(int argc, char *argv[]) {
       oldchar = ch;
 
       ch = readch();
-
          
       /* EDIT */
       if(esc_key == 0) {
@@ -333,7 +332,7 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, ch
       limitCol  = findEndline(editBuffer, *whereY - START_CURSOR_Y);
       positionX = *whereX - START_CURSOR_X; //Buffer position (x,y)
       positionY = *whereY - START_CURSOR_Y;
-
+     
    /* ---------------------------------------- */   
    /* 
       READ CHARS WITH AND WITHOUT ACCENTS.
@@ -351,7 +350,6 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, ch
 
    if ((ch > 31 && ch < 127) || ch<0) {
      //if a char has been read.
-
       read_accent(&ch, accentchar);
       //INSERT CHARS AT THE END OF LINE
       if (*whereX < MAX_CHARS && positionX >= limitCol-1){
@@ -448,7 +446,11 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, ch
       //Ask for confirmations CTRL-C -> Exit
       exitp = confirmation();	//Shall we exit? Global variable! 
     }
-
+    if(ch == K_CTRL_H) {
+      //Change color Scheme
+      setColorScheme(colorsWindow(mylist));
+      refresh_screen(1);
+    }
   }
   return 0;
 }
@@ -457,7 +459,7 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, ch
 /* Timer 1 Animation. Clock and cursor     */
 /*-----------------------------------------*/
 
-int timer_1(int *timer1) {
+int timer_1(int *timer1){
 /* Timer for animations - Display time and clean cursor */
   time_t  mytime = time(NULL);
   char   *time_str = ctime(&mytime);
@@ -484,7 +486,6 @@ int timer_1(int *timer1) {
     return 1;
   }
 }
-
 /*-----------------------------------------*/
 /* Manage keys that send a ESC sequence    */
 /*-----------------------------------------*/
@@ -507,7 +508,7 @@ int special_keys(int *whereX, int *whereY, char ch) {
  
     //Check key trails for special keys.
 
-    //FUNCTION KEYS
+    //FUNCTION KEYS : F1 - F4
     if(strcmp(chartrail, K_F2_TRAIL) == 0 ||
        strcmp(chartrail, K_F2_TRAIL2) == 0) {
       if(horizontal_menu() == K_ESCAPE) {
@@ -516,10 +517,16 @@ int special_keys(int *whereX, int *whereY, char ch) {
 	main_screen();
       }
       //  Drop-down menu loop */       
-      drop_down(&kglobal);	//animation
+      drop_down(&kglobal);	//animation  
     } else if(strcmp(chartrail, K_F3_TRAIL) == 0 ||
 	      strcmp(chartrail, K_F3_TRAIL2) == 0) {
       refresh_screen(1);
+    } else if(strcmp(chartrail, K_F1_TRAIL) == 0 ||
+	      strcmp(chartrail, K_F1_TRAIL2) == 0) {
+      help_info();
+    } else if(strcmp(chartrail, K_F4_TRAIL) == 0 ||
+	      strcmp(chartrail, K_F4_TRAIL2) == 0) {
+      about_info();
       // ARROW KEYS  
     } else if(strcmp(chartrail, K_LEFT_TRAIL) == 0) {
       //Left-arrow key  
@@ -537,6 +544,30 @@ int special_keys(int *whereX, int *whereY, char ch) {
       //Down-arrow key  
       if(*whereY < rows - 2)
 	*whereY = *whereY + 1;
+    } else if(strcmp(chartrail, K_ALT_H) == 0) {
+      help_info();
+    } else if(strcmp(chartrail, K_ALT_O) == 0) {
+      openFileHandler(); //Open file Dialog
+    } else if(strcmp(chartrail, K_ALT_N) == 0) {
+      newDialog(currentFile); // New file
+      refresh_screen(-1);
+    } else if(strcmp(chartrail, K_ALT_A) == 0) {
+      saveasDialog(currentFile); //Save as.. file
+      refresh_screen(-1);
+    } else if(strcmp(chartrail, K_ALT_D) == 0) {
+      fileInfoDialog(); //Info file
+    } else if(strcmp(chartrail, K_ALT_W) == 0) {     
+      if(strcmp(currentFile, UNKNOWN) == 0)
+        saveasDialog(currentFile); //Write to file
+      else {
+        saveDialog(currentFile);
+      }
+      refresh_screen(-1);
+    } else if(strcmp(chartrail, K_ALT_X) == 0) {
+      if (fileModified == 1)
+        exitp = confirmation();	//Shall we exit? Global variable!
+      else
+        exitp = EXIT_FLAG;
     }
     esc_key = 1;
   } else {
@@ -758,6 +789,11 @@ int refresh_editarea() {
 
 char horizontal_menu() {
   char    temp_char;
+  int     i=0;
+   //Clean Status bar
+  for(i = 1; i < columns; i++) {
+    write_ch(i, rows, FILL_CHAR, STATUSBAR, STATUSMSG);
+  } 
   write_str(1, rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG);
   update_screen();
   loadmenus(mylist, HOR_MENU);
@@ -772,8 +808,10 @@ char horizontal_menu() {
 
 void filemenu() {
   int     i;
-  char    oldFile[MAX_TEXT];
-
+   //Clean Status bar
+  for(i = 1; i < columns; i++) {
+    write_ch(i, rows, FILL_CHAR, STATUSBAR, STATUSMSG);
+  } 
   data.index = OPTION_NIL;
   write_str(1, rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG);
   loadmenus(mylist, FILE_MENU);
@@ -793,21 +831,7 @@ void filemenu() {
   }
   if(data.index == OPTION_2) {
     //External Module - Open file dialog.
-    openFileDialog(&openFileData);
-    //Update new global file name
-    if(openFileData.itemIndex != 0) {
-      //Change current File Name 
-      //if the index is different than CLOSE_WINDOW
-      clearString(oldFile, MAX_TEXT);
-      strcpy(oldFile, currentFile);	//save previous file to go back
-      clearString(currentFile, MAX_TEXT);
-      strcpy(currentFile, openFileData.path);
-      cleanBuffer(editBuffer);
-      //Open file and dump first page to buffer - temporary
-      if(filePtr != NULL)
-	closeFile(filePtr);
-      handleopenFile(&filePtr, currentFile, oldFile);
-    }
+    openFileHandler();
   }
   if(data.index == OPTION_3) {
     //Save option
@@ -848,11 +872,11 @@ void filemenu() {
 
 void optionsmenu() {
   int     i;
-  long    size = 0, lines = 0;
-  char    sizeStr[12];
-  char    linesStr[12];
-  char    tempMsg[50];
   data.index = OPTION_NIL;
+  //Clean Status bar
+  for(i = 1; i < columns; i++) {
+    write_ch(i, rows, FILL_CHAR, STATUSBAR, STATUSMSG);
+  } 
   write_str(1, rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG);
   loadmenus(mylist, OPT_MENU);
   write_str(7, 1, "Options", MENU_SELECTOR, MENU_FOREGROUND1);
@@ -864,29 +888,7 @@ void optionsmenu() {
   free_list(mylist);
   if(data.index == OPTION_1) {
     //File Info
-    if(filePtr != NULL) {
-      closeFile(filePtr);
-      openFile(&filePtr, currentFile, "r");
-      size = getfileSize(filePtr);
-      lines = countLinesFile(filePtr);
-      if(size <= 0)
-	size = 0;
-      if(lines <= 0)
-	lines = 0;
-      sprintf(sizeStr, "%ld", size);
-      sprintf(linesStr, "%ld", lines);
-      strcpy(tempMsg, WINFO_SIZE);
-      strcat(tempMsg, sizeStr);
-      strcat(tempMsg, " bytes.");
-      strcat(tempMsg, WINFO_SIZE2);
-      strcat(tempMsg, linesStr);
-      strcat(tempMsg, " lines.\n");
-      //strcat(WINFO_SIZE3, currentFile);
-      //strcat(tempMsg, currentFile);
-      alertWindow(mylist, currentFile, tempMsg);
-    } else {
-      infoWindow(mylist, WINFO_NOPEN);
-    }
+    fileInfoDialog();
   }
   if(data.index == OPTION_3) {
     //Colors
@@ -908,6 +910,10 @@ void optionsmenu() {
 
 void helpmenu() {
   int     i;
+   //Clean Status bar
+  for(i = 1; i < columns; i++) {
+    write_ch(i, rows, FILL_CHAR, STATUSBAR, STATUSMSG);
+  } 
   data.index = OPTION_NIL;
   write_str(1, rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG);
   loadmenus(mylist, HELP_MENU);
@@ -1286,7 +1292,65 @@ int newDialog(char fileName[MAX_TEXT]) {
   }
   return ok;
 }
+/*--------------------------*/
+/* OPEN File Dialog HANDLER */
+/*--------------------------*/
 
+int openFileHandler(){
+   char    oldFile[MAX_TEXT];
+    openFileDialog(&openFileData);
+    //Update new global file name
+    if(openFileData.itemIndex != 0) {
+      //Change current File Name 
+      //if the index is different than CLOSE_WINDOW
+      clearString(oldFile, MAX_TEXT);
+      strcpy(oldFile, currentFile);	//save previous file to go back
+      clearString(currentFile, MAX_TEXT);
+      strcpy(currentFile, openFileData.path);
+      cleanBuffer(editBuffer);
+      //Open file and dump first page to buffer - temporary
+      if(filePtr != NULL)
+	closeFile(filePtr);
+        handleopenFile(&filePtr, currentFile, oldFile);
+    }
+   return 1;
+}
+
+/*------------------*/
+/* File Info Dialog */
+/*------------------*/
+
+
+int fileInfoDialog(){
+  long    size = 0, lines = 0;
+  char    sizeStr[12];
+  char    linesStr[12];
+  char    tempMsg[50];
+  if(filePtr != NULL) {
+      closeFile(filePtr);
+      openFile(&filePtr, currentFile, "r");
+      size = getfileSize(filePtr);
+      lines = countLinesFile(filePtr);
+      if(size <= 0)
+	size = 0;
+      if(lines <= 0)
+	lines = 0;
+      sprintf(sizeStr, "%ld", size);
+      sprintf(linesStr, "%ld", lines);
+      strcpy(tempMsg, WINFO_SIZE);
+      strcat(tempMsg, sizeStr);
+      strcat(tempMsg, " bytes.");
+      strcat(tempMsg, WINFO_SIZE2);
+      strcat(tempMsg, linesStr);
+      strcat(tempMsg, " lines.\n");
+      //strcat(WINFO_SIZE3, currentFile);
+      //strcat(tempMsg, currentFile);
+      alertWindow(mylist, currentFile, tempMsg);
+    } else {
+      infoWindow(mylist, WINFO_NOPEN);
+    }
+  return 0;
+}
 /*-----------------------------*/
 /* Write EditBuffer to Display */
 /*-----------------------------*/

@@ -4,7 +4,7 @@
 Module to show user interface windows, textbox, etc.
 @author : Velorek
 @version : 1.0  
-Last modified: 1/11/2018 + Custom OK window                                                                
+Last modified: 4/11/2018 + New keys                                                                
 ========================================================================
 */
 
@@ -26,15 +26,15 @@ Last modified: 1/11/2018 + Custom OK window
 
 //HELP MESSAGE
 #define HELP0 "Here is a list of the most common keys: \n\n"
-#define HELP1 "CTRL-L OPEN MENUS   |   F2 - OPEN MENUS \n"
-#define HELP2 "CTRL-C EXIT         |   F3 - REFRESH SCREEN \n"
-#define HELP3 "CTRL-L OPEN MENUS   |   F2 - OPEN MENUS \n"
-#define HELP4 "CTRL-L OPEN MENUS   |   F2 - OPEN MENUS \n"
-#define HELP5 "CTRL-L OPEN MENUS   |   F2 - OPEN MENUS \n"
-#define HELP6 "CTRL-L OPEN MENUS   |   F2 - OPEN MENUS \n"
-#define HELP7 "CTRL-L OPEN MENUS   |   F2 - OPEN MENUS \n"
-#define HELP8 "CTRL-L OPEN MENUS   |   F2 - OPEN MENUS \n"
-#define HELP9 "CTRL-L OPEN MENUS   |   F2 - OPEN MENUS \n"
+#define HELP1 "ALT-X: EXIT PROGRAM  |   F1 OR ALT-H: HELP \n"
+#define HELP2 "CTRL-L: OPEN MENUS   |   F2: OPEN MENUS \n"
+#define HELP3 "ALT-O: OPEN FILE     |   F3: REFRESH SCREEN \n"
+#define HELP4 "ALT-N: NEW FILE      |   F4: ABOUT DIALOG \n"
+#define HELP5 "ALT-W: OPEN MENUS    |   ALT-A: SAVE AS \n"
+#define HELP6 "ALT-D: FILE INFO     |   CTRL-C: EXIT \n"
+#define HELP7 "CTRL-H: COLORS       |   ALT-V:  RESERVED \n"
+#define HELP8 "ALT-F: RESERVED      |   ALT-D:  RESERVED \n"
+#define HELP9 "CTRL-H: RESERVED     |   ALT-K:  RESERVED \n"
 #define HELP10 "\nFor more info visit  \n [http://oldstuff286.blogspot.com]"
 
 //END

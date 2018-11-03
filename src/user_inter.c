@@ -6,7 +6,7 @@ windows, textbox, etc.
 @author : Velorek
 @version : 1.0
  
-LAST MODIFIED : 2/11/2018 - Help dialog added / custom ok Window
+LAST MODIFIED : 4/11/2018 - Fixed latency in cursor (text box)
 ======================================================================
 */
 
@@ -160,16 +160,17 @@ int textbox(int wherex, int wherey, int displayLength,
   write_ch(positionx + displayLength + 1, wherey, ']', backcolor,
 	   textcolor);
   update_screen();
+  //Reset keyboard
   if(kbhit() == 1)
     ch = readch();
-  ch = 0;
+    ch = 0;
 
   do {
       keypressed = kbhit();
     //Cursor Animation
    if (keypressed == 0){
     cursorCount++;
-    if(cursorCount == 100) {
+    if(cursorCount == 10000) {
       cursorCount = 0;
       switch (cursorON) {
 	case 1:
@@ -191,7 +192,7 @@ int textbox(int wherex, int wherey, int displayLength,
           cursorON = 1;
 	  break;
       }
-     }
+     } 
     }
     //Process keys     
     if(keypressed == 1) {

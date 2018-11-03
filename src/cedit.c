@@ -332,7 +332,8 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, ch
       limitCol  = findEndline(editBuffer, *whereY - START_CURSOR_Y);
       positionX = *whereX - START_CURSOR_X; //Buffer position (x,y)
       positionY = *whereY - START_CURSOR_Y;
-     
+      accentchar[0] =0;
+      accentchar[1]=0;
    /* ---------------------------------------- */   
    /* 
       READ CHARS WITH AND WITHOUT ACCENTS.
@@ -378,7 +379,8 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, ch
             editBuffer[positionY].charBuf[oldPosition].ch;
             editBuffer[positionY].charBuf[newPosition].specialChar =  
             editBuffer[positionY].charBuf[oldPosition].specialChar;
-           // refresh_line(*whereY);
+           //Don't print null characters to string
+            if (editBuffer[positionY].charBuf[oldPosition].ch!=CHAR_NIL){
              if (accentchar[0]!=0 || editBuffer[positionY].charBuf[oldPosition].specialChar != 0)
              {
               //Special char ? print the two values to screen buffer.
@@ -387,10 +389,10 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, ch
               write_ch(newPosition + START_CURSOR_X, *whereY, editBuffer[positionY].charBuf[newPosition].ch,
                EDITAREACOL,EDIT_FORECOLOR);
             } else{
-            write_ch(newPosition + START_CURSOR_X, *whereY, editBuffer[positionY].charBuf[newPosition].ch,
+             write_ch(newPosition + START_CURSOR_X, *whereY, editBuffer[positionY].charBuf[newPosition].ch,
                EDITAREACOL,EDIT_FORECOLOR);
             }
-            
+            }
             counter++;
          }
          //insert new SPECIAL char
@@ -406,7 +408,8 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, ch
         writetoBuffer(editBuffer, positionX,positionY, accentchar[1]);
         
         *whereX = *whereX + 1;
-        }    
+        }   
+      update_screen();
       fileModified = FILE_MODIFIED;  
     } 
 
@@ -477,7 +480,7 @@ int timer_1(int *timer1){
     write_str(columns - strlen(time_str), 1, time_str, MENU_PANEL, MENU_FOREGROUND0);
     write_str(columns - strlen(time_str) - 5,1, temp, MENU_PANEL, MENU_FOREGROUND0);
     update_position();		//update position display
-    update_screen();
+    update_screen(); //update screen - main routine in timer
     c_animation++; 
     if (c_animation > 6) c_animation = 0;
     return 0;
@@ -601,7 +604,7 @@ char specialChar;
   } else {
     *timer = 0;			//reset timer
     //Is the cursor at the end or in the middle of text?
-    if (positionX <= limitCol){ 
+    if (positionX < limitCol){ 
       currentChar = editBuffer[positionY].charBuf[positionX].ch;
    } else
     {
@@ -711,7 +714,7 @@ int main_screen() {
   write_ch(2, rows - 1, '<', SCROLLBAR_ARR, SCROLLBAR_FORE);
   write_ch(columns - 1, rows - 1, '>', SCROLLBAR_ARR, SCROLLBAR_FORE);
 
-  update_screen();
+//  update_screen();
   //Write editBuffer
   writeBuffertoDisplay(editBuffer);
 
@@ -885,6 +888,7 @@ void optionsmenu() {
   close_window();
   write_str(1, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0);
   update_screen();
+
   free_list(mylist);
   if(data.index == OPTION_1) {
     //File Info

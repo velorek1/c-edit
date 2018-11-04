@@ -72,6 +72,7 @@ Last modified : 4/11/2018 - Inline edit (work in progress)
 #define K_LEFTMENU -1		//Left arrow key pressed while in menu
 #define K_RIGHTMENU -2		//Right arrow key pressed while in menu
 #define MAX_TEXT 150
+#define MAX_PATH 1024
 
 //MENU CONSTANTS
 #define HOR_MENU -1
@@ -141,7 +142,7 @@ char    currentFile[MAX_TEXT];
 int     limitRow = 0, limitCol = 0; // These variables account for the current limits of the buffer.
 int     c_animation=0; //Counter for animation 
 
-//char    fullPathStr[MAX_TEXT];
+char    currentPath[MAX_PATH];
 
 //FLAGS
 int     exitp = 0;		// Exit flag for main loop
@@ -216,7 +217,7 @@ int main(int argc, char *argv[]) {
   clearString(currentFile, MAX_TEXT);
   strcpy(currentFile, UNKNOWN);
   setColorScheme(0);            //Until config file is added
-  
+  getcwd(currentPath, sizeof(currentPath));     //Save current path
 
   main_screen();		//Draw screen
   resetch();			//Clear keyboard and sets ENTER = 13
@@ -311,7 +312,7 @@ int findEndline(EDITBUFFER editBuffer[MAX_LINES], int line){
    do{
       ch = editBuffer[line].charBuf[i].ch;
       i++;
-      if (ch == CHAR_NIL) break;
+      if (ch == CHAR_NIL || ch == END_LINE_CHAR) break;
     } while (i<MAX_CHARS);
    result = i;
    ch=0;
@@ -325,7 +326,7 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, ch
   int     oldPosition = 0;
   int     positionX=0; 
   int     positionY=0;
- 
+  int     i=0; 
  if(ch != K_ESCAPE) {
     
       //Calculate position values 
@@ -352,6 +353,15 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, ch
    if ((ch > 31 && ch < 127) || ch<0) {
      //if a char has been read.
       read_accent(&ch, accentchar);
+
+      //ADD SPACES IF CURSOR IS NOT AT THE END OF THE LINE
+       if (positionX > limitCol){ 
+         for (i=limitCol-1; i<=positionX; i++)
+         {
+           writetoBuffer(editBuffer, i, positionY, ' ');
+           write_ch(i+START_CURSOR_X,*whereY, ' ', EDITAREACOL, EDIT_FORECOLOR);
+         }
+      }
       //INSERT CHARS AT THE END OF LINE
       if (*whereX < MAX_CHARS && positionX >= limitCol-1){
        if (accentchar[0]!=0) {
@@ -379,8 +389,9 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, ch
             editBuffer[positionY].charBuf[oldPosition].ch;
             editBuffer[positionY].charBuf[newPosition].specialChar =  
             editBuffer[positionY].charBuf[oldPosition].specialChar;
-           //Don't print null characters to string
-            if (editBuffer[positionY].charBuf[oldPosition].ch!=CHAR_NIL){
+           //Don't print null characters to string or 0x0A
+            if (editBuffer[positionY].charBuf[oldPosition].ch!=CHAR_NIL || 
+                editBuffer[positionY].charBuf[oldPosition].ch!=END_LINE_CHAR){
              if (accentchar[0]!=0 || editBuffer[positionY].charBuf[oldPosition].specialChar != 0)
              {
               //Special char ? print the two values to screen buffer.
@@ -426,9 +437,17 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, ch
     if(ch == K_BACKSPACE) {
       //BACKSPACE key
       write_ch(*whereX, *whereY, ' ', EDITAREACOL, EDITAREACOL);
+      editBuffer[positionY].charBuf[positionX-1].ch =  CHAR_NIL;
+      editBuffer[positionY].charBuf[positionX-1].specialChar = CHAR_NIL;
+      //Remove line if we continue pressing backspace
+      if(*whereX == START_CURSOR_X && *whereY>START_CURSOR_Y) {
+         *whereY = *whereY-1;
+         *whereX = findEndline(editBuffer, *whereY - START_CURSOR_Y) + START_CURSOR_X;
+      }
       if(*whereX > START_CURSOR_X)
 	*whereX = *whereX - 1;
     }
+
     if(ch == K_TAB) {
       //TAB key
       if(*whereX < columns - TAB_DISTANCE)
@@ -547,6 +566,8 @@ int special_keys(int *whereX, int *whereY, char ch) {
       //Down-arrow key  
       if(*whereY < rows - 2)
 	*whereY = *whereY + 1;
+    } else if(strcmp(chartrail, K_DELETE) == 0) {
+      //delete button;
     } else if(strcmp(chartrail, K_ALT_H) == 0) {
       help_info();
     } else if(strcmp(chartrail, K_ALT_O) == 0) {
@@ -1302,6 +1323,7 @@ int newDialog(char fileName[MAX_TEXT]) {
 
 int openFileHandler(){
    char    oldFile[MAX_TEXT];
+    chdir(currentPath); //Go back to original path
     openFileDialog(&openFileData);
     //Update new global file name
     if(openFileData.itemIndex != 0) {

@@ -50,6 +50,8 @@ Last modified: 04/11/2018 + Added more keys
 #define K_RIGHT_TRAIL "\e[C\0\0"
 #define K_LEFT_TRAIL "\e[D\0\0"
 
+#define K_DELETE "\e[3~"
+
 #define K_CTRL_C 0x03
 #define K_CTRL_D 0x04
 #define K_CTRL_H 0x08

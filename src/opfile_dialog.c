@@ -430,8 +430,8 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
 	    scrollData->scrollDirection = DOWN_SCROLL;
 	  }
 	  //Return value  
-	  ch = control;
-	  break;
+          ch = control;
+	  break;         
       }
     }
   }
@@ -719,7 +719,6 @@ void openFileDialog(SCROLLDATA * openFileData) {
       exitFlag = 1;		//First item is selected
     if(ch == K_ENTER && scrollData.isDirectory == FILEITEM)
       exitFlag = 1;		//File selected 
-
   } while(exitFlag != 1);
 
   //Return file selected by copying into fileToOpen -> currentFile

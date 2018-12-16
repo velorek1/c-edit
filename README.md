@@ -1,6 +1,8 @@
 C-EDIT Project in C language
 ============================
 C-EDIT for linux - IN PROGRESS - A linux text editor in the style of the MSDOS EDIT - NO NCURSES 
+Project Website: https://c-edit.000webhostapp.com/
+[https://c-edit.000webhostapp.com/](https://c-edit.000webhostapp.com/)
 
 So far I have implemented:
 
@@ -34,8 +36,6 @@ Files in /src/:
 
 
 As a screen buffer I have implemented a dynamic structure in memory that allows to save the current screen so that you can display new things on top and then go back to the previous (saved) screen. (simple linked list)
-
-More info at: oldstuff286.blogspot.com
 
 Makefile is included. Type "cd src", "make" and "./cedit" to execute.
 

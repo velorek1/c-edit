@@ -1,7 +1,7 @@
 C-EDIT Project in C language
 ============================
 C-EDIT for linux - IN PROGRESS - A linux text editor in the style of the MSDOS EDIT - NO NCURSES
-* WARNING: DO NOT EDIT YOUR PRECIOUS FILES WITH THIS EDITOR!!
+* >>>>> WARNING: DO NOT EDIT YOUR PRECIOUS FILES WITH THIS EDITOR!! <<<<<
 
 :WEB:
 [C-Edit Project Website](https://c-edit.000webhostapp.com/)
@@ -20,11 +20,12 @@ So far I have implemented:
 * Save file option. 
 * User interface: Text box.
 * Open file - in progress.
+* Added Keyboard module.
+* Improved Text box.
+* Color schemes.
 
 *New:
- * Color schemes.
- * Added Keyboard module.
- * Improved Text box.
+ * Added rudimentary config file for color schemes.
 
 Files in /src/:
 ===============

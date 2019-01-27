@@ -6,7 +6,7 @@ windows, textbox, etc.
 @author : Velorek
 @version : 1.0
  
-LAST MODIFIED : 4/11/2018 - Fixed latency in cursor (text box)
+LAST MODIFIED : 27/1/2019 - Updated color schemes
 ======================================================================
 */
 
@@ -451,11 +451,11 @@ void setColorScheme(int colorCode)
       break;
     case 1: //Blue color scheme
       EDITAREACOL= B_BLUE;
-      EDIT_FORECOLOR=FH_WHITE;
-      STATUSBAR =B_CYAN;
+      EDIT_FORECOLOR=F_WHITE;
+      STATUSBAR =B_BLUE;
       STATUSMSG =F_WHITE;
       MENU_PANEL =B_WHITE;
-      MENU_SELECTOR =B_CYAN;
+      MENU_SELECTOR =B_BLUE;
       MENU_FOREGROUND0 =F_BLACK;
       MENU_FOREGROUND1= F_WHITE;
       EDITWINDOW_BACK= B_BLUE;
@@ -472,8 +472,8 @@ void setColorScheme(int colorCode)
       STATUSMSG =F_WHITE;
       MENU_PANEL =B_BLUE;
       MENU_SELECTOR =B_CYAN;
-      MENU_FOREGROUND0 = FH_WHITE;
-      MENU_FOREGROUND1 = FH_YELLOW;
+      MENU_FOREGROUND0 = F_WHITE;
+      MENU_FOREGROUND1 = F_WHITE;
       EDITWINDOW_BACK= B_BLACK;
       EDITWINDOW_FORE= F_WHITE;
       SCROLLBAR_BACK= B_WHITE;

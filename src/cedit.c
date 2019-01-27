@@ -3,7 +3,7 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 4/11/2018 - Inline edit (work in progress)                                           
+Last modified : 27/01/2019 - Added simple config file for color schemes                                          
 ======================================================================*/
 
 /*====================================================================*/
@@ -49,7 +49,7 @@ Last modified : 4/11/2018 - Inline edit (work in progress)
 #define WSAVETITLE_MSG "[C-EDIT SAVE AS]"
 #define WNEWTITLE_MSG "[C-EDIT NEW FILE]"
 #define WTITLEABOUT_MSG "[ABOUT]"
-#define WABOUT_MSG "Coded by v3l0r3k.\n - 2018 - \n Spukhafte Fernwirkungen!"
+#define WABOUT_MSG "Coded by v3l0r3k.\n - 2019 - \n Spukhafte Fernwirkungen!"
 #define WINFO_NOPEN "Error:\nThere isn't any file open!"
 #define WINFO_SIZE "-File size: "
 #define WINFO_SIZE2 "\n-No. of lines: "
@@ -106,6 +106,7 @@ Last modified : 4/11/2018 - Inline edit (work in progress)
 
 //FILE CONSTANTS
 #define TMP_FILE "tmp.txt"
+#define CONFIGFILE "cedit.cfg"
 #define FILE_MODIFIED 1
 #define FILE_UNMODIFIED 0
 #define FILE_READMODE 2
@@ -200,6 +201,7 @@ long    checkFile(FILE * filePtr);
 int     file_exists(char *fileName);
 int     handleopenFile(FILE ** filePtr, char *fileName, char *oldFileName);
 int     createnewFile(FILE ** filePtr, char *fileName, int checkFile);
+void    checkConfigFile(int setValue);
 /*====================================================================*/
 /* MAIN PROGRAM - CODE                                                */
 /*====================================================================*/
@@ -216,7 +218,8 @@ int main(int argc, char *argv[]) {
   cleanBuffer(editBuffer);
   clearString(currentFile, MAX_TEXT);
   strcpy(currentFile, UNKNOWN);
-  setColorScheme(0);            //Until config file is added
+  checkConfigFile(-1);            //Check config file for colorScheme. -1 -> first time
+  //setColorScheme(0);            //Until config file is added
   getcwd(currentPath, sizeof(currentPath));     //Save current path
 
   main_screen();		//Draw screen
@@ -895,7 +898,7 @@ void filemenu() {
 /*--------------------------*/
 
 void optionsmenu() {
-  int     i;
+  int     i, setColor;
   data.index = OPTION_NIL;
   //Clean Status bar
   for(i = 1; i < columns; i++) {
@@ -916,8 +919,10 @@ void optionsmenu() {
     fileInfoDialog();
   }
   if(data.index == OPTION_3) {
-    //Colors
-    setColorScheme(colorsWindow(mylist));
+    //Set Colors
+    setColor = colorsWindow(mylist);
+    setColorScheme(setColor);
+    checkConfigFile(setColor); //save new configuration in config file
     refresh_screen(1);
   }
   data.index = OPTION_NIL;
@@ -1103,7 +1108,7 @@ void credits() {
   printf(cedit_ascii_5);
   printf(cedit_ascii_6);
 
-  printf("\nCoded by v3l0r3k 2018.\n");
+  printf("\nCoded by v3l0r3k 2019.\n");
 
 }
 
@@ -1390,12 +1395,17 @@ int writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES]) {
     tempChar = editBuffer[j].charBuf[i].ch;
     specialChar = editBuffer[j].charBuf[i].specialChar;
     if(tempChar != CHAR_NIL) {
-      if(tempChar != END_LINE_CHAR) {
-	write_ch(i + START_CURSOR_X, j + START_CURSOR_Y, specialChar,
+      if(tempChar != END_LINE_CHAR) {	
+        write_ch(i + START_CURSOR_X, j + START_CURSOR_Y, specialChar,
 		 EDITAREACOL, EDIT_FORECOLOR);
 	write_ch(i + START_CURSOR_X, j + START_CURSOR_Y, tempChar, EDITAREACOL,
 		 EDIT_FORECOLOR);
 	i++;
+        if (i==columns -2){
+          //temporary restriction until scroll is implemented
+          i=0;
+          j++;
+        }
       }
       if(tempChar == END_LINE_CHAR) {
 	i = 0;
@@ -1584,4 +1594,57 @@ int createnewFile(FILE ** filePtr, char *fileName, int checkFile) {
     refresh_screen(-1);
   }
   return ok;
+}
+
+/*-------------------*/
+/* Checks config file*/
+/*-------------------*/
+
+void checkConfigFile(int setValue){
+FILE *fp;
+int ok=0;
+char ch;
+
+ if (setValue == -1){
+   if(file_exists(CONFIGFILE)) {
+    //If we open the program for the first time.
+   //Read config file
+        ok=openFile(&fp,CONFIGFILE, "r");
+        if (ok==1){
+          ch=getc(fp);
+          ch = ch - '0';
+          setColorScheme(ch);
+        } else
+        {
+          printf("Error opening configfile. Setting to defaults.\n");
+          setColorScheme(0);
+        }
+          closeFile(fp);
+    } else {
+        //Create config file
+         ok=openFile(&fp,CONFIGFILE, "w");
+         if (ok==1){
+           fprintf(fp,"%d",0);
+           setColorScheme(0); //Create config file and set default color Scheme        
+         }else
+         {
+          printf("Error creating config file. Setting to defaults.\n");
+          setColorScheme(0);
+         }
+          closeFile(fp);
+   }
+  } else{
+    //If we call the function from the menu.
+    //Set new value in config file
+         ok=openFile(&fp,CONFIGFILE, "w");
+         if (ok==1){
+           fprintf(fp,"%d",setValue);
+           //setColorScheme(setValue); //Create config file and set default color Scheme        
+         }else
+         {
+          printf("Error creating config file. Setting to defaults.\n");
+          setColorScheme(0);
+         }
+          closeFile(fp); 
+  }    
 }

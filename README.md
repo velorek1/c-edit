@@ -1,7 +1,7 @@
 C-EDIT Project in C language
 ============================
 C-EDIT for linux - IN PROGRESS - A linux text editor in the style of the MSDOS EDIT - NO NCURSES
-* >>>>> WARNING: DO NOT EDIT YOUR PRECIOUS FILES WITH THIS EDITOR!! <<<<<
+* WARNING: DO NOT EDIT YOUR PRECIOUS FILES WITH THIS EDITOR!!
 
 :WEB:
 [C-Edit Project Website](https://c-edit.000webhostapp.com/)

@@ -129,29 +129,27 @@ void screencol(int x) {
   outputcolor(0, 0);
 }
 
-
 /*-----------------------*/
 /* Reset ANSI ATTRIBUTES */
 /*-----------------------*/
 void resetAnsi(int x) {
-  switch (x){
-    case 0: //reset all colors and attributes
+  switch (x) {
+    case 0:			//reset all colors and attributes
       printf("%c[0m", 0x1b);
       break;
-    case 1: //reset only attributes
+    case 1:			//reset only attributes
       printf("%c[20m", 0x1b);
       break;
-    case 2: //reset foreg. colors and not attrib.
+    case 2:			//reset foreg. colors and not attrib.
       printf("%c[39m", 0x1b);
       break;
-    case 3: //reset back. colors and not attrib.
+    case 3:			//reset back. colors and not attrib.
       printf("%c[49m", 0x1b);
       break;
     default:
       break;
   }
 }
-
 
 /*------------------------*/
 /* Get terminal dimensions*/

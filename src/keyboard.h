@@ -24,7 +24,6 @@ Last modified: 04/11/2018 + Added more keys
 #include "c_cool.h"
 //#include "screen_buffer.h"
 
-
 /*====================================================================*/
 /* KEYS - CONSTANTS                                                   */
 /*====================================================================*/
@@ -43,7 +42,6 @@ Last modified: 04/11/2018 + Added more keys
 #define K_F3_TRAIL2 "\e[[C\0"
 #define K_F4_TRAIL "\eOS\0\0"
 #define K_F4_TRAIL2 "\e[[D\0"
-
 
 #define K_UP_TRAIL "\e[A\0\0"
 #define K_DOWN_TRAIL "\e[B\0\0"
@@ -78,8 +76,7 @@ Last modified: 04/11/2018 + Added more keys
 /* FUNCTION PROTOTYPES                                                */
 /*====================================================================*/
 
-int read_keytrail(char chartrail[5]);
-int read_accent(char *ch, char accentchar[2]);
+int     read_keytrail(char chartrail[5]);
+int     read_accent(char *ch, char accentchar[2]);
 
 #endif
-

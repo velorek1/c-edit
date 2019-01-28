@@ -10,7 +10,7 @@ Last modified : 20/10/2018
 */
 
 #ifndef _SCREEN_BUFFER_H_
-# define _SCREEN_BUFFER_H_
+#define _SCREEN_BUFFER_H_
 
 /*====================================================================*/
 /* COMPILER DIRECTIVES AND INCLUDES                                   */
@@ -20,7 +20,7 @@ Last modified : 20/10/2018
 #include <stdlib.h>
 #include <strings.h>
 #include "c_cool.h"
-#include "keyboard.h" 
+#include "keyboard.h"
 
 #define NHOR_LINE -50
 #define NVER_LINE -51

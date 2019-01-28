@@ -9,7 +9,7 @@ Last modified: 4/11/2018 + New keys
 */
 
 #ifndef _USER_INTER_H_
-# define _USER_INTER_H_
+#define _USER_INTER_H_
 
 /*====================================================================*/
 /* COMPILER DIRECTIVES AND INCLUDES                                   */
@@ -30,7 +30,7 @@ Last modified: 4/11/2018 + New keys
 #define HELP2 "CTRL-L: OPEN MENUS   |   F2: OPEN MENUS \n"
 #define HELP3 "ALT-O: OPEN FILE     |   F3: REFRESH SCREEN \n"
 #define HELP4 "ALT-N: NEW FILE      |   F4: ABOUT DIALOG \n"
-#define HELP5 "ALT-W: OPEN MENUS    |   ALT-A: SAVE AS \n"
+#define HELP5 "ALT-W: SAVE FILE     |   ALT-A: SAVE AS \n"
 #define HELP6 "ALT-D: FILE INFO     |   CTRL-C: EXIT \n"
 #define HELP7 "CTRL-H: COLORS       |   ALT-V:  RESERVED \n"
 #define HELP8 "ALT-F: RESERVED      |   ALT-D:  RESERVED \n"
@@ -38,7 +38,6 @@ Last modified: 4/11/2018 + New keys
 #define HELP10 "\nFor more info visit  \n [http://oldstuff286.blogspot.com]"
 
 //END
-
 
 #define MAX_TEXT 150
 
@@ -75,8 +74,6 @@ extern int SCROLLBAR_BACK;
 extern int SCROLLBAR_FORE;
 extern int SCROLLBAR_SEL;
 extern int SCROLLBAR_ARR;
-
-
 
 /*====================================================================*/
 /* FUNCTION PROTOTYPES                                                */

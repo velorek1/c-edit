@@ -452,7 +452,7 @@ void setColorScheme(int colorCode)
     case 1: //Blue color scheme
       EDITAREACOL= B_BLUE;
       EDIT_FORECOLOR=F_WHITE;
-      STATUSBAR =B_BLUE;
+      STATUSBAR =B_BLACK;
       STATUSMSG =F_WHITE;
       MENU_PANEL =B_WHITE;
       MENU_SELECTOR =B_BLUE;

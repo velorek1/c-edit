@@ -34,9 +34,9 @@ Last modified : 27/01/2019 - Added simple config file for color schemes
 #define cedit_ascii_6 " \\_____|    |______\\__,_|_|\\__|\n"
 
 //ABOUT - ASCII ART
-#define ABOUT_ASC_1 "        _   __       \n"   
+#define ABOUT_ASC_1 "        _   __       \n"
 #define ABOUT_ASC_2 "       /  _|__ _|.___\n"
-#define ABOUT_ASC_3 "       \\_  |__(_]| |  v0.1 \n       Coded   by  V3l0rek\n " 
+#define ABOUT_ASC_3 "       \\_  |__(_]| |  v0.1 \n       Coded   by  V3l0rek\n "
 #define ANIMATION "||//--\\\\"
 
 //USER-DEFINED MESSAGES
@@ -111,7 +111,6 @@ Last modified : 27/01/2019 - Added simple config file for color schemes
 #define FILE_UNMODIFIED 0
 #define FILE_READMODE 2
 
-
 /*====================================================================*/
 /* TYPEDEF DEFINITIONS                                                */
 /*====================================================================*/
@@ -140,15 +139,14 @@ int     rows = 0, columns = 0, old_rows = 0, old_columns = 0;	// Terminal dimens
 int     cursorX = START_CURSOR_X, cursorY = START_CURSOR_Y, timerCursor = 0;	// Cursor position and Timer
 char    kglobal = 0;		// Global variable for menu animation
 char    currentFile[MAX_TEXT];
-int     limitRow = 0, limitCol = 0; // These variables account for the current limits of the buffer.
-int     c_animation=0; //Counter for animation 
+int     limitRow = 0, limitCol = 0;	// These variables account for the current limits of the buffer.
+int     c_animation = 0;	//Counter for animation 
 
 char    currentPath[MAX_PATH];
 
 //FLAGS
 int     exitp = 0;		// Exit flag for main loop
 int     fileModified = FILE_UNMODIFIED;	//Have we modified the buffer?
-
 
 /*====================================================================*/
 /* PROTOTYPES OF FUNCTIONS                                            */
@@ -218,9 +216,9 @@ int main(int argc, char *argv[]) {
   cleanBuffer(editBuffer);
   clearString(currentFile, MAX_TEXT);
   strcpy(currentFile, UNKNOWN);
-  checkConfigFile(-1);            //Check config file for colorScheme. -1 -> first time
+  checkConfigFile(-1);		//Check config file for colorScheme. -1 -> first time
   //setColorScheme(0);            //Until config file is added
-  getcwd(currentPath, sizeof(currentPath));     //Save current path
+  getcwd(currentPath, sizeof(currentPath));	//Save current path
 
   main_screen();		//Draw screen
   resetch();			//Clear keyboard and sets ENTER = 13
@@ -259,25 +257,25 @@ int main(int argc, char *argv[]) {
 
       //If arrow keys are used repeatedly. This avoids printing unwanted chars.   
       if(oldchar == K_ESCAPE)
-	 esc_key = 1; 
-      
+	esc_key = 1;
+
       //if (ch != 27 && oldchar == 7) esc_key = 0;
-      
+
       oldchar = ch;
 
       ch = readch();
-         
+
       /* EDIT */
       if(esc_key == 0) {
 	//Process input and get rid of extra characters
 	process_input(editBuffer, &cursorX, &cursorY, ch);	//Edit
 	keypressed = 0;
       }
-    } else{
+    } else {
       //Keypressed = 0 - Reset values
       esc_key = 0;
-      ch=0;
-      oldchar=0;
+      ch = 0;
+      oldchar = 0;
     }
   } while(exitp != EXIT_FLAG);	//exit flag for the whole program
   if(filePtr != NULL) {
@@ -306,126 +304,135 @@ void update_position() {
 /* EDIT Section */
 /*------------- */
 
+int findEndline(EDITBUFFER editBuffer[MAX_LINES], int line) {
+  char    ch = 0;
+  int     i = 0;
+  int     result = 0;
 
-int findEndline(EDITBUFFER editBuffer[MAX_LINES], int line){
-   char ch=0;
-   int i=0; 
-   int result=0;
-
-   do{
-      ch = editBuffer[line].charBuf[i].ch;
-      i++;
-      if (ch == CHAR_NIL || ch == END_LINE_CHAR) break;
-    } while (i<MAX_CHARS);
-   result = i;
-   ch=0;
-   return result;
+  do {
+    ch = editBuffer[line].charBuf[i].ch;
+    i++;
+    if(ch == CHAR_NIL || ch == END_LINE_CHAR)
+      break;
+  } while(i < MAX_CHARS);
+  result = i;
+  ch = 0;
+  return result;
 }
-int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, char ch) {
+int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX,
+		  int *whereY, char ch) {
 /* EDIT FUNCTIONS */
   char    accentchar[2];
   int     counter = 0;
   int     newPosition = 0;
   int     oldPosition = 0;
-  int     positionX=0; 
-  int     positionY=0;
-  int     i=0; 
- if(ch != K_ESCAPE) {
-    
-      //Calculate position values 
-      limitCol  = findEndline(editBuffer, *whereY - START_CURSOR_Y);
-      positionX = *whereX - START_CURSOR_X; //Buffer position (x,y)
-      positionY = *whereY - START_CURSOR_Y;
-      accentchar[0] =0;
-      accentchar[1]=0;
-   /* ---------------------------------------- */   
-   /* 
-      READ CHARS WITH AND WITHOUT ACCENTS.
-      Accent value is stored in the
-      specialChar field of every item in the 
-      buffer.
-      Example:
-              á : specialChar  = -61
-                  Char = -95
-              a : specialChar = 0
-                  Char = 97                
-   */
-    
-   /* ---------------------------------------- */   
+  int     positionX = 0;
+  int     positionY = 0;
+  int     i = 0;
+  if(ch != K_ESCAPE) {
 
-   if ((ch > 31 && ch < 127) || ch<0) {
-     //if a char has been read.
+    //Calculate position values 
+    limitCol = findEndline(editBuffer, *whereY - START_CURSOR_Y);
+    positionX = *whereX - START_CURSOR_X;	//Buffer position (x,y)
+    positionY = *whereY - START_CURSOR_Y;
+    accentchar[0] = 0;
+    accentchar[1] = 0;
+    /* ---------------------------------------- */
+    /* 
+       READ CHARS WITH AND WITHOUT ACCENTS.
+       Accent value is stored in the
+       specialChar field of every item in the 
+       buffer.
+       Example:
+       á : specialChar  = -61
+       Char = -95
+       a : specialChar = 0
+       Char = 97                
+     */
+
+    /* ---------------------------------------- */
+
+    if((ch > 31 && ch < 127) || ch < 0) {
+      //if a char has been read.
       read_accent(&ch, accentchar);
 
       //ADD SPACES IF CURSOR IS NOT AT THE END OF THE LINE
-       if (positionX > limitCol){ 
-         for (i=limitCol-1; i<=positionX; i++)
-         {
-           writetoBuffer(editBuffer, i, positionY, ' ');
-           write_ch(i+START_CURSOR_X,*whereY, ' ', EDITAREACOL, EDIT_FORECOLOR);
-         }
+      if(positionX > limitCol) {
+	for(i = limitCol - 1; i <= positionX; i++) {
+	  writetoBuffer(editBuffer, i, positionY, ' ');
+	  write_ch(i + START_CURSOR_X, *whereY, ' ', EDITAREACOL,
+		   EDIT_FORECOLOR);
+	}
       }
       //INSERT CHARS AT THE END OF LINE
-      if (*whereX < MAX_CHARS && positionX >= limitCol-1){
-       if (accentchar[0]!=0) {
-          //Special char ? print the two values to screen buffer.
-          write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL, EDIT_FORECOLOR);
-          write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL, EDIT_FORECOLOR);
-        } else
-        {
-          write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL, EDIT_FORECOLOR);
-        }
-        writetoBuffer(editBuffer, positionX, positionY, accentchar[0]);
-        writetoBuffer(editBuffer, positionX, positionY, accentchar[1]);
-        *whereX = *whereX + 1;
+      if(*whereX < MAX_CHARS && positionX >= limitCol - 1) {
+	if(accentchar[0] != 0) {
+	  //Special char ? print the two values to screen buffer.
+	  write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL,
+		   EDIT_FORECOLOR);
+	  write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL,
+		   EDIT_FORECOLOR);
+	} else {
+	  write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL,
+		   EDIT_FORECOLOR);
+	}
+	writetoBuffer(editBuffer, positionX, positionY, accentchar[0]);
+	writetoBuffer(editBuffer, positionX, positionY, accentchar[1]);
+	*whereX = *whereX + 1;
       }
- 
       //INSERT CHAR IN THE MIDDLE OF THE LINE
-      if (*whereX < MAX_CHARS && positionX < limitCol-1){
-         //move all chars one space to the side
-       counter = 0;        
-        //move characters to the side
-       while (counter <= (limitCol - positionX)){
-            newPosition = limitCol - counter + 1;
-            oldPosition = limitCol - counter;
-            editBuffer[positionY].charBuf[newPosition].ch =  
-            editBuffer[positionY].charBuf[oldPosition].ch;
-            editBuffer[positionY].charBuf[newPosition].specialChar =  
-            editBuffer[positionY].charBuf[oldPosition].specialChar;
-           //Don't print null characters to string or 0x0A
-            if (editBuffer[positionY].charBuf[oldPosition].ch!=CHAR_NIL || 
-                editBuffer[positionY].charBuf[oldPosition].ch!=END_LINE_CHAR){
-             if (accentchar[0]!=0 || editBuffer[positionY].charBuf[oldPosition].specialChar != 0)
-             {
-              //Special char ? print the two values to screen buffer.
-              write_ch(newPosition + START_CURSOR_X, *whereY, editBuffer[positionY].charBuf[newPosition].specialChar,
-               EDITAREACOL,EDIT_FORECOLOR);
-              write_ch(newPosition + START_CURSOR_X, *whereY, editBuffer[positionY].charBuf[newPosition].ch,
-               EDITAREACOL,EDIT_FORECOLOR);
-            } else{
-             write_ch(newPosition + START_CURSOR_X, *whereY, editBuffer[positionY].charBuf[newPosition].ch,
-               EDITAREACOL,EDIT_FORECOLOR);
-            }
-            }
-            counter++;
-         }
-         //insert new SPECIAL char
-        if (accentchar[0]!=0) {
-          //Special char ? print the two values to screen buffer.
-          write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL, EDIT_FORECOLOR);
-          write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL, EDIT_FORECOLOR);
-        } else
-        {
-          write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL, EDIT_FORECOLOR);
-        }
-        writetoBuffer(editBuffer, positionX, positionY, accentchar[0]);
-        writetoBuffer(editBuffer, positionX,positionY, accentchar[1]);
-        
-        *whereX = *whereX + 1;
-        }   
+      if(*whereX < MAX_CHARS && positionX < limitCol - 1) {
+	//move all chars one space to the side
+	counter = 0;
+	//move characters to the side
+	while(counter <= (limitCol - positionX)) {
+	  newPosition = limitCol - counter + 1;
+	  oldPosition = limitCol - counter;
+	  editBuffer[positionY].charBuf[newPosition].ch =
+	      editBuffer[positionY].charBuf[oldPosition].ch;
+	  editBuffer[positionY].charBuf[newPosition].specialChar =
+	      editBuffer[positionY].charBuf[oldPosition].specialChar;
+	  //Don't print null characters to string or 0x0A
+	  if(editBuffer[positionY].charBuf[oldPosition].ch != CHAR_NIL ||
+	     editBuffer[positionY].charBuf[oldPosition].ch !=
+	     END_LINE_CHAR) {
+	    if(accentchar[0] != 0
+	       || editBuffer[positionY].charBuf[oldPosition].specialChar !=
+	       0) {
+	      //Special char ? print the two values to screen buffer.
+	      write_ch(newPosition + START_CURSOR_X, *whereY,
+		       editBuffer[positionY].charBuf[newPosition].
+		       specialChar, EDITAREACOL, EDIT_FORECOLOR);
+	      write_ch(newPosition + START_CURSOR_X, *whereY,
+		       editBuffer[positionY].charBuf[newPosition].ch,
+		       EDITAREACOL, EDIT_FORECOLOR);
+	    } else {
+	      write_ch(newPosition + START_CURSOR_X, *whereY,
+		       editBuffer[positionY].charBuf[newPosition].ch,
+		       EDITAREACOL, EDIT_FORECOLOR);
+	    }
+	  }
+	  counter++;
+	}
+	//insert new SPECIAL char
+	if(accentchar[0] != 0) {
+	  //Special char ? print the two values to screen buffer.
+	  write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL,
+		   EDIT_FORECOLOR);
+	  write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL,
+		   EDIT_FORECOLOR);
+	} else {
+	  write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL,
+		   EDIT_FORECOLOR);
+	}
+	writetoBuffer(editBuffer, positionX, positionY, accentchar[0]);
+	writetoBuffer(editBuffer, positionX, positionY, accentchar[1]);
+
+	*whereX = *whereX + 1;
+      }
       update_screen();
-      fileModified = FILE_MODIFIED;  
-    } 
+      fileModified = FILE_MODIFIED;
+    }
 
     if(ch == K_ENTER) {
       //RETURN - ENTER
@@ -433,19 +440,21 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, ch
 	writetoBuffer(editBuffer, positionX, positionY, END_LINE_CHAR);
 	*whereY = *whereY + 1;
 	*whereX = START_CURSOR_X;
-        fileModified = FILE_MODIFIED;
+	fileModified = FILE_MODIFIED;
       }
     }
 
     if(ch == K_BACKSPACE) {
       //BACKSPACE key
       write_ch(*whereX, *whereY, ' ', EDITAREACOL, EDITAREACOL);
-      editBuffer[positionY].charBuf[positionX-1].ch =  CHAR_NIL;
-      editBuffer[positionY].charBuf[positionX-1].specialChar = CHAR_NIL;
+      editBuffer[positionY].charBuf[positionX - 1].ch = CHAR_NIL;
+      editBuffer[positionY].charBuf[positionX - 1].specialChar = CHAR_NIL;
       //Remove line if we continue pressing backspace
-      if(*whereX == START_CURSOR_X && *whereY>START_CURSOR_Y) {
-         *whereY = *whereY-1;
-         *whereX = findEndline(editBuffer, *whereY - START_CURSOR_Y) + START_CURSOR_X;
+      if(*whereX == START_CURSOR_X && *whereY > START_CURSOR_Y) {
+	*whereY = *whereY - 1;
+	*whereX =
+	    findEndline(editBuffer,
+			*whereY - START_CURSOR_Y) + START_CURSOR_X;
       }
       if(*whereX > START_CURSOR_X)
 	*whereX = *whereX - 1;
@@ -484,11 +493,11 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX, int *whereY, ch
 /* Timer 1 Animation. Clock and cursor     */
 /*-----------------------------------------*/
 
-int timer_1(int *timer1){
+int timer_1(int *timer1) {
 /* Timer for animations - Display time and clean cursor */
   time_t  mytime = time(NULL);
   char   *time_str = ctime(&mytime);
-  char temp[4];
+  char    temp[4];
 
   temp[0] = '[';
   temp[1] = ANIMATION[c_animation];
@@ -499,18 +508,22 @@ int timer_1(int *timer1){
     *timer1 = 0;
     time_str[strlen(time_str) - 1] = '\0';
     //display system time
-    write_str(columns - strlen(time_str), 1, time_str, MENU_PANEL, MENU_FOREGROUND0);
-    write_str(columns - strlen(time_str) - 5,1, temp, MENU_PANEL, MENU_FOREGROUND0);
+    write_str(columns - strlen(time_str), 1, time_str, MENU_PANEL,
+	      MENU_FOREGROUND0);
+    write_str(columns - strlen(time_str) - 5, 1, temp, MENU_PANEL,
+	      MENU_FOREGROUND0);
     update_position();		//update position display
-    update_screen(); //update screen - main routine in timer
-    c_animation++; 
-    if (c_animation > 6) c_animation = 0;
+    update_screen();		//update screen - main routine in timer
+    c_animation++;
+    if(c_animation > 6)
+      c_animation = 0;
     return 0;
   } else {
     *timer1 = *timer1 + 1;
     return 1;
   }
 }
+
 /*-----------------------------------------*/
 /* Manage keys that send a ESC sequence    */
 /*-----------------------------------------*/
@@ -529,8 +542,8 @@ int special_keys(int *whereX, int *whereY, char ch) {
   char    chartrail[5];
 
   if(ch == K_ESCAPE) {
-        read_keytrail(chartrail); //Read trail after ESC key
- 
+    read_keytrail(chartrail);	//Read trail after ESC key
+
     //Check key trails for special keys.
 
     //FUNCTION KEYS : F1 - F4
@@ -574,27 +587,27 @@ int special_keys(int *whereX, int *whereY, char ch) {
     } else if(strcmp(chartrail, K_ALT_H) == 0) {
       help_info();
     } else if(strcmp(chartrail, K_ALT_O) == 0) {
-      openFileHandler(); //Open file Dialog
+      openFileHandler();	//Open file Dialog
     } else if(strcmp(chartrail, K_ALT_N) == 0) {
-      newDialog(currentFile); // New file
+      newDialog(currentFile);	// New file
       refresh_screen(-1);
     } else if(strcmp(chartrail, K_ALT_A) == 0) {
-      saveasDialog(currentFile); //Save as.. file
+      saveasDialog(currentFile);	//Save as.. file
       refresh_screen(-1);
     } else if(strcmp(chartrail, K_ALT_D) == 0) {
-      fileInfoDialog(); //Info file
-    } else if(strcmp(chartrail, K_ALT_W) == 0) {     
+      fileInfoDialog();		//Info file
+    } else if(strcmp(chartrail, K_ALT_W) == 0) {
       if(strcmp(currentFile, UNKNOWN) == 0)
-        saveasDialog(currentFile); //Write to file
+	saveasDialog(currentFile);	//Write to file
       else {
-        saveDialog(currentFile);
+	saveDialog(currentFile);
       }
       refresh_screen(-1);
     } else if(strcmp(chartrail, K_ALT_X) == 0) {
-      if (fileModified == 1)
-        exitp = confirmation();	//Shall we exit? Global variable!
+      if(fileModified == 1)
+	exitp = confirmation();	//Shall we exit? Global variable!
       else
-        exitp = EXIT_FLAG;
+	exitp = EXIT_FLAG;
     }
     esc_key = 1;
   } else {
@@ -610,17 +623,17 @@ int special_keys(int *whereX, int *whereY, char ch) {
 
 void draw_cursor(int *whereX, int *whereY, int *timer) {
 /* CURSOR is drawn directly to screen and not to buffer */
-int positionX=0, limitCol = 0, positionY = 0;
-char currentChar = FILL_CHAR;
-char specialChar;
+  int     positionX = 0, limitCol = 0, positionY = 0;
+  char    currentChar = FILL_CHAR;
+  char    specialChar;
 
   *timer = *timer + 1;		//increase timer counter for animation
 
   //Calculate position
-  limitCol  = findEndline(editBuffer, *whereY - START_CURSOR_Y);
-  positionX = *whereX - START_CURSOR_X; //Buffer position (x,y)
+  limitCol = findEndline(editBuffer, *whereY - START_CURSOR_Y);
+  positionX = *whereX - START_CURSOR_X;	//Buffer position (x,y)
   positionY = *whereY - START_CURSOR_Y;
-  
+
   if(*timer < LIMIT_TIMER) {
     gotoxy(*whereX, *whereY);
     outputcolor(EDIT_FORECOLOR, EDITAREACOL);
@@ -628,10 +641,9 @@ char specialChar;
   } else {
     *timer = 0;			//reset timer
     //Is the cursor at the end or in the middle of text?
-    if (positionX < limitCol){ 
+    if(positionX < limitCol) {
       currentChar = editBuffer[positionY].charBuf[positionX].ch;
-   } else
-    {
+    } else {
       currentChar = FILL_CHAR;
     }
 
@@ -640,13 +652,12 @@ char specialChar;
     //outputcolor(FH_YELLOW, 1);
     outputcolor(F_YELLOW, EDITAREACOL);
     //Is it an accent or special char?
-    if (currentChar < 0)
-      {
-        specialChar = editBuffer[positionY].charBuf[positionX].specialChar;
-        printf("%c%c",specialChar, editBuffer[positionY].charBuf[positionX].ch);
-      }
-    else{
-      printf("%c",currentChar);
+    if(currentChar < 0) {
+      specialChar = editBuffer[positionY].charBuf[positionX].specialChar;
+      printf("%c%c", specialChar,
+	     editBuffer[positionY].charBuf[positionX].ch);
+    } else {
+      printf("%c", currentChar);
     }
     resetAnsi(0);
   }
@@ -710,7 +721,7 @@ int main_screen() {
   /* Frames */
   //window appearance and scroll bar
   for(i = 2; i < rows; i++) {
-    write_ch(columns, i, ' ', SCROLLBAR_BACK, SCROLLBAR_FORE); //Scroll bar
+    write_ch(columns, i, ' ', SCROLLBAR_BACK, SCROLLBAR_FORE);	//Scroll bar
     write_ch(1, i, NVER_LINE, EDITWINDOW_BACK, EDITWINDOW_FORE);	//upper vertical line box-like char 
   }
   for(i = 2; i < columns; i++) {
@@ -723,9 +734,11 @@ int main_screen() {
     write_ch(i, rows - 1, FILL_CHAR, SCROLLBAR_BACK, SCROLLBAR_FORE);
   }
   //Window-appearance
-  write_ch(columns, 2, NUPPER_RIGHT_CORNER, EDITWINDOW_BACK, EDITWINDOW_FORE); //right window corner
-  write_ch(columns, rows - 1, NLOWER_RIGHT_CORNER, EDITWINDOW_BACK, EDITWINDOW_FORE);
-  write_ch(1, rows - 1, NLOWER_LEFT_CORNER, EDITWINDOW_BACK, EDITWINDOW_FORE);
+  write_ch(columns, 2, NUPPER_RIGHT_CORNER, EDITWINDOW_BACK, EDITWINDOW_FORE);	//right window corner
+  write_ch(columns, rows - 1, NLOWER_RIGHT_CORNER, EDITWINDOW_BACK,
+	   EDITWINDOW_FORE);
+  write_ch(1, rows - 1, NLOWER_LEFT_CORNER, EDITWINDOW_BACK,
+	   EDITWINDOW_FORE);
 
   //Center and diplay file name
   write_str((columns / 2) - (strlen(currentFile) / 2), 2, currentFile,
@@ -744,6 +757,7 @@ int main_screen() {
 
   return 0;
 }
+
 /*----------------------------*/
 /* Only refresh current line  */
 /*----------------------------*/
@@ -764,13 +778,12 @@ int refresh_line(int line) {
     columns = COLUMNS_FAILSAFE;
 
   //Paint blue line
-    for(i = START_CURSOR_X; i < columns - 1; i++)
-      write_ch(i, line, FILL_CHAR, EDITAREACOL, EDITAREACOL);
+  for(i = START_CURSOR_X; i < columns - 1; i++)
+    write_ch(i, line, FILL_CHAR, EDITAREACOL, EDITAREACOL);
 
   update_screen();
   return 0;
 }
-
 
 /*-------------------------*/
 /* Only refresh edit Area  */
@@ -816,11 +829,11 @@ int refresh_editarea() {
 
 char horizontal_menu() {
   char    temp_char;
-  int     i=0;
-   //Clean Status bar
+  int     i = 0;
+  //Clean Status bar
   for(i = 1; i < columns; i++) {
     write_ch(i, rows, FILL_CHAR, STATUSBAR, STATUSMSG);
-  } 
+  }
   write_str(1, rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG);
   update_screen();
   loadmenus(mylist, HOR_MENU);
@@ -835,10 +848,10 @@ char horizontal_menu() {
 
 void filemenu() {
   int     i;
-   //Clean Status bar
+  //Clean Status bar
   for(i = 1; i < columns; i++) {
     write_ch(i, rows, FILL_CHAR, STATUSBAR, STATUSMSG);
-  } 
+  }
   data.index = OPTION_NIL;
   write_str(1, rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG);
   loadmenus(mylist, FILE_MENU);
@@ -879,7 +892,7 @@ void filemenu() {
 
   if(data.index == OPTION_5) {
     //Exit option
-    if (fileModified == 1)
+    if(fileModified == 1)
       exitp = confirmation();	//Shall we exit? Global variable!
     else
       exitp = EXIT_FLAG;
@@ -903,7 +916,7 @@ void optionsmenu() {
   //Clean Status bar
   for(i = 1; i < columns; i++) {
     write_ch(i, rows, FILL_CHAR, STATUSBAR, STATUSMSG);
-  } 
+  }
   write_str(1, rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG);
   loadmenus(mylist, OPT_MENU);
   write_str(7, 1, "Options", MENU_SELECTOR, MENU_FOREGROUND1);
@@ -922,7 +935,7 @@ void optionsmenu() {
     //Set Colors
     setColor = colorsWindow(mylist);
     setColorScheme(setColor);
-    checkConfigFile(setColor); //save new configuration in config file
+    checkConfigFile(setColor);	//save new configuration in config file
     refresh_screen(1);
   }
   data.index = OPTION_NIL;
@@ -940,10 +953,10 @@ void optionsmenu() {
 
 void helpmenu() {
   int     i;
-   //Clean Status bar
+  //Clean Status bar
   for(i = 1; i < columns; i++) {
     write_ch(i, rows, FILL_CHAR, STATUSBAR, STATUSMSG);
-  } 
+  }
   data.index = OPTION_NIL;
   write_str(1, rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG);
   loadmenus(mylist, HELP_MENU);
@@ -978,24 +991,22 @@ void helpmenu() {
 /* Displays a window to asks user for confirmation */
 int confirmation() {
   int     ok = 0;
-  if (fileModified == 1){
+  if(fileModified == 1) {
     ok = yesnoWindow(mylist, WMODIFIED_MSG);
     data.index = OPTION_NIL;
     //save file if modified?
-    if (ok == 1) {
-        if(strcmp(currentFile, UNKNOWN) == 0)
-          saveasDialog(currentFile);
-        else {
-          saveDialog(currentFile);
-        }
-        ok = EXIT_FLAG;
-    }
-    else {
+    if(ok == 1) {
+      if(strcmp(currentFile, UNKNOWN) == 0)
+	saveasDialog(currentFile);
+      else {
+	saveDialog(currentFile);
+      }
+      ok = EXIT_FLAG;
+    } else {
       ok = EXIT_FLAG;
     }
-  } else
-  {
-    ok = -1; //Exit without asking.
+  } else {
+    ok = -1;			//Exit without asking.
   }
   return ok;
 }
@@ -1006,35 +1017,35 @@ int confirmation() {
 
 int about_info() {
   int     ok = 0;
-  char  msg[100];
-  msg[0]='\0';
+  char    msg[100];
+  msg[0] = '\0';
   strcat(msg, ABOUT_ASC_1);
   strcat(msg, ABOUT_ASC_2);
   strcat(msg, ABOUT_ASC_3);
   strcat(msg, "\0");
-  alertWindow(mylist,  WTITLEABOUT_MSG, msg); 
+  alertWindow(mylist, WTITLEABOUT_MSG, msg);
   return ok;
 }
+
 /*--------------------------*/
 /* Display About Dialog     */
 /*--------------------------*/
 
-
 int help_info() {
   int     ok = 0;
-  char  msg[500];
-  msg[0]='\0';
-  strcat(msg, HELP0); //located in user_inter.h
-  strcat(msg, HELP1); //located in user_inter.h
-  strcat(msg, HELP2); //located in user_inter.h
-  strcat(msg, HELP3); //located in user_inter.h
-  strcat(msg, HELP4); //located in user_inter.h
-  strcat(msg, HELP5); //located in user_inter.h
-  strcat(msg, HELP6); //located in user_inter.h
-  strcat(msg, HELP7); //located in user_inter.h
-  strcat(msg, HELP8); //located in user_inter.h
-  strcat(msg, HELP9); //located in user_inter.h
-  strcat(msg, HELP10); //located in user_inter.h
+  char    msg[500];
+  msg[0] = '\0';
+  strcat(msg, HELP0);		//located in user_inter.h
+  strcat(msg, HELP1);		//located in user_inter.h
+  strcat(msg, HELP2);		//located in user_inter.h
+  strcat(msg, HELP3);		//located in user_inter.h
+  strcat(msg, HELP4);		//located in user_inter.h
+  strcat(msg, HELP5);		//located in user_inter.h
+  strcat(msg, HELP6);		//located in user_inter.h
+  strcat(msg, HELP7);		//located in user_inter.h
+  strcat(msg, HELP8);		//located in user_inter.h
+  strcat(msg, HELP9);		//located in user_inter.h
+  strcat(msg, HELP10);		//located in user_inter.h
   strcat(msg, "\0");
   helpWindow(mylist, msg);
   return ok;
@@ -1251,7 +1262,7 @@ int saveDialog(char fileName[MAX_TEXT]) {
   strcpy(tempMsg, fileName);
   strcat(tempMsg, WSAVE_MSG);
   ok = infoWindow(mylist, tempMsg);
-  fileModified = 0; //reset modified flag
+  fileModified = 0;		//reset modified flag
 
   return ok;
 }
@@ -1281,7 +1292,7 @@ int saveasDialog(char fileName[MAX_TEXT]) {
 	strcpy(tempMsg, fileName);
 	strcat(tempMsg, WSAVE_MSG);
 	ok = infoWindow(mylist, tempMsg);
-        fileModified = 0;
+	fileModified = 0;
       } else {
 	//Do nothing.
       }
@@ -1322,66 +1333,67 @@ int newDialog(char fileName[MAX_TEXT]) {
   }
   return ok;
 }
+
 /*--------------------------*/
 /* OPEN File Dialog HANDLER */
 /*--------------------------*/
 
-int openFileHandler(){
-   char    oldFile[MAX_TEXT];
-    chdir(currentPath); //Go back to original path
-    openFileDialog(&openFileData);
-    //Update new global file name
-    if(openFileData.itemIndex != 0) {
-      //Change current File Name 
-      //if the index is different than CLOSE_WINDOW
-      clearString(oldFile, MAX_TEXT);
-      strcpy(oldFile, currentFile);	//save previous file to go back
-      clearString(currentFile, MAX_TEXT);
-      strcpy(currentFile, openFileData.path);
-      cleanBuffer(editBuffer);
-      //Open file and dump first page to buffer - temporary
-      if(filePtr != NULL)
-	closeFile(filePtr);
-        handleopenFile(&filePtr, currentFile, oldFile);
-    }
-   return 1;
+int openFileHandler() {
+  char    oldFile[MAX_TEXT];
+  chdir(currentPath);		//Go back to original path
+  openFileDialog(&openFileData);
+  //Update new global file name
+  if(openFileData.itemIndex != 0) {
+    //Change current File Name 
+    //if the index is different than CLOSE_WINDOW
+    clearString(oldFile, MAX_TEXT);
+    strcpy(oldFile, currentFile);	//save previous file to go back
+    clearString(currentFile, MAX_TEXT);
+    strcpy(currentFile, openFileData.path);
+    cleanBuffer(editBuffer);
+    //Open file and dump first page to buffer - temporary
+    if(filePtr != NULL)
+      closeFile(filePtr);
+    handleopenFile(&filePtr, currentFile, oldFile);
+  }
+  return 1;
 }
 
 /*------------------*/
 /* File Info Dialog */
 /*------------------*/
 
-
-int fileInfoDialog(){
+int fileInfoDialog() {
   long    size = 0, lines = 0;
   char    sizeStr[12];
   char    linesStr[12];
   char    tempMsg[50];
   if(filePtr != NULL) {
-      closeFile(filePtr);
-      openFile(&filePtr, currentFile, "r");
-      size = getfileSize(filePtr);
-      lines = countLinesFile(filePtr);
-      if(size <= 0)
-	size = 0;
-      if(lines <= 0)
-	lines = 0;
-      sprintf(sizeStr, "%ld", size);
-      sprintf(linesStr, "%ld", lines);
-      strcpy(tempMsg, WINFO_SIZE);
-      strcat(tempMsg, sizeStr);
-      strcat(tempMsg, " bytes.");
-      strcat(tempMsg, WINFO_SIZE2);
-      strcat(tempMsg, linesStr);
-      strcat(tempMsg, " lines.\n");
-      //strcat(WINFO_SIZE3, currentFile);
-      //strcat(tempMsg, currentFile);
-      alertWindow(mylist, currentFile, tempMsg);
-    } else {
-      infoWindow(mylist, WINFO_NOPEN);
-    }
+    closeFile(filePtr);
+    openFile(&filePtr, currentFile, "r");
+    size = getfileSize(filePtr);
+    lines = countLinesFile(filePtr);
+    if(size <= 0)
+      size = 0;
+    if(lines <= 0)
+      lines = 0;
+    sprintf(sizeStr, "%ld", size);
+    sprintf(linesStr, "%ld", lines);
+    strcpy(tempMsg, WINFO_SIZE);
+    strcat(tempMsg, sizeStr);
+    strcat(tempMsg, " bytes.");
+    strcat(tempMsg, WINFO_SIZE2);
+    strcat(tempMsg, linesStr);
+    strcat(tempMsg, " lines.\n");
+    //strcat(WINFO_SIZE3, currentFile);
+    //strcat(tempMsg, currentFile);
+    alertWindow(mylist, currentFile, tempMsg);
+  } else {
+    infoWindow(mylist, WINFO_NOPEN);
+  }
   return 0;
 }
+
 /*-----------------------------*/
 /* Write EditBuffer to Display */
 /*-----------------------------*/
@@ -1395,17 +1407,17 @@ int writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES]) {
     tempChar = editBuffer[j].charBuf[i].ch;
     specialChar = editBuffer[j].charBuf[i].specialChar;
     if(tempChar != CHAR_NIL) {
-      if(tempChar != END_LINE_CHAR) {	
-        write_ch(i + START_CURSOR_X, j + START_CURSOR_Y, specialChar,
+      if(tempChar != END_LINE_CHAR) {
+	write_ch(i + START_CURSOR_X, j + START_CURSOR_Y, specialChar,
 		 EDITAREACOL, EDIT_FORECOLOR);
-	write_ch(i + START_CURSOR_X, j + START_CURSOR_Y, tempChar, EDITAREACOL,
-		 EDIT_FORECOLOR);
+	write_ch(i + START_CURSOR_X, j + START_CURSOR_Y, tempChar,
+		 EDITAREACOL, EDIT_FORECOLOR);
 	i++;
-        if (i==columns -2){
-          //temporary restriction until scroll is implemented
-          i=0;
-          j++;
-        }
+	if(i == columns - 2) {
+	  //temporary restriction until scroll is implemented
+	  i = 0;
+	  j++;
+	}
       }
       if(tempChar == END_LINE_CHAR) {
 	i = 0;
@@ -1600,51 +1612,48 @@ int createnewFile(FILE ** filePtr, char *fileName, int checkFile) {
 /* Checks config file*/
 /*-------------------*/
 
-void checkConfigFile(int setValue){
-FILE *fp;
-int ok=0;
-char ch;
+void checkConfigFile(int setValue) {
+  FILE   *fp;
+  int     ok = 0;
+  char    ch;
 
- if (setValue == -1){
-   if(file_exists(CONFIGFILE)) {
-    //If we open the program for the first time.
-   //Read config file
-        ok=openFile(&fp,CONFIGFILE, "r");
-        if (ok==1){
-          ch=getc(fp);
-          ch = ch - '0';
-          setColorScheme(ch);
-        } else
-        {
-          printf("Error opening configfile. Setting to defaults.\n");
-          setColorScheme(0);
-        }
-          closeFile(fp);
+  if(setValue == -1) {
+    if(file_exists(CONFIGFILE)) {
+      //If we open the program for the first time.
+      //Read config file
+      ok = openFile(&fp, CONFIGFILE, "r");
+      if(ok == 1) {
+	ch = getc(fp);
+	ch = ch - '0';
+	setColorScheme(ch);
+      } else {
+	printf("Error opening configfile. Setting to defaults.\n");
+	setColorScheme(0);
+      }
+      closeFile(fp);
     } else {
-        //Create config file
-         ok=openFile(&fp,CONFIGFILE, "w");
-         if (ok==1){
-           fprintf(fp,"%d",0);
-           setColorScheme(0); //Create config file and set default color Scheme        
-         }else
-         {
-          printf("Error creating config file. Setting to defaults.\n");
-          setColorScheme(0);
-         }
-          closeFile(fp);
-   }
-  } else{
+      //Create config file
+      ok = openFile(&fp, CONFIGFILE, "w");
+      if(ok == 1) {
+	fprintf(fp, "%d", 0);
+	setColorScheme(0);	//Create config file and set default color Scheme        
+      } else {
+	printf("Error creating config file. Setting to defaults.\n");
+	setColorScheme(0);
+      }
+      closeFile(fp);
+    }
+  } else {
     //If we call the function from the menu.
     //Set new value in config file
-         ok=openFile(&fp,CONFIGFILE, "w");
-         if (ok==1){
-           fprintf(fp,"%d",setValue);
-           //setColorScheme(setValue); //Create config file and set default color Scheme        
-         }else
-         {
-          printf("Error creating config file. Setting to defaults.\n");
-          setColorScheme(0);
-         }
-          closeFile(fp); 
-  }    
+    ok = openFile(&fp, CONFIGFILE, "w");
+    if(ok == 1) {
+      fprintf(fp, "%d", setValue);
+      //setColorScheme(setValue); //Create config file and set default color Scheme        
+    } else {
+      printf("Error creating config file. Setting to defaults.\n");
+      setColorScheme(0);
+    }
+    closeFile(fp);
+  }
 }

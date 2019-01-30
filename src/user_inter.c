@@ -59,21 +59,22 @@ LAST MODIFIED : 27/1/2019 - Updated color schemes
 /*====================================================================*/
 /* GLOBAL VARIABLES                                                   */
 /*====================================================================*/
-//Classic color scheme
+//C-Edit Theme
 int EDITAREACOL= B_BLUE;
-int EDIT_FORECOLOR=FH_WHITE;
-int STATUSBAR =B_CYAN;
-int STATUSMSG =FH_WHITE;
+int EDIT_FORECOLOR=F_WHITE;
+int STATUSBAR =B_BLACK;
+int STATUSMSG =F_WHITE;
 int MENU_PANEL =B_WHITE;
-int MENU_SELECTOR =B_BLACK;
+int MENU_SELECTOR =B_BLUE;
 int MENU_FOREGROUND0 =F_BLACK;
 int MENU_FOREGROUND1= F_WHITE;
-int EDITWINDOW_BACK= B_BLACK;
-int EDITWINDOW_FORE= FH_WHITE;
+int EDITWINDOW_BACK= B_BLUE;
+int EDITWINDOW_FORE= F_WHITE;
 int SCROLLBAR_BACK= B_WHITE;
 int SCROLLBAR_FORE= F_WHITE;
 int SCROLLBAR_SEL= B_CYAN;
 int SCROLLBAR_ARR= B_BLACK;
+
 /*====================================================================*/
 /* FUNCTIONS - CODE                                                   */
 /*====================================================================*/
@@ -120,9 +121,9 @@ void loadmenus(LISTCHOICE * mylist, int choice) {
     add_item(mylist, "<OK>", (columns / 2) - 1, (rows / 2) + 3, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
   }
   if(choice == COLORS_MENU) {
-    add_item(mylist, "Classic Theme", (columns / 2) - 6, (rows / 2) - 2, 
+    add_item(mylist, "C-Edit Theme", (columns / 2) - 6, (rows / 2) - 2, 
         MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
-    add_item(mylist, "Blue Theme", (columns / 2) - 6, (rows / 2) -1, 
+    add_item(mylist, "Classic Theme", (columns / 2) - 6, (rows / 2) -1, 
         MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
     add_item(mylist, "Dark Theme", (columns / 2) - 6, (rows / 2), 
         MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
@@ -433,23 +434,7 @@ void setColorScheme(int colorCode)
 
   switch (colorCode){
 
-    case 0: //Classic color scheme
-      EDITAREACOL= B_BLUE;
-      EDIT_FORECOLOR=F_WHITE;
-      STATUSBAR =B_CYAN;
-      STATUSMSG =F_BLACK;
-      MENU_PANEL =B_WHITE;
-      MENU_SELECTOR =B_BLACK;
-      MENU_FOREGROUND0 =F_BLACK;
-      MENU_FOREGROUND1= F_WHITE;
-      EDITWINDOW_BACK= B_BLACK;
-      EDITWINDOW_FORE= F_WHITE;
-      SCROLLBAR_BACK= B_WHITE;
-      SCROLLBAR_FORE= F_WHITE;
-      SCROLLBAR_SEL= B_CYAN;
-      SCROLLBAR_ARR= B_BLACK;
-      break;
-    case 1: //Blue color scheme
+    case 0: //C-edit Blue Theme
       EDITAREACOL= B_BLUE;
       EDIT_FORECOLOR=F_WHITE;
       STATUSBAR =B_BLACK;
@@ -464,6 +449,22 @@ void setColorScheme(int colorCode)
       SCROLLBAR_FORE= F_WHITE;
       SCROLLBAR_SEL= B_CYAN;
       SCROLLBAR_ARR= B_BLACK;
+    break;
+    case 1: //Classic color scheme
+      EDITAREACOL= B_BLUE;
+      EDIT_FORECOLOR=F_WHITE;
+      STATUSBAR =B_CYAN;
+      STATUSMSG =F_BLACK;
+      MENU_PANEL =B_WHITE;
+      MENU_SELECTOR =B_BLACK;
+      MENU_FOREGROUND0 =F_BLACK;
+      MENU_FOREGROUND1= F_WHITE;
+      EDITWINDOW_BACK= B_BLACK;
+      EDITWINDOW_FORE= F_WHITE;
+      SCROLLBAR_BACK= B_WHITE;
+      SCROLLBAR_FORE= F_WHITE;
+      SCROLLBAR_SEL= B_WHITE;
+      SCROLLBAR_ARR= B_CYAN;
       break;
    case 2: //Dark color scheme
       EDITAREACOL= B_BLACK;

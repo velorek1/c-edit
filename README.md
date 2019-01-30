@@ -45,4 +45,5 @@ Makefile is included. Type "cd src", "make" and "./cedit" to execute.
 ![Alt text](screencaps/cedit.gif?raw=true "Demo")
 ![Alt text](screencaps/cedit1.png?raw=true "Demo")
 ![Alt text](screencaps/cedit2.png?raw=true "Demo")
+![Alt text](screencaps/cedit3.png?raw=true "Demo")
 ![Alt text](screencaps/cedit4.png?raw=true "Demo")

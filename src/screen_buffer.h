@@ -5,7 +5,7 @@ are displayed on the terminal.
 
 @author : Velorek
 @version : 1.0
-Last modified : 20/10/2018
+Last modified : 2/2/2019 + read_char + dynamic shadow
 ======================================================================
 */
 
@@ -56,6 +56,7 @@ typedef struct _screencell {
 
 void    create_screen();
 void    write_ch(int x, int y, char ch, int backcolor, int forecolor);
+char    read_char(int x, int y);
 void    write_str(int x, int y, char *str, int backcolor, int forecolor);
 void    write_num(int x, int y, int num, int length, int backcolor,
 		  int forecolor);

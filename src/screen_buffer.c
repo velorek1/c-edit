@@ -13,7 +13,7 @@ composition to the user.
 
 @author : Velorek
 @version : 1.0
-Last modified : 20/10/2018
+Last modified : 2/2/2019 + Added read_char and dynamic shadow
 =====================================================================
 */
 
@@ -35,6 +35,7 @@ Last modified : 20/10/2018
 
 //MISC. values
 #define FILL_CHAR 32
+#define CHAR_NIL '\0'
 #define ROWS_FAILSAFE 25
 #define COLUMNS_FAILSAFE 80
 #define SECONDARYBUFFER_ON 1
@@ -277,6 +278,33 @@ void update_smart() {
   }
 }
 
+/*--------------------------.*/
+/* Reads a char from buffer. */
+/*--------------------------.*/
+
+
+char read_char(int x, int y) {
+/* Read specific character from buffer */
+  int     i, pos;
+  char ch = FILL_CHAR;
+  SCREENCELL *aux;
+  if (bufferON==1)  //check whether savebuffer to use in the dynamic shadow
+    aux = secondary_start;		// we set our auxiliary pointer at the beginning of the list.
+  else
+    aux = primary_start;
+  pos = (y - 1) * columns + x;	//This is the formula to calculate the position index in the screen buffer
+ if(pos <= buffersize) {
+  for(i = 0; i <= pos; i++) {
+      //Run through the buffer until reaching desired position
+      if(aux->index == pos)
+	break;
+      aux = aux->next;
+    }
+  ch = aux->item;
+ }
+  return ch;
+}
+
 /*-------------------------.*/
 /* Writes a char to buffer. */
 /*-------------------------.*/
@@ -485,13 +513,18 @@ void draw_window(int x1, int y1, int x2, int y2, int backcolor,
    values and map these chars to Unicode characters. 
  */
   int     i, j;
+  char ch=FILL_CHAR;
   i = x1;
   j = y1;
   save_buffer();		//saves screen to be restored later in close_window
   //shadow
   for(j = y1 + 1; j <= y2 + 1; j++)
     for(i = x1 + 1; i <= x2 + 1; i++)
-      write_ch(i, j, ' ', B_BLACK, F_BLACK);
+    {
+      ch=read_char(i,j); //dynamic shadow
+      if (ch==CHAR_NIL) ch=FILL_CHAR;
+      write_ch(i, j, ch, B_BLACK, F_WHITE);
+    }
   //window
   for(j = y1; j <= y2; j++)
     for(i = x1; i <= x2; i++)

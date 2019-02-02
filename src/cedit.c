@@ -3,7 +3,7 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 27/01/2019 - Added simple config file for color schemes                                          
+Last modified : 02/02/2019 - Started redefining buffer to allow scrolling                                         
 ======================================================================*/
 
 /*====================================================================*/
@@ -95,14 +95,15 @@ Last modified : 27/01/2019 - Added simple config file for color schemes
 // DISPLAY CONSTANTS
 #define FILL_CHAR 32
 
-//EDIT AREA CONSTANTS
-//Temporary implementation : 
-//Edit buffer is 400lines x 400chars
+//EDIT AREA CONSTANTS 
+//Edit buffer is 32700 lines x 1022 chars
 
-#define MAX_CHARS 400		// 400 chars per line
-#define MAX_LINES 400		// 400 lines per page
+#define MAX_CHARS 1022		// 1022 chars per line
+#define MAX_LINES 32700		// 32700 lines per page (max mem 32750)
 #define CHAR_NIL '\0'
 #define END_LINE_CHAR 0x0A	// $0A
+#define VSCROLL_ON 1
+#define VSCROLL_OFF 0
 
 //FILE CONSTANTS
 #define TMP_FILE "tmp.txt"
@@ -117,12 +118,20 @@ Last modified : 27/01/2019 - Added simple config file for color schemes
 
 typedef struct _charint {
   char    ch;
-  int     specialChar;
+  char     specialChar;
 } CHARINT;
 
 typedef struct _editbuffer {
   CHARINT charBuf[MAX_LINES];
 } EDITBUFFER;
+
+typedef struct _editScroll {
+  long lengthScroll; //Maximum no. of lines in File
+  long displayLength; //number of current display Lines
+  long scrollLimit; //limit of scroll
+  int  vScroll; //whether scroll is active or not
+} EDITSCROLL;
+
 
 /*====================================================================*/
 /* GLOBAL VARIABLES */
@@ -132,16 +141,18 @@ LISTCHOICE *mylist, data;
 SCREENCELL *my_screen;
 SCROLLDATA openFileData;
 EDITBUFFER editBuffer[MAX_LINES];
+EDITSCROLL editScroll;
 
 FILE   *filePtr;
 
 int     rows = 0, columns = 0, old_rows = 0, old_columns = 0;	// Terminal dimensions
-int     cursorX = START_CURSOR_X, cursorY = START_CURSOR_Y, timerCursor = 0;	// Cursor position and Timer
+long     cursorX = START_CURSOR_X, cursorY = START_CURSOR_Y; //Cursor position
+int      timerCursor = 0;	// Timer
 char    kglobal = 0;		// Global variable for menu animation
 char    currentFile[MAX_TEXT];
-int     limitRow = 0, limitCol = 0;	// These variables account for the current limits of the buffer.
+long     limitRow = 0, limitCol = 0;	// These variables account for the current limits of the buffer.
 int     c_animation = 0;	//Counter for animation 
-
+long    maxLineFile = 1;        //Last line of file
 char    currentPath[MAX_PATH];
 
 //FLAGS
@@ -166,20 +177,21 @@ int     confirmation();
 int     about_info();
 int     help_info();
 int     refresh_screen(int force_refresh);
-int     refresh_line(int line);
+int     refresh_line(long line);
 
 //Key handling prototypes
-int     special_keys(int *whereX, int *whereY, char ch);
+int     special_keys(long *whereX, long *whereY, char ch);
 //int special_keys(int *whereX, int *whereY,char ch, char chartrail[5], int *counter);
-void    draw_cursor(int *whereX, int *whereY, int *timer);
+void    draw_cursor(long *whereX, long *whereY, int *timer);
 int     timer_1(int *timer1);
 //Edit prototypes
 void    cleanBuffer(EDITBUFFER editBuffer[MAX_LINES]);
-int     writetoBuffer(EDITBUFFER editBuffer[MAX_LINES], int whereX,
-		      int whereY, char ch);
-int     process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX,
-		      int *whereY, char ch);
-int     findEndline(EDITBUFFER editBuffer[MAX_LINES], int line);
+int     writetoBuffer(EDITBUFFER editBuffer[MAX_LINES], long whereX,
+		      long whereY, char ch);
+int     process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
+		      long *whereY, char ch);
+int     findEndline(EDITBUFFER editBuffer[MAX_LINES], long line);
+int     checkScroll(long *currentPointer, EDITSCROLL *editScroll);
 
 //File-handling prototypes
 int     openFile(FILE ** filePtr, char fileName[], char *mode);
@@ -220,6 +232,8 @@ int main(int argc, char *argv[]) {
   //setColorScheme(0);            //Until config file is added
   getcwd(currentPath, sizeof(currentPath));	//Save current path
 
+  editScroll.vScroll = VSCROLL_OFF; //SCROLL IS OFF
+  
   main_screen();		//Draw screen
   resetch();			//Clear keyboard and sets ENTER = 13
 
@@ -304,9 +318,9 @@ void update_position() {
 /* EDIT Section */
 /*------------- */
 
-int findEndline(EDITBUFFER editBuffer[MAX_LINES], int line) {
+int findEndline(EDITBUFFER editBuffer[MAX_LINES], long line) {
   char    ch = 0;
-  int     i = 0;
+  long     i = 0;
   int     result = 0;
 
   do {
@@ -319,15 +333,15 @@ int findEndline(EDITBUFFER editBuffer[MAX_LINES], int line) {
   ch = 0;
   return result;
 }
-int process_input(EDITBUFFER editBuffer[MAX_LINES], int *whereX,
-		  int *whereY, char ch) {
+int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
+		  long *whereY, char ch) {
 /* EDIT FUNCTIONS */
   char    accentchar[2];
-  int     counter = 0;
-  int     newPosition = 0;
-  int     oldPosition = 0;
-  int     positionX = 0;
-  int     positionY = 0;
+  long     counter = 0;
+  long     newPosition = 0;
+  long     oldPosition = 0;
+  long     positionX = 0;
+  long     positionY = 0;
   int     i = 0;
   if(ch != K_ESCAPE) {
 
@@ -528,7 +542,7 @@ int timer_1(int *timer1) {
 /* Manage keys that send a ESC sequence    */
 /*-----------------------------------------*/
 
-int special_keys(int *whereX, int *whereY, char ch) {
+int special_keys(long *whereX, long *whereY, char ch) {
 /* MANAGE SPECIAL KEYS */
 /* 
    New implementation: Trail of chars found in keyboard.c
@@ -621,9 +635,9 @@ int special_keys(int *whereX, int *whereY, char ch) {
 /* Draw cursor on screen and animate it    */
 /*-----------------------------------------*/
 
-void draw_cursor(int *whereX, int *whereY, int *timer) {
+void draw_cursor(long *whereX, long *whereY, int *timer) {
 /* CURSOR is drawn directly to screen and not to buffer */
-  int     positionX = 0, limitCol = 0, positionY = 0;
+  long     positionX = 0, limitCol = 0, positionY = 0;
   char    currentChar = FILL_CHAR;
   char    specialChar;
 
@@ -671,6 +685,7 @@ int refresh_screen(int force) {
 /* Query terminal dimensions again and check if resize 
    has been produced */
   get_terminal_dimensions(&rows, &columns);
+  editScroll.displayLength = rows - 4; //update Scroll 
   if(rows != old_rows || columns != old_columns || force == 1
      || force == -1) {
     if(force != -1) {
@@ -762,8 +777,8 @@ int main_screen() {
 /* Only refresh current line  */
 /*----------------------------*/
 
-int refresh_line(int line) {
-  int     i;
+int refresh_line(long line) {
+  long     i;
   get_terminal_dimensions(&rows, &columns);
   old_rows = rows;
   old_columns = columns;
@@ -1133,7 +1148,7 @@ void credits() {
 
 void cleanBuffer(EDITBUFFER editBuffer[MAX_LINES]) {
 //Clean and initialize the edit buffer
-  int     i, j;
+  long     i, j;
 
   for(j = 0; j < MAX_LINES; j++)
     for(i = 0; i < MAX_CHARS; i++) {
@@ -1142,7 +1157,7 @@ void cleanBuffer(EDITBUFFER editBuffer[MAX_LINES]) {
     }
 }
 
-int writetoBuffer(EDITBUFFER editBuffer[MAX_LINES], int whereX, int whereY,
+int writetoBuffer(EDITBUFFER editBuffer[MAX_LINES], long whereX, long whereY,
 		  char ch) {
   int     oldValue;
   oldValue = editBuffer[whereY].charBuf[whereX].specialChar;
@@ -1216,8 +1231,8 @@ int closeFile(FILE * filePtr) {
 
 int writeBuffertoFile(FILE * filePtr, EDITBUFFER editBuffer[MAX_LINES]) {
   char    tempChar, oldChar;
-  int     lineCounter = 0;
-  int     inlineChar = 0;
+  long     lineCounter = 0;
+  long     inlineChar = 0;
   int     specialChar = 0;
 
   //Check if pointer is valid
@@ -1399,7 +1414,7 @@ int fileInfoDialog() {
 /*-----------------------------*/
 
 int writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES]) {
-  int     i = 0, j = 0;
+  long     i = 0, j = 0;
   char    tempChar, specialChar;
 
   //Dump edit buffer to screen.
@@ -1418,6 +1433,7 @@ int writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES]) {
 	  i = 0;
 	  j++;
 	}
+        if (j == rows -4) break;
       }
       if(tempChar == END_LINE_CHAR) {
 	i = 0;
@@ -1434,9 +1450,9 @@ int writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES]) {
 /*------------------------------*/
 
 int filetoBuffer(FILE * filePtr, EDITBUFFER editBuffer[MAX_LINES]) {
-  int     inlineChar = 0, lineCounter = 0;
+  long     inlineChar = 0, lineCounter = 0;
   char    ch;
-
+  
   //Check if pointer is valid
   if(filePtr != NULL) {
     rewind(filePtr);		//Make sure we are at the beginning
@@ -1445,8 +1461,8 @@ int filetoBuffer(FILE * filePtr, EDITBUFFER editBuffer[MAX_LINES]) {
     while(!feof(filePtr)) {
       if(ch != CHAR_NIL) {
 	//Temporary restrictions until scroll is implemented.
-	if(lineCounter == rows - 4)
-	  break;
+	//if(lineCounter == rows - 4)
+	//  break;
 
 	if(ch == SPECIAL_CHARS_SET1 || ch == SPECIAL_CHARS_SET2) {
 	  writetoBuffer(editBuffer, inlineChar, lineCounter, ch);

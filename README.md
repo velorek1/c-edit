@@ -26,6 +26,7 @@ So far I have implemented:
 
 *New:
  * Added rudimentary config file for color schemes.
+ * Dynamic shadow & Read_char. EditBuffer redesigned.
 
 Files in /src/:
 ===============

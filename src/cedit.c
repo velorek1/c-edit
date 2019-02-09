@@ -239,10 +239,6 @@ int main(int argc, char *argv[]) {
   clearString(currentFile, MAX_TEXT);
   strcpy(currentFile, UNKNOWN);
   checkConfigFile(-1);		//Check config file for colorScheme. -1 -> first time
-  editScroll.scrollActive = 0; //Scroll is inactive.
-  editScroll.totalLines = 1; //There is just one line active in buffer
-  editScroll.bufferX = 1;
-  editScroll.bufferY = 1;
   getcwd(currentPath, sizeof(currentPath));	//Save current path
  
   main_screen();		//Draw screen
@@ -364,9 +360,14 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
   if(ch != K_ESCAPE) {
 
     //Calculate position values 
-    limitCol = findEndline(editBuffer, *whereY - START_CURSOR_Y);
-    positionX = *whereX - START_CURSOR_X;	//Buffer position (x,y)
-    positionY = *whereY - START_CURSOR_Y;
+    limitCol = findEndline(editBuffer, editScroll.bufferY-1);
+    //positionX = *whereX - START_CURSOR_X;	//Buffer position (x,y)
+    
+    //if (editScroll.scrollActive == 0)
+     //positionY = *whereY - START_CURSOR_Y;
+    //else
+     positionX = editScroll.bufferX-1;
+     positionY = editScroll.bufferY-1; 
     accentchar[0] = 0;
     accentchar[1] = 0;
     /* ---------------------------------------- */
@@ -412,6 +413,7 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
 	writetoBuffer(editBuffer, positionX, positionY, accentchar[0]);
 	writetoBuffer(editBuffer, positionX, positionY, accentchar[1]);
 	*whereX = *whereX + 1;
+        editScroll.bufferX++;
       }
       //INSERT CHAR IN THE MIDDLE OF THE LINE
       if(*whereX < MAX_CHARS && positionX < limitCol - 1) {
@@ -462,6 +464,7 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
 	writetoBuffer(editBuffer, positionX, positionY, accentchar[1]);
 
 	*whereX = *whereX + 1;
+        editScroll.bufferX++;
       }
       update_screen();
       fileModified = FILE_MODIFIED;
@@ -473,9 +476,10 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
 	writetoBuffer(editBuffer, positionX, positionY, END_LINE_CHAR);
 	*whereY = *whereY + 1;
 	*whereX = START_CURSOR_X;
-	fileModified = FILE_MODIFIED;
+        editScroll.bufferX = 1;
+        editScroll.bufferY++;
         editScroll.totalLines = editScroll.totalLines + 1;
-        editScroll.bufferY = editScroll.bufferY + 1;
+	fileModified = FILE_MODIFIED;
       }
     }
 
@@ -490,15 +494,19 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
 	*whereX =
 	    findEndline(editBuffer,
 			*whereY - START_CURSOR_Y) + START_CURSOR_X;
+        editScroll.bufferY--;
+        editScroll.bufferX = findEndline(editBuffer,editScroll.bufferY);
       }
       if(*whereX > START_CURSOR_X)
 	*whereX = *whereX - 1;
+        editScroll.bufferX--;
     }
 
     if(ch == K_TAB) {
       //TAB key
       if(*whereX < columns - TAB_DISTANCE)
 	*whereX = *whereX + TAB_DISTANCE;
+        editScroll.bufferX = editScroll.bufferX + TAB_DISTANCE;
     }
     //*ch=0;
   } 
@@ -703,8 +711,10 @@ void draw_cursor(long *whereX, long *whereY, int *timer) {
 
   //Calculate position
   limitCol = findEndline(editBuffer, *whereY - START_CURSOR_Y);
-  positionX = *whereX - START_CURSOR_X;	//Buffer position (x,y)
-  positionY = *whereY - START_CURSOR_Y;
+  //positionX = *whereX - START_CURSOR_X;	//Buffer position (x,y)
+  //positionY = *whereY - START_CURSOR_Y;
+  positionX = editScroll.bufferX-1;
+  positionY = editScroll.bufferY-1;
 
   if(*timer < LIMIT_TIMER) {
     gotoxy(*whereX, *whereY);
@@ -773,6 +783,10 @@ int main_screen() {
   cursorX = START_CURSOR_X;
   cursorY = START_CURSOR_Y;
   draw_cursor(&cursorX, &cursorY, &timerCursor);
+  editScroll.scrollActive = 0; //Scroll is inactive.
+  editScroll.totalLines = 1; //There is just one line active in buffer
+  editScroll.bufferX = 1;
+  editScroll.bufferY = 1;
   //Failsafe just in case it can't find the terminal dimensions
   if(rows == 0)
     rows = ROWS_FAILSAFE;

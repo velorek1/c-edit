@@ -7,7 +7,7 @@
    are drawn to the terminal on raw mode to have a better scrolling
    animation. Once the file is selected, the window is closed and the
    previous screen is painted to the terminal again.
-   Last modified : 09/8/2018
+   Last modified : 10/9/2019 - Added failsafe keys for scrolling
    Coded by Velorek.
    Target OS: Linux.                                                  */
 /*====================================================================*/
@@ -45,7 +45,8 @@
 #define FILL_CHAR 32
 
 //Keys used.
-#define K_ENTER 13
+#define K_ENTER 13 
+#define K_ENTER2 10 
 #define K_ESCAPE 27
 #define K_UP_ARROW 'A'		// K_ESCAPE + 'A' -> UP_ARROW
 #define K_DOWN_ARROW 'B'	// K_ESCAPE + 'B' -> DOWN_ARROW
@@ -343,7 +344,10 @@ unselecting previous item
       cleanLine(window_y1 + 1, MENU_PANEL, MENU_FOREGROUND0, window_x1 + 1, window_x2);
       outputcolor(MENU_FOREGROUND0, MENU_PANEL);
       gotoxy(window_x1 + 2, window_y1 + 1);
-      printf("OPEN FILE|%d/%d", aux->index, scrollData->listLength - 1);
+      printf("Open File: w/s ^/v");
+      gotoxy(window_x1 + 3, window_y2 - 1);
+      outputcolor(F_BLUE, MENU_PANEL);
+      printf("    [%d/%d]     ", aux->index, scrollData->listLength - 1);
 
       //Highlight new item
       displayItem2(aux, scrollData, SELECT_ITEM);
@@ -369,7 +373,10 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
   cleanLine(window_y1 + 1, MENU_PANEL, MENU_FOREGROUND0, window_x1 + 1, window_x2);
   outputcolor(MENU_FOREGROUND0, MENU_PANEL);
   gotoxy(window_x1 + 2, window_y1 + 1);
-  printf("OPEN FILE|%d/%d", aux->index, scrollData->listLength - 1);
+  printf("Open File: w/s ^/v");
+  gotoxy(window_x1 + 3, window_y2 - 1);
+  outputcolor(F_BLUE, MENU_PANEL);
+  printf("    [%d/%d]     ", aux->index, scrollData->listLength - 1);
 
   if(scrollData->scrollDirection == DOWN_SCROLL
      && scrollData->currentListIndex != 0) {
@@ -391,7 +398,42 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
     //if enter key pressed - break loop
     if(ch == K_ENTER)
       control = CONTINUE_SCROLL;	//Break the loop
-
+    //fail-safe keys
+    if (ch == 'w'){
+	  //Move selector up
+	  scrollData->scrollDirection = UP_SCROLL;
+	  continueScroll = move_display(&aux, scrollData);
+	  //Break the loop if we are scrolling
+	  if(scrollData->scrollActive == SCROLL_ACTIVE
+	     && continueScroll == 1) {
+	    control = CONTINUE_SCROLL;
+	    //Update data
+	    scrollData->currentListIndex =
+		scrollData->currentListIndex - 1;
+	    scrollData->selector = scrollData->wherey;
+	    scrollData->itemIndex = aux->index;
+	    //Return value
+	    ch = control;
+	  }
+     }
+    if (ch == 's'){
+	  //Move selector down
+	  scrollData->scrollDirection = DOWN_SCROLL;
+	  continueScroll = move_display(&aux, scrollData);
+	  //Break the loop if we are scrolling
+	  if(scrollData->scrollActive == SCROLL_ACTIVE
+	     && continueScroll == 1) {
+	    control = CONTINUE_SCROLL;
+	    //Update data  
+	    scrollData->currentListIndex =
+		scrollData->currentListIndex + 1;
+	    scrollData->selector = scrollData->wherey;
+	    scrollData->itemIndex = aux->index;
+	    scrollData->scrollDirection = DOWN_SCROLL;
+	  }
+	  //Return value  
+          ch = control;
+     }
     //Check arrow keys
     if(ch == K_ESCAPE)		// escape key
     {
@@ -435,7 +477,7 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
       }
     }
   }
-  if(ch == K_ENTER)		// enter key
+  if(ch == K_ENTER || ch == K_ENTER2)		// enter key
   {
     //Pass data of last item selected.
     scrollData->item =
@@ -670,7 +712,6 @@ void openFileDialog(SCROLLDATA * openFileData) {
   int     exitFlag = 0;
   int     i;
   int     rows, columns;
-
   get_terminal_dimensions(&rows, &columns);
   //Check if the screen is active in memory first.
 

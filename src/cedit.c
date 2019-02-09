@@ -940,12 +940,9 @@ void smoothScroll(char direction) {
     if (lastLine2<lastLine){
     for(i = START_CURSOR_X; i < lastLine+1; i++)
     {
-      gotoxy(i,j);
-      outputcolor(EDITAREACOL,EDITAREACOL);
-      printf("%c",FILL_CHAR);
-      if (i<columns-2){
-        flush_cell(i,j);
-        //write_ch(i, j, FILL_CHAR, EDITAREACOL, EDITAREACOL);
+       if (i<columns-2){
+       flush_cell(i,j);
+       //write_ch(i, j, FILL_CHAR, EDITAREACOL, EDITAREACOL);
       }
      }
     }

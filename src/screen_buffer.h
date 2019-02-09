@@ -70,6 +70,8 @@ void    close_window();
 int     mapChartoU8(int character);
 void    update_screen();
 void    update_smart();
+void    flush_buffer();
+void    flush_cell(int x, int y);
 void    clearString(char *string, int max);
 
 #endif

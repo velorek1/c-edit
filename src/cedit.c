@@ -240,7 +240,10 @@ int main(int argc, char *argv[]) {
   strcpy(currentFile, UNKNOWN);
   checkConfigFile(-1);		//Check config file for colorScheme. -1 -> first time
   getcwd(currentPath, sizeof(currentPath));	//Save current path
- 
+  editScroll.scrollActive = 0; //Scroll is inactive.
+  editScroll.totalLines = 1; //There is just one line active in buffer
+  editScroll.bufferX = 1;
+  editScroll.bufferY = 1;
   main_screen();		//Draw screen
   resetch();			//Clear keyboard and sets ENTER = 13
   /*------------------------------------------------------------------*/
@@ -783,10 +786,6 @@ int main_screen() {
   cursorX = START_CURSOR_X;
   cursorY = START_CURSOR_Y;
   draw_cursor(&cursorX, &cursorY, &timerCursor);
-  editScroll.scrollActive = 0; //Scroll is inactive.
-  editScroll.totalLines = 1; //There is just one line active in buffer
-  editScroll.bufferX = 1;
-  editScroll.bufferY = 1;
   //Failsafe just in case it can't find the terminal dimensions
   if(rows == 0)
     rows = ROWS_FAILSAFE;

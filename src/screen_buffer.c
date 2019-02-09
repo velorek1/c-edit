@@ -213,6 +213,23 @@ void save_buffer() {
     aux2 = aux2->next;
   }
 }
+/*----------------------*/
+/* FLUSH primary buffer */
+/*----------------------*/
+
+void flush_buffer() {
+  //Copies primary buffer into secondary buffer.
+  //Thereby saving current screen to be retrieved later.
+  int     i;
+  SCREENCELL *aux;
+  aux = primary_start;		// Points to the first item of the first buffer
+  for(i = 0; i < buffersize; i++) {
+    //Copy buffer 1 into buffer 2.
+    aux->item = FILL_CHAR;
+    aux = aux->next;
+  }
+}
+
 
 /*---------------------------------------------------*/
 /* Copy secondary buffer into primary buffer         */
@@ -279,12 +296,12 @@ void update_smart() {
 }
 
 /*--------------------------.*/
-/* Reads a char from buffer. */
+/* reads a char from buffer. */
 /*--------------------------.*/
 
 
 char read_char(int x, int y) {
-/* Read specific character from buffer */
+/* read specific character from buffer */
   int     i, pos;
   char ch = FILL_CHAR;
   SCREENCELL *aux;
@@ -292,10 +309,10 @@ char read_char(int x, int y) {
     aux = secondary_start;		// we set our auxiliary pointer at the beginning of the list.
   else
     aux = primary_start;
-  pos = (y - 1) * columns + x;	//This is the formula to calculate the position index in the screen buffer
+  pos = (y - 1) * columns + x;	//this is the formula to calculate the position index in the screen buffer
  if(pos <= buffersize) {
   for(i = 0; i <= pos; i++) {
-      //Run through the buffer until reaching desired position
+      //run through the buffer until reaching desired position
       if(aux->index == pos)
 	break;
       aux = aux->next;
@@ -304,6 +321,32 @@ char read_char(int x, int y) {
  }
   return ch;
 }
+
+/*--------------------------.*/
+/* flush cell from buffer.  */
+/*--------------------------.*/
+
+
+void flush_cell(int x, int y) {
+/* read specific character from buffer */
+  int     i, pos;
+  SCREENCELL *aux;
+  if (bufferON==1)  //check whether savebuffer to use in the dynamic shadow
+    aux = secondary_start;		// we set our auxiliary pointer at the beginning of the list.
+  else
+    aux = primary_start;
+  pos = (y - 1) * columns + x;	//this is the formula to calculate the position index in the screen buffer
+ if(pos <= buffersize) {
+  for(i = 0; i <= pos; i++) {
+      //run through the buffer until reaching desired position
+      if(aux->index == pos)
+	break;
+      aux = aux->next;
+    }
+  aux->item = FILL_CHAR;
+ }
+}
+
 
 /*-------------------------.*/
 /* Writes a char to buffer. */

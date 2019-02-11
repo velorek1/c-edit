@@ -7,7 +7,7 @@
    are drawn to the terminal on raw mode to have a better scrolling
    animation. Once the file is selected, the window is closed and the
    previous screen is painted to the terminal again.
-   Last modified : 10/9/2019 - Added failsafe keys for scrolling
+   Last modified : 11/9/2019 - Switch to readch() instead of getch()
    Coded by Velorek.
    Target OS: Linux.                                                  */
 /*====================================================================*/
@@ -24,6 +24,7 @@
 #include <sys/ioctl.h>
 #include "screen_buffer.h"
 #include "c_cool.h"
+#include "keyboard.h"
 #include "user_inter.h"
 #include "list_choice.h"
 
@@ -365,7 +366,8 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
   unsigned control = 0;
   unsigned continueScroll;
   unsigned counter = 0;
-
+  unsigned keypressed = 0;
+  char chartrail[5];
   //Go to and select expected item at the beginning
 
   gotoIndex(&aux, scrollData, scrollData->currentListIndex);
@@ -393,13 +395,15 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
   //It break the loop everytime the boundaries are reached.
   //to reload a new list to show the scroll animation.
   while(control != CONTINUE_SCROLL) {
-    ch = getch();
-
-    //if enter key pressed - break loop
-    if(ch == K_ENTER)
-      control = CONTINUE_SCROLL;	//Break the loop
-    //fail-safe keys
-    if (ch == 'w'){
+    keypressed = kbhit();
+   if (keypressed == 1){
+      ch = readch();
+      keypressed = 0;
+      //if enter key pressed - break loop
+      if(ch == K_ENTER)
+        control = CONTINUE_SCROLL;	//Break the loop
+      //fail-safe keys
+      if (ch == 'w'){
 	  //Move selector up
 	  scrollData->scrollDirection = UP_SCROLL;
 	  continueScroll = move_display(&aux, scrollData);
@@ -415,8 +419,8 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
 	    //Return value
 	    ch = control;
 	  }
-     }
-    if (ch == 's'){
+       }
+      if (ch == 's'){
 	  //Move selector down
 	  scrollData->scrollDirection = DOWN_SCROLL;
 	  continueScroll = move_display(&aux, scrollData);
@@ -433,13 +437,13 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
 	  }
 	  //Return value  
           ch = control;
-     }
-    //Check arrow keys
-    if(ch == K_ESCAPE)		// escape key
-    {
-      getch();			// read key again for arrow key combinations
-      switch (getch()) {
-	case K_UP_ARROW:	// escape key + A => arrow key up
+       }
+      //Check arrow keys
+      if(ch == K_ESCAPE)		// escape key
+      {
+        read_keytrail(chartrail);	// read key again for arrow key combinations
+        if(strcmp(chartrail, K_UP_TRAIL) == 0) {
+	  // escape key + A => arrow key up
 	  //Move selector up
 	  scrollData->scrollDirection = UP_SCROLL;
 	  continueScroll = move_display(&aux, scrollData);
@@ -455,8 +459,9 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
 	    //Return value
 	    ch = control;
 	  }
-	  break;
-	case K_DOWN_ARROW:	// escape key + B => arrow key down
+       }
+      if(strcmp(chartrail, K_DOWN_TRAIL) == 0) {
+	// escape key + B => arrow key down
 	  //Move selector down
 	  scrollData->scrollDirection = DOWN_SCROLL;
 	  continueScroll = move_display(&aux, scrollData);
@@ -472,11 +477,9 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
 	    scrollData->scrollDirection = DOWN_SCROLL;
 	  }
 	  //Return value  
-          ch = control;
-	  break;         
+          ch = control;         
       }
-    }
-  }
+      }
   if(ch == K_ENTER || ch == K_ENTER2)		// enter key
   {
     //Pass data of last item selected.
@@ -489,6 +492,8 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
     //strcpy(scrollData->path, aux->path);
     scrollData->path = aux->path;
     scrollData->isDirectory = aux->isDirectory;
+  }
+  }
   }
   return ch;
 }
@@ -736,8 +741,11 @@ void openFileDialog(SCROLLDATA * openFileData) {
   write_ch(window_x1, window_y1 + 2, NLOWER_LEFT_CORNER, MENU_PANEL, MENU_FOREGROUND0);
   write_ch(window_x2, window_y1 + 2, NLOWER_RIGHT_CORNER, MENU_PANEL,
 	   MENU_FOREGROUND0);
+  cleanLine(window_y1 + 1, MENU_PANEL, MENU_FOREGROUND0, window_x1 + 1, window_x2);
+  write_str(window_x1 + 2, window_y1 + 1,"Open File: w/s ^/v",MENU_FOREGROUND0, MENU_PANEL);
 
   update_screen();
+
   do {
     //Add items to list
     listFiles(&listBox1, newDir);
@@ -764,6 +772,7 @@ void openFileDialog(SCROLLDATA * openFileData) {
 
   //Return file selected by copying into fileToOpen -> currentFile
   close_window();
+  resetch();
   openFileData->item =
       (char *)malloc(sizeof(char) * strlen(scrollData.item) + 1);
   openFileData->path =

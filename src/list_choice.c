@@ -4,7 +4,7 @@ Module to make a circular linked list to make a selection menu in C.
 
 @author : Velorek
 @version : 1.0
-Last modified : 22/10/2018 - REM Added Tab Key
+Last modified : 11/02/2019 - Switch to readch() instead of readch() 
 ======================================================================
 */
 
@@ -193,6 +193,8 @@ char start_vmenu(LISTCHOICE * list_data) {
   LISTCHOICE aux;
   int     exitwhile = 0;
   int     esc_key = 0;
+  char chartrail[5];
+  unsigned keypressed = 0;
   display_list(list_data);	//display whole list
 
   //Highlight first item on the list
@@ -202,32 +204,33 @@ char start_vmenu(LISTCHOICE * list_data) {
   ch = 0;			//init ch value
   while(ch != K_ENTER)		// escape key or enter
   {
-    ch = getch();
-    if(ch == K_ESCAPE) {
-      esc_key = ESC_KEY;
-      getch();
-      switch (getch()) {
-	case 'A':
+   keypressed = kbhit();
+   if (keypressed == 1){
+      ch = readch();
+      keypressed = 0;
+    
+      if(ch == K_ESCAPE)		// escape key
+      {
+        read_keytrail(chartrail);	// read key again for arrow key combinations
+        esc_key = ESC_KEY;
+        if(strcmp(chartrail, K_UP_TRAIL) == 0) {
 	  move_selector(&aux, DIR_UP);
 	  esc_key = 0;
-	  break;
-	case 'B':
+	}
+	if(strcmp(chartrail, K_DOWN_TRAIL) == 0) {
 	  move_selector(&aux, DIR_DOWN);
 	  esc_key = 0;
-	  break;
-	case 'C':
+	}
+        if(strcmp(chartrail, K_RIGHT_TRAIL) == 0) {
 	  ch = K_LEFTMENU;	// this will be used in top-down menu. Mark for left arrow key
 	  exitwhile = EXIT_FLAG;
 	  esc_key = 0;
-	  break;
-	case 'D':
+	}
+        if(strcmp(chartrail, K_LEFT_TRAIL) == 0) {
 	  ch = K_RIGHTMENU;	// this will be used in top-down menu. Mark for right arrow key
 	  exitwhile = EXIT_FLAG;
 	  esc_key = 0;
-	  break;
-	default:
-	  esc_key = ESC_KEY;
-	  break;
+	}
       }
     }
     if(esc_key == ESC_KEY) {
@@ -236,9 +239,11 @@ char start_vmenu(LISTCHOICE * list_data) {
     if(exitwhile == EXIT_FLAG)
       break;
   }
+
   if(ch == K_ENTER) {
     //Pass data of last item by value.
     *list_data = aux;
+    resetch();
   }
   return ch;			// return the key or code pressed
 
@@ -249,7 +254,9 @@ char start_vmenu(LISTCHOICE * list_data) {
 /*--------------------------------------*/
 char start_hmenu(LISTCHOICE * list_data) {
   char    ch;
-  int     exitloop = 0;
+  //int     exitloop = 0;
+  unsigned keypressed = 0 ;
+  char chartrail[5];
   LISTCHOICE aux;
 
   display_list(list_data);	//display whole list
@@ -261,28 +268,38 @@ char start_hmenu(LISTCHOICE * list_data) {
   ch = 0;			//init ch value
   while(ch != K_ENTER)		// escape key or enter
   {
-    ch = getch();
-    if(exitloop == EXIT_FLAG)
-      break;
-    if(ch == K_ESCAPE) {
-      getch();
-      switch (getch()) {
-	case 'C':
+     keypressed = kbhit();
+     if (keypressed == 1){
+      ch = readch();
+      keypressed = 0;
+    
+      if(ch == K_ESCAPE)		// escape key
+      {
+        read_keytrail(chartrail);	// read key again for arrow key combinations
+        //esc_key = ESC_KEY;
+        if(strcmp(chartrail, K_RIGHT_TRAIL) == 0) {
 	  move_selector(&aux, DIR_LEFT);
-	  break;
-	case 'D':
+	  //esc_key = 0;
+	}
+        if(strcmp(chartrail, K_LEFT_TRAIL) == 0) {
 	  move_selector(&aux, DIR_RIGHT);
-	  break;
-	default:
-	  exitloop = EXIT_FLAG;
-	  break;
+	  //esc_key = 0;
+	}
+  
+//    if(exitloop == EXIT_FLAG)
+  //    break;
+//	default:
+//	  exitloop = EXIT_FLAG;
+//	  break;
       }
+    
+       if (ch == K_TAB) move_selector(&aux, DIR_LEFT);
     }
-    if (ch == K_TAB) move_selector(&aux, DIR_LEFT);
   }
   if(ch == K_ENTER) {
     //Pass data of last item by value.
     *list_data = aux;
+    resetch();
   }
   return ch;
 }

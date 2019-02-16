@@ -42,9 +42,11 @@ void pushTerm() {
 /*---------------------------*/
 /* Reset terminal to failsafe*/
 /*---------------------------*/
-void resetTerm() {
-  tcsetattr(0, TCSANOW, &failsafe);
-  /* retrieve failsafe settings */
+int resetTerm() {
+  //tcsetattr(0, TCSANOW, &failsafe);
+  /* flush and reset */
+  if (tcsetattr(0,TCSAFLUSH,&failsafe) < 0) return -1;
+  return 0;
 }
 
 /*--------------------------------------.*/

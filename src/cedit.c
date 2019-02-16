@@ -1238,7 +1238,6 @@ void credits() {
   resetAnsi(0);
   screencol(0);
   outputcolor(7, 0);
-
   printf(cedit_ascii_1);
   printf(cedit_ascii_2);
   printf(cedit_ascii_3);

@@ -162,9 +162,8 @@ int textbox(int wherex, int wherey, int displayLength,
 	   textcolor);
   update_screen();
   //Reset keyboard
-  if(kbhit() == 1)
-    ch = readch();
-    ch = 0;
+  if(kbhit() == 1) ch = readch();
+  ch = 0;
 
   do {
       keypressed = kbhit();

@@ -500,16 +500,14 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
         editScroll.bufferY--;
         editScroll.bufferX = findEndline(editBuffer,editScroll.bufferY);
       }
-      if(*whereX > START_CURSOR_X)
-	*whereX = *whereX - 1;
-        editScroll.bufferX--;
+      if(*whereX > START_CURSOR_X) *whereX = *whereX - 1;
+      editScroll.bufferX--;
     }
 
     if(ch == K_TAB) {
       //TAB key
-      if(*whereX < columns - TAB_DISTANCE)
-	*whereX = *whereX + TAB_DISTANCE;
-        editScroll.bufferX = editScroll.bufferX + TAB_DISTANCE;
+      if(*whereX < columns - TAB_DISTANCE) *whereX = *whereX + TAB_DISTANCE;
+      editScroll.bufferX = editScroll.bufferX + TAB_DISTANCE;
     }
     //*ch=0;
   } 

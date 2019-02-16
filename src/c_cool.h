@@ -70,7 +70,7 @@ Last modified: 02/11/2018 + Added resetAnsi
 /*====================================================================*/
 
 void    pushTerm();
-void    resetTerm();
+int    resetTerm();
 int     kbhit();
 int     readch();
 int     resetch();

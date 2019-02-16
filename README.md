@@ -7,6 +7,7 @@ C-EDIT for linux - IN PROGRESS - A linux text editor in the style of the MSDOS E
 [C-Edit Project Website](https://c-edit.000webhostapp.com/)
 
 TO INSTALL:  
+
     * Download or clone repository.
     * Type "cd src", "make" and "./cedit" to execute.
     

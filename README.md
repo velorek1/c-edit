@@ -6,6 +6,10 @@ C-EDIT for linux - IN PROGRESS - A linux text editor in the style of the MSDOS E
 :WEB:
 [C-Edit Project Website](https://c-edit.000webhostapp.com/)
 
+TO INSTALL:  
+    * Download or clone repository.
+    * Type "cd src", "make" and "./cedit" to execute.
+    
 So far I have implemented:
 
 * ANSI functions for positioning cursor in screen, changing output colour, hiding cursor.
@@ -41,8 +45,6 @@ Files in /src/:
 
 
 As a screen buffer I have implemented a dynamic structure in memory that allows to save the current screen so that you can display new things on top and then go back to the previous (saved) screen. (simple linked list)
-
-Makefile is included. Type "cd src", "make" and "./cedit" to execute.
 
 ![Alt text](screencaps/cedit3.png?raw=true "Demo")
 ![Alt text](screencaps/cedit4.png?raw=true "Demo")

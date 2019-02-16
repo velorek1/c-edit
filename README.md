@@ -13,26 +13,11 @@ TO INSTALL:
     
 So far I have implemented:
 
-* ANSI functions for positioning cursor in screen, changing output colour, hiding cursor.
-* Unicode for drawing box-like windows.
 * A very simple Double Screen Buffer with a simple linked list in memory for greater display control. 
-* Top-down menus using a double circular linked list.
-* Kbhit and getch so that I can loop without blocking the program.
+* Rudimentary Text User Interface with Windows, Textbox, Keyboard handling, Color schemes, etc.
 * Automatic display resizing.
 * Open file dialog with a Listbox and SCROLL capabilities to navigate and find the file to open.
-* Rudimentary Edit buffer. 
-* File handling functions. 
-* Save file option. 
-* User interface: Text box.
-* Open file - in progress.
-* Added Keyboard module.
-* Improved Text box.
-* Color schemes.
-
-*New:
- * Added rudimentary config file for color schemes.
- * Dynamic shadow & Read_char. EditBuffer redesigned.
- * Down scroll.
+* Rudimentary Edit buffer with vertical scroll. 
 
 Files in /src/:
 ===============

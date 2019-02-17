@@ -18,7 +18,7 @@ LAST MODIFIED : 28/10/2018 + Improved read_accent
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include "c_cool.h"
+#include "rawterm.h"
 #include "keyboard.h"
 
 /*====================================================================*/

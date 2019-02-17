@@ -21,7 +21,7 @@ Last modified: 4/11/2018 + New keys
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include "screen_buffer.h"
-#include "c_cool.h"
+#include "rawterm.h"
 #include "list_choice.h"
 
 //HELP MESSAGE

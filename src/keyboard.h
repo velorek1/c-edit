@@ -21,7 +21,7 @@ Last modified: 04/11/2018 + Added more keys
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include "c_cool.h"
+#include "rawterm.h"
 //#include "screen_buffer.h"
 
 /*====================================================================*/

@@ -15,7 +15,7 @@ Last modified : 11/02/2019 - Switch to readch() instead of readch()
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "c_cool.h"
+#include "rawterm.h"
 #include "screen_buffer.h"
 #include "keyboard.h"
 

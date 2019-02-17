@@ -22,7 +22,7 @@ Last modified: 9/08/2018
 #include <termios.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include "c_cool.h"
+#include "rawterm.h"
 #include "screen_buffer.h"
 
 /*====================================================================*/

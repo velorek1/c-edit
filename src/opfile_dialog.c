@@ -23,7 +23,7 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include "screen_buffer.h"
-#include "c_cool.h"
+#include "rawterm.h"
 #include "keyboard.h"
 #include "user_inter.h"
 #include "list_choice.h"

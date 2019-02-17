@@ -19,7 +19,7 @@ Last modified : 2/2/2019 + read_char + dynamic shadow
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
-#include "c_cool.h"
+#include "rawterm.h"
 #include "keyboard.h"
 
 #define NHOR_LINE -50

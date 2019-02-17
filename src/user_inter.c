@@ -21,7 +21,7 @@ LAST MODIFIED : 27/1/2019 - Updated color schemes
 #include <sys/ioctl.h>
 #include <string.h>
 #include "screen_buffer.h"
-#include "c_cool.h"
+#include "rawterm.h"
 #include "list_choice.h"
 #include "user_inter.h"
 #include "keyboard.h"

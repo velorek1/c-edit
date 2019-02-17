@@ -26,7 +26,7 @@ Last modified : 2/2/2019 + Added read_char and dynamic shadow
 #include <string.h>
 #include <locale.h>
 #include <wchar.h>		/* wint_t */
-#include "c_cool.h"
+#include "rawterm.h"
 #include "keyboard.h"
 
 /*====================================================================*/

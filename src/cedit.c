@@ -14,7 +14,7 @@ Last modified : 09/02/2019 - Down Scroll
 #include <time.h>
 #include <string.h>
 #include <unistd.h>
-#include "c_cool.h"
+#include "rawterm.h"
 #include "list_choice.h"
 #include "screen_buffer.h"
 #include "opfile_dialog.h"

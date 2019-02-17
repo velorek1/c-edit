@@ -19,7 +19,7 @@ double linked list.
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
-#include "c_cool.h"
+#include "rawterm.h"
 
 /*====================================================================*/
 /* TYPE DEFINITIONS                                                   */

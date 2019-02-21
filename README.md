@@ -5,6 +5,8 @@ C-EDIT for linux - IN PROGRESS - A linux text editor in the style of the MSDOS E
 
 :WEB:
 [C-Edit Project Website](https://c-edit.000webhostapp.com/)
+If you want to support this project:
+https://tippin.me/@Velorek
 
 TO INSTALL:  
 

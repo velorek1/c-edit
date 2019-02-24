@@ -5,7 +5,7 @@ Module to handle keyboard input in Linux and create
 a further layer of abstraction.
 @author : Velorek
 @version : 1.0  
-Last modified: 04/11/2018 + Added more keys                                                                
+Last modified: 24/02/2019 Page Up/Down keys                                                                
 ========================================================================
 */
 
@@ -47,6 +47,9 @@ Last modified: 04/11/2018 + Added more keys
 #define K_DOWN_TRAIL "\e[B\0\0"
 #define K_RIGHT_TRAIL "\e[C\0\0"
 #define K_LEFT_TRAIL "\e[D\0\0"
+
+#define K_PAGEDOWN_TRAIL "\e[6~"
+#define K_PAGEUP_TRAIL "\e[5~"
 
 #define K_DELETE "\e[3~"
 

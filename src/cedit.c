@@ -897,6 +897,9 @@ int i,j;
       printf("%c",FILL_CHAR);
       flush_cell(i,j);
      }
+  for(i = 2; i < columns; i++) {
+    write_ch(i, 2, NHOR_LINE, EDITWINDOW_BACK, EDITWINDOW_FORE);	//horizontal line box-like char
+  }
   //Center and diplay file name
   write_str((columns / 2) - (strlen(currentFile) / 2), 2, currentFile,
 	    MENU_PANEL, MENU_FOREGROUND0);

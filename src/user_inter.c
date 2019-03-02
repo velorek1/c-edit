@@ -462,7 +462,7 @@ void setColorScheme(int colorCode)
       EDITWINDOW_FORE= F_WHITE;
       SCROLLBAR_BACK= B_WHITE;
       SCROLLBAR_FORE= F_WHITE;
-      SCROLLBAR_SEL= B_WHITE;
+      SCROLLBAR_SEL= B_BLACK;
       SCROLLBAR_ARR= B_CYAN;
       break;
    case 2: //Dark color scheme

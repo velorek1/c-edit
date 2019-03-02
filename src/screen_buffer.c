@@ -13,7 +13,7 @@ composition to the user.
 
 @author : Velorek
 @version : 1.0
-Last modified : 2/2/2019 + Added read_char and dynamic shadow
+Last modified : 2/3/2019 +write_num now returns length of str 
 =====================================================================
 */
 
@@ -401,13 +401,14 @@ void write_str(int x, int y, char *str, int backcolor, int forecolor) {
 /* Writes an integer value as a string on screen */
 /*-----------------------------------------------*/
 
-void write_num(int x, int y, int num, int length, int backcolor,
+int write_num(int x, int y, int num, int length, int backcolor,
 	       int forecolor) {
   //the length of the string must be passed on the function
   char   *astr;
   astr = (char *)malloc(sizeof(char) * length + 1);
   sprintf(astr, "%d", num);
   write_str(x, y, astr, backcolor, forecolor);
+  return strlen(astr);
 }
 
 /*---------------------------------------*/

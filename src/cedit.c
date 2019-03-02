@@ -3,7 +3,7 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 24/02/2019 - Scroll Indicator + Page Up/down                                         
+Last modified : 2/03/2019 - Scroll Indicator update                                         
 ======================================================================*/
 
 /*====================================================================*/
@@ -131,7 +131,7 @@ typedef struct _editbuffer {
 typedef struct _editScroll {
   long totalLines; //Maximum no. of lines in File or Buffer
   long displayLength; //number of current display Lines
-  long scrollRatio; //used for scroll indicator
+  float scrollRatio; //used for scroll indicator
   long scrollLimit; //limit of scroll
   long scrollPointer; //last pointed/shown line
   long pagePointer; //last page displayed
@@ -294,8 +294,6 @@ int main(int argc, char *argv[]) {
       if(oldchar == K_ESCAPE)
 	esc_key = 1;
 
-      //if (ch != 27 && oldchar == 7) esc_key = 0;
-
       oldchar = ch;
 
       ch = readch();
@@ -332,20 +330,37 @@ int main(int argc, char *argv[]) {
 /*----------------------------------------- */
 
 void update_indicators() {
-//Update cursor position display on screen
+/* 
+   Update cursor position display on screen.
+   Values are float to save decimal points.
+- Formulas:
+   scrollRatio = totalFileLines / displayLength;
+   currentPosition = bufferY / scrollRatio;
+   percentage = (currentPosition * 100) / displayLength;
+   To adjust to the bar dimensions:
+   scrollBar = ((displayLength-3) * percentage) / 100;
+*/
   int i;
-  long scrollIndicator=1;
-  write_str(columns - 20, rows, "| L:        C:     ", STATUSBAR, STATUSMSG);
-  write_num(columns - 6, rows, editScroll.bufferX, 3, STATUSBAR, STATUSMSG);
-  write_num(columns - 16, rows, editScroll.bufferY, 4, STATUSBAR, STATUSMSG);
-  //Scroll indicator
+  float scrollIndicator=1.0, positionY, displayLength;
+  float percentage, scrollBar;
+  write_str(columns - 24, rows, "| L:        C:     ", STATUSBAR, STATUSMSG);
+  write_num(columns - 10, rows, editScroll.bufferX, 3, STATUSBAR, STATUSMSG);
+  write_num(columns - 20, rows, editScroll.bufferY, 4, STATUSBAR, STATUSMSG);
+  //Scroll indicator and percentage display
   if (editScroll.scrollActiveV == VSCROLL_ON){
+     //Clean scroll bar
      for(i = 4; i < rows-2; i++) {
-      write_ch(columns, i, ' ', SCROLLBAR_BACK, SCROLLBAR_FORE);	//Scroll bar
+      write_ch(columns, i, ' ', SCROLLBAR_BACK, SCROLLBAR_FORE);
      }
-     if (editScroll.scrollRatio > 1) scrollIndicator = (int)(editScroll.bufferY / editScroll.scrollRatio);
-     if (scrollIndicator > rows-7) scrollIndicator = rows-7;
-     write_ch(columns, scrollIndicator+4, '*', SCROLLBAR_SEL, SCROLLBAR_FORE);
+     positionY = editScroll.bufferY;
+     displayLength = editScroll.displayLength;
+     scrollIndicator = positionY / editScroll.scrollRatio;
+     percentage = (scrollIndicator * 100) / displayLength;
+     scrollBar = ((displayLength-3) * percentage)/100;
+     write_ch(columns, 4+scrollBar, '*', SCROLLBAR_SEL, SCROLLBAR_FORE);
+     write_str(columns-5,rows, "    ", STATUSBAR,F_BLACK);
+     i=write_num(columns-5,rows, percentage, 3, STATUSBAR,FH_YELLOW);
+     write_ch(columns-5+i,rows, '%', STATUSBAR,FH_YELLOW);
   }
 }
 
@@ -802,6 +817,7 @@ int refresh_screen(int force) {
       free_buffer();		//delete structure from memory for resize
       create_screen();		//create new structure 
       main_screen();		//Refresh screen in case of resize
+      checkScrollValues(editScroll.totalLines);      //Update scroll values
     } else
       //only update edit area to avoid flickering effect
        flush_editarea();
@@ -1523,17 +1539,20 @@ int fileInfoDialog() {
 /*-----------------------------*/
 
 short checkScrollValues(long lines){
+ float totalLines, displayLength;
  editScroll.displayLength = rows - 5;
  editScroll.totalLines = lines;
- editScroll.scrollLimit = editScroll.totalLines - editScroll.displayLength;
+ editScroll.scrollLimit = (editScroll.totalLines - editScroll.displayLength)-1;
  if (editScroll.totalLines > editScroll.displayLength)
    {
-     editScroll.scrollActiveV = 1;
+     editScroll.scrollActiveV = VSCROLL_ON;
      //Calculate scrollRatio for scroll indicator
-     editScroll.scrollRatio = (int) (lines  / (editScroll.displayLength - 2));
+     totalLines = editScroll.totalLines;
+     displayLength = editScroll.displayLength+1;
+     editScroll.scrollRatio = totalLines  / displayLength;
      return VSCROLL_ON;
  } else{
-     editScroll.scrollActiveV = 0;
+     editScroll.scrollActiveV = VSCROLL_OFF;
    return VSCROLL_OFF;
  }
 }

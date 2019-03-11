@@ -29,6 +29,7 @@ Files in /src/:
 * keyboard.c -> module to control keyboard input.
 * opfile_dialog.c -> module that list files with scroll capabilities to select the file to open.
 * user_inter.c -> module with user interface widgets: alert windows, confirmation windows, textbox, etc.
+* file_basics.c -> module for single file operations.
 * cedit.c -> Editor in C in the style of MSDOS EDIT (In progress).
 
 

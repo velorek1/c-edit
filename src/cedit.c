@@ -3,7 +3,7 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 2/03/2019 - Scroll Indicator update                                         
+Last modified : 09/03/2019 - New File_Basics module 
 ======================================================================*/
 
 /*====================================================================*/
@@ -19,6 +19,7 @@ Last modified : 2/03/2019 - Scroll Indicator update
 #include "screen_buffer.h"
 #include "opfile_dialog.h"
 #include "user_inter.h"
+#include "file_basics.h"
 #include "keyboard.h"
 
 /*====================================================================*/
@@ -49,7 +50,6 @@ Last modified : 2/03/2019 - Scroll Indicator update
 #define WSAVETITLE_MSG "[C-EDIT SAVE AS]"
 #define WNEWTITLE_MSG "[C-EDIT NEW FILE]"
 #define WTITLEABOUT_MSG "[ABOUT]"
-#define WABOUT_MSG "Coded by v3l0r3k.\n - 2019 - \n Spukhafte Fernwirkungen!"
 #define WINFO_NOPEN "Error:\nThere isn't any file open!"
 #define WINFO_SIZE "-File size: "
 #define WINFO_SIZE2 "\n-No. of lines: "
@@ -109,8 +109,6 @@ Last modified : 2/03/2019 - Scroll Indicator update
 #define DIRECTION_UP 0
 
 //FILE CONSTANTS
-#define TMP_FILE "tmp.txt"
-#define CONFIGFILE "cedit.cfg"
 #define FILE_MODIFIED 1
 #define FILE_UNMODIFIED 0
 #define FILE_READMODE 2
@@ -214,19 +212,12 @@ void    smoothScroll(char direction);
 short   checkScrollValues(long lines);
 
 //File-handling prototypes
-int     openFile(FILE ** filePtr, char fileName[], char *mode);
-int     closeFile(FILE * filePtr);
 int     writeBuffertoFile(FILE * filePtr,
 			  EDITBUFFER editBuffer[MAX_LINES]);
 int     writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES]);
 int     filetoBuffer(FILE * filePtr, EDITBUFFER editBuffer[MAX_LINES]);
-long    getfileSize(FILE * filePtr);
-long    countLinesFile(FILE * filePtr);
-long    checkFile(FILE * filePtr);
-int     file_exists(char *fileName);
 int     handleopenFile(FILE ** filePtr, char *fileName, char *oldFileName);
 int     createnewFile(FILE ** filePtr, char *fileName, int checkFile);
-void    checkConfigFile(int setValue);
 
 /*====================================================================*/
 /* MAIN PROGRAM - CODE                                                */
@@ -1303,47 +1294,6 @@ int writetoBuffer(EDITBUFFER editBuffer[MAX_LINES], long whereX, long whereY,
 /*FILE handling functions */
 /*========================*/
 
-/*-----------*/
-/* Open file */
-/*-----------*/
-
-int openFile(FILE ** filePtr, char fileName[], char *mode)
-/* 
-Open file.
-@return ok = 1 ? 0 Success! 
-*/
-{
-  int     ok = 0;
-  *filePtr = fopen(fileName, mode);
-
-  if(*filePtr != NULL) {
-    //File opened correctly.
-    ok = 1;
-  } else {
-    //Error
-    ok = 0;
-  }
-  return ok;
-}
-
-/*------------*/
-/* Close file */
-/*------------*/
-
-int closeFile(FILE * filePtr) {
-/* 
-   Close file
-@return ok: 
-*/
-  int     ok;
-
-  if(filePtr != NULL) {
-    ok = fclose(filePtr);
-  }
-
-  return ok;
-}
-
 /*--------------------------*/
 /* Write EditBuffer to File */
 /*--------------------------*/
@@ -1645,75 +1595,6 @@ int filetoBuffer(FILE * filePtr, EDITBUFFER editBuffer[MAX_LINES]) {
   return 1;
 }
 
-/*---------------*/
-/* Get file size */
-/*---------------*/
-
-long getfileSize(FILE * filePtr) {
-  long    sz;
-  if(filePtr != NULL) {
-    fseek(filePtr, 0L, SEEK_END);
-    sz = ftell(filePtr);
-    rewind(filePtr);
-  }
-
-  return sz;
-}
-
-/*-----------------*/
-/* Check file type */
-/*-----------------*/
-
-long countLinesFile(FILE * filePtr) {
-  char    ch;
-  long    counterA = 0;
-  if(filePtr != NULL) {
-    rewind(filePtr);		//Make sure we are at the beginning
-
-    ch = getc(filePtr);		//Peek ahead in the file
-    while(!feof(filePtr)) {
-      if(ch == END_LINE_CHAR) {
-	counterA++;
-      }
-      ch = getc(filePtr);
-    }
-  }
-  return counterA;
-}
-
-long checkFile(FILE * filePtr) {
-  char    ch;
-  long    counterA = 0;
-  if(filePtr != NULL) {
-    rewind(filePtr);		//Make sure we are at the beginning
-
-    ch = getc(filePtr);		//Peek ahead in the file
-    while(!feof(filePtr)) {
-      if(ch < 9) {
-	//discard accents
-	if(ch > -60)
-	  counterA++;
-      }
-      ch = getc(filePtr);
-    }
-  }
-  return counterA;
-}
-
-/*----------------------*/
-/* Check if file exists */
-/*----------------------*/
-
-int file_exists(char *fileName) {
-  int     ok;
-  if(access(fileName, F_OK) != -1) {
-    ok = 1;			//File exists
-  } else {
-    ok = 0;
-  }
-  return ok;
-}
-
 /*------------------*/
 /* Open file checks */
 /*------------------*/
@@ -1792,52 +1673,4 @@ int createnewFile(FILE ** filePtr, char *fileName, int checkFile) {
   return ok;
 }
 
-/*-------------------*/
-/* Checks config file*/
-/*-------------------*/
 
-void checkConfigFile(int setValue) {
-  FILE   *fp;
-  int     ok = 0;
-  char    ch;
-
-  if(setValue == -1) {
-    if(file_exists(CONFIGFILE)) {
-      //If we open the program for the first time.
-      //Read config file
-      ok = openFile(&fp, CONFIGFILE, "r");
-      if(ok == 1) {
-	ch = getc(fp);
-	ch = ch - '0';
-	setColorScheme(ch);
-      } else {
-	printf("Error opening configfile. Setting to defaults.\n");
-	setColorScheme(0);
-      }
-      closeFile(fp);
-    } else {
-      //Create config file
-      ok = openFile(&fp, CONFIGFILE, "w");
-      if(ok == 1) {
-	fprintf(fp, "%d", 0);
-	setColorScheme(0);	//Create config file and set default color Scheme        
-      } else {
-	printf("Error creating config file. Setting to defaults.\n");
-	setColorScheme(0);
-      }
-      closeFile(fp);
-    }
-  } else {
-    //If we call the function from the menu.
-    //Set new value in config file
-    ok = openFile(&fp, CONFIGFILE, "w");
-    if(ok == 1) {
-      fprintf(fp, "%d", setValue);
-      //setColorScheme(setValue); //Create config file and set default color Scheme        
-    } else {
-      printf("Error creating config file. Setting to defaults.\n");
-      setColorScheme(0);
-    }
-    closeFile(fp);
-  }
-}

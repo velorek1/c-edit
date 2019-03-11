@@ -59,6 +59,11 @@ Last modified: 4/11/2018 + New keys
 #define OPTION_NIL -1		//Reset option
 #define CONFIRMATION 1
 
+//EDIT CONSTANTS
+#define CHAR_NIL '\0'
+#define END_LINE_CHAR 0x0A	// $0A
+#define FILL_CHAR 32
+
 //GLOBAL VARIABLES - COLOR SCHEME
 extern int EDITAREACOL;
 extern int EDIT_FORECOLOR;

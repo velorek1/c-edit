@@ -1,19 +1,31 @@
+TARGETS = cedit
+
 HEADERS = rawterm.h list_choice.h screen_buffer.h
 
-default: ./cedit
+# The list of object files.
+OBJS =  cedit.o rawterm.o list_choice.o screen_buffer.o
+OBJS += opfile_dialog.o user_inter.o file_basics.o
+OBJS += keyboard.o
 
-cedit.o: cedit.c $(HEADERS)
-	gcc -c -Wall cedit.c 
-	gcc -c -Wall rawterm.c
-	gcc -c -Wall list_choice.c
-	gcc -c -Wall screen_buffer.c
-	gcc -c -Wall opfile_dialog.c
-	gcc -c -Wall user_inter.c
-	gcc -c -Wall file_basics.c
-	gcc -c -Wall keyboard.c
+# the list of files to clean
+TOCLEAN = cedit $(OBJS)
 
-cedit: cedit.o 
-	gcc cedit.o rawterm.o keyboard.o list_choice.o screen_buffer.o opfile_dialog.o user_inter.o file_basics.o -o cedit
+RM ?= rm -f
 
+all: $(TARGETS)
 clean:
-	-rm -f cedit.o
+	$(RM) $(TOCLEAN)
+
+cedit: $(OBJS)
+	$(CC) $(LDFLAGS) -o $(.TARGET) $(OBJS)
+
+# INCLUDE DEPENDENCIES to compile depending on which
+# source has been touched.
+cedit.o: cedit.c rawterm.h list_choice.h screen_buffer.h keyboard.h opfile_dialog.h user_inter.h file_basics.h
+file_basics.o: file_basics.c user_inter.h screen_buffer.h rawterm.h keyboard.h list_choice.h file_basics.h
+keyboard.o: keyboard.c rawterm.h keyboard.h
+list_choice.o: list_choice.c rawterm.h screen_buffer.h keyboard.h
+opfile_dialog.o: opfile_dialog.c screen_buffer.h rawterm.h keyboard.h user_inter.h list_choice.h
+rawterm.o: rawterm.c 
+screen_buffer.o: screen_buffer.c rawterm.h keyboard.h
+user_inter.o: user_inter.c screen_buffer.h rawterm.h keyboard.h list_choice.h user_inter.h

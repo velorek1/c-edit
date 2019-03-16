@@ -1,4 +1,4 @@
-TARGETS = cedit
+TARGET = cedit
 
 HEADERS = rawterm.h list_choice.h screen_buffer.h
 
@@ -12,12 +12,12 @@ TOCLEAN = cedit $(OBJS)
 
 RM ?= rm -f
 
-all: $(TARGETS)
+all: $(TARGET)
 clean:
 	$(RM) $(TOCLEAN)
 
 cedit: $(OBJS)
-	$(CC) $(LDFLAGS) -o $(.TARGET) $(OBJS)
+	$(CC)  $(LDFLAGS) $(OBJS) -o $(TARGET) 
 
 # INCLUDE DEPENDENCIES to compile depending on which
 # source has been touched.

@@ -17,7 +17,7 @@ clean:
 	$(RM) $(TOCLEAN)
 
 cedit: $(OBJS)
-	$(CC) $(LDFLAGS) -o $(.TARGET) $(OBJS)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS)
 
 # INCLUDE DEPENDENCIES to compile depending on which
 # source has been touched.

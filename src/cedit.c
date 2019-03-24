@@ -56,7 +56,7 @@ Last modified : 09/03/2019 - New File_Basics module
 #define WINFO_SIZE3 "\n-File name: "
 #define WCHECKFILE_MSG " This file isn't a  \n text file. Program \n may crash. Open anyway?"
 #define WINFONOTYET_MSG "Not implemented yet!"
-#define WCHECKLINES_MSG " File longer than 32700 \n lines. You'll view those \n lines as read Mode! "
+#define WCHECKLINES_MSG " File longer than 3000 \n lines. You'll view those \n lines as read Mode! "
 #define WMODIFIED_MSG " File has been modified\n Save current buffer?"
 #define WFILEEXISTS_MSG " File exists. \n Overwrite?"
 #define WFILEINREADMODE_MSG " File is on read mode. \n"
@@ -96,11 +96,13 @@ Last modified : 09/03/2019 - New File_Basics module
 // DISPLAY CONSTANTS
 #define FILL_CHAR 32
 
+//Temporary implementation- Static Buffer
 //EDIT AREA CONSTANTS 
-//Edit buffer is currently 32700 lines x 1022 chars
+//Edit buffer is currently 3000 lines x 500 chars
 
-#define MAX_CHARS 1022		// 1022 chars per line
-#define MAX_LINES 32700		// 32700 lines per page (max mem 32750)
+#define MAX_CHARS 500		// 500 chars per line
+#define MAX_LINES 3000		// 3000 lines per page (max mem 32750)
+
 #define CHAR_NIL '\0'
 #define END_LINE_CHAR 0x0A	// $0A
 #define VSCROLL_ON 1
@@ -1526,16 +1528,18 @@ int writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES]) {
     specialChar = editBuffer[z+j].charBuf[i].specialChar;
     if(tempChar != CHAR_NIL) {
       if(tempChar != END_LINE_CHAR) {
-	write_ch(i + START_CURSOR_X, j + START_CURSOR_Y, specialChar,
+	if(i == columns - 4) {
+	  //temporary restriction until vertical scroll is implemented
+	  i = 0;
+	  if (j<editScroll.displayLength-1) j++;
+          else
+            tempChar = END_LINE_CHAR;
+	}
+        write_ch(i + START_CURSOR_X, j + START_CURSOR_Y, specialChar,
 		 EDITAREACOL, EDIT_FORECOLOR);
 	write_ch(i + START_CURSOR_X, j + START_CURSOR_Y, tempChar,
 		 EDITAREACOL, EDIT_FORECOLOR);
 	i++;
-	if(i == columns - 3) {
-	  //temporary restriction until scroll is implemented
-	  i = 0;
-	  j++;
-	}
       }
       if(tempChar == END_LINE_CHAR) {
 	i = 0;

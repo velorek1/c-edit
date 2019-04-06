@@ -7,7 +7,8 @@
    are drawn to the terminal on raw mode to have a better scrolling
    animation. Once the file is selected, the window is closed and the
    previous screen is painted to the terminal again.
-   Last modified : 11/9/2019 - Switch to readch() instead of getch()
+   Last modified : 11/1/2019 - Switch to readch() instead of getch()
+                   06/04/2019 - Corrected all memory leaks
    Coded by Velorek.
    Target OS: Linux.                                                  */
 /*====================================================================*/
@@ -679,18 +680,18 @@ void changeDir(SCROLLDATA * scrollData, char fullPath[MAX],
   if(scrollData->isDirectory == DIRECTORY) {
     if(scrollData->itemIndex == 1) {
       //cd ..
-      cleanString(fullPath, strlen(fullPath));
-      cleanString(oldPath, strlen(oldPath));
-      cleanString(newDir, strlen(newDir));
+      cleanString(fullPath, MAX);
+      cleanString(oldPath, MAX);
+      cleanString(newDir, MAX);
       chdir("..");
       getcwd(oldPath, sizeof(oldPath));
       strcpy(newDir, oldPath);
       strcpy(fullPath, oldPath);
     } else {
       //cd newDir
-      cleanString(fullPath, strlen(fullPath));
-      cleanString(newDir, strlen(newDir));
-      cleanString(oldPath, strlen(oldPath));
+      cleanString(fullPath, MAX);
+      cleanString(newDir, MAX);
+      cleanString(oldPath, MAX);
       getcwd(oldPath, sizeof(oldPath));
       strcat(oldPath, "/");
       strcat(oldPath, scrollData->path);
@@ -777,7 +778,7 @@ void openFileDialog(SCROLLDATA * openFileData) {
     listFiles(&listBox1, newDir);
     ch = listBox(listBox1, window_x1 + 3, window_y1 + 3, &scrollData,
 		 MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1, 10);
-    deleteList(&listBox1);
+   // deleteList(&listBox1);
 
     //Clean all lines on the window
     for(i = window_y1 + 3; i < window_y2; i++) {
@@ -793,7 +794,20 @@ void openFileDialog(SCROLLDATA * openFileData) {
     if(scrollData.itemIndex == 0)
       exitFlag = 1;		//First item is selected
     if(ch == K_ENTER && scrollData.isDirectory == FILEITEM)
-      exitFlag = 1;		//File selected 
+      exitFlag = 1;		//File selected
+    openFileData->item = scrollData.item;
+    openFileData->itemIndex = scrollData.itemIndex;
+    openFileData->path = scrollData.path;
+    //Save full path
+    strcpy(openFileData->fullPath, fullPath);
+    strcat(openFileData->fullPath, "/");
+    strcat(openFileData->fullPath, scrollData.path);
+    openFileData->isDirectory = scrollData.isDirectory;
+
+    if(listBox1 != NULL) {
+		deleteList(&listBox1);
+		listBox1 = NULL;
+    } 
   } while(exitFlag != 1);
 
   //Return file selected by copying into fileToOpen -> currentFile
@@ -803,14 +817,6 @@ void openFileDialog(SCROLLDATA * openFileData) {
     //  (char *)malloc(sizeof(char) * strlen(scrollData.item) + 1);
   //openFileData->path =
       //(char *)malloc(sizeof(char) * strlen(scrollData.path) + 1);
-  openFileData->item = scrollData.item;
-  openFileData->itemIndex = scrollData.itemIndex;
-  openFileData->path = scrollData.path;
-  //Save full path
-  strcpy(openFileData->fullPath, fullPath);
-  strcat(openFileData->fullPath, "/");
-  strcat(openFileData->fullPath, scrollData.path);
-  openFileData->isDirectory = scrollData.isDirectory;
   //strcpy(filetoOpen, scrollData.path);
 
 }

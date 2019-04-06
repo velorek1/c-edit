@@ -123,14 +123,15 @@ void free_list(LISTCHOICE * list_identifier) {
   do {
     p = aux;
     aux = aux->back;
-    free(p->item);		//free off the string field
-    free(p);			//remove item
+    if (p->item != NULL) free(p->item);		//free off the string field
+    if (p != NULL) free(p);			//remove item
   } while(aux != head->back);
   head = NULL;
   tail = NULL;
   former = NULL;
   current = NULL;
 }
+
 
 /*-----------------------------------------*/
 /* Displays the items contained in the list 

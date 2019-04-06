@@ -388,13 +388,15 @@ void write_str(int x, int y, char *str, int backcolor, int forecolor) {
   char   *astr;
   int     i, wherex;
   wherex = x;
-  astr = (char *)malloc(sizeof(char) * strlen(str) + 1);
+  //astr = (char *)malloc(sizeof(char) * strlen(str) + 1);
   astr = str;
   for(i = 0; i <= strlen(str) - 1; i++) {
     write_ch(wherex, y, astr[i], backcolor, forecolor);
     wherex = wherex + 1;
   
   }
+  //astr = NULL;
+  //free(astr);
 }
 
 /*-----------------------------------------------*/
@@ -405,10 +407,13 @@ int write_num(int x, int y, int num, int length, int backcolor,
 	       int forecolor) {
   //the length of the string must be passed on the function
   char   *astr;
+  char len;
   astr = (char *)malloc(sizeof(char) * length + 1);
   sprintf(astr, "%d", num);
   write_str(x, y, astr, backcolor, forecolor);
-  return strlen(astr);
+  len = strlen(astr);
+  free(astr);
+  return len;
 }
 
 /*---------------------------------------*/
@@ -524,7 +529,42 @@ void screen_color(int color) {
 /*-----------------------------*/
 /* Destroy both screen buffers */
 /*-----------------------------*/
+/* Function to delete the entire linked list */
+void free_buffer() 
+{ 
+   /* deref head_ref to get the real head */
+   SCREENCELL *current; 
+   SCREENCELL *next; 
+   current=primary_start;
+  
+   while (current != NULL)  
+   { 
+       next = current->next; 
+       //if (current != NULL){
+         free(current);
+       //}
+       current = next; 
+   } 
+    current=secondary_start;
+  
+   while (current != NULL)  
+   { 
+       next = current->next; 
+       //if (current != NULL){
+         free(current);
+       //}
+       current = next; 
+   } 
+   free(current); 
+   /* deref head_ref to affect the real head back 
+      in the caller. */
+   primary_start = NULL;
+  primary_end = NULL;
+  secondary_start = NULL;
+  secondary_end = NULL;
+} 
 
+/*
 void free_buffer() {
   SCREENCELL *aux, *p;
   aux = primary_start;
@@ -544,6 +584,7 @@ void free_buffer() {
   secondary_start = NULL;
   secondary_end = NULL;
 }
+*/
 
 /*------------------------------------------*/
 /* Draw window area with or without border. */

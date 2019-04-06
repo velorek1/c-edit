@@ -17,6 +17,7 @@ Last modified : 09/03/2019 - New File_Basics module
 #include "rawterm.h"
 #include "list_choice.h"
 #include "screen_buffer.h"
+#include "edit_buffer.h"
 #include "opfile_dialog.h"
 #include "user_inter.h"
 #include "file_basics.h"
@@ -149,6 +150,7 @@ LISTCHOICE *mylist, data; //menus handler
 SCREENCELL *my_screen; //display handler
 SCROLLDATA openFileData; //openFile dialog
 EDITBUFFER editBuffer[MAX_LINES]; //edit buffer
+//EDITCELL *editBuffer1;
 EDITSCROLL editScroll; //scroll Values
 
 FILE   *filePtr;
@@ -244,6 +246,7 @@ int main(int argc, char *argv[]) {
   editScroll.totalLines = 1; //There is just one line active in buffer
   editScroll.bufferX = 1;
   editScroll.bufferY = 1;
+  //editBuffer1 = addRear(editBuffer1, newEditCell(20,-67));
   main_screen();		//Draw screen
   resetch();			//Clear keyboard and sets ENTER = 13
   /*------------------------------------------------------------------*/

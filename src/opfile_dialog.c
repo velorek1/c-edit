@@ -90,7 +90,7 @@ typedef struct _scrolldata {
   char   *path;
   char    fullPath[MAX];
   unsigned itemIndex;
-  LISTBOX *head;		//store head of the list
+ // LISTBOX *head;		//store head of the list
 } SCROLLDATA;
 
 /*====================================================================*/
@@ -138,18 +138,26 @@ LISTBOX *newelement(char *text, char *itemPath, unsigned itemType) {
   return newp;
 }
 
-// deleleteList: remove list from memory
-void deleteList(LISTBOX ** head) {
-  LISTBOX *p, *aux;
-  aux = *head;
-  while(aux->next != NULL) {
-    p = aux;
-    aux = aux->next;
-    free(p->item);
-    free(p);			//remove item
-  }
-  *head = NULL;
-}
+void deleteList(LISTBOX **head) 
+{ 
+   /* deref head_ref to get the real head */
+   LISTBOX *current = *head; 
+   LISTBOX *next = NULL; 
+  
+   while (current != NULL)  
+   { 
+       next = current->next; 
+       free(current->item);
+       free(current->path);
+       free(current);
+       current = next; 
+   } 
+    
+   /* deref head_ref to affect the real head back 
+      in the caller. */
+   *head = NULL; 
+} 
+
 
 /* addend: add new LISTBOX to the end of a list  */
 /* usage example: listBox1 = (addend(listBox1, newelement("Item")); */
@@ -483,8 +491,8 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
   if(ch == K_ENTER || ch == K_ENTER2)		// enter key
   {
     //Pass data of last item selected.
-    scrollData->item =
-	(char *)malloc(sizeof(char) * strlen(aux->item) + 1);
+    //scrollData->item =
+	//(char *)imalloc(sizeof(char) * strlen(aux->item) + 1);
     //scrollData->path = (char *)malloc(sizeof(char) *strlen(aux->path) + 1);
     scrollData->item = aux->item;
     scrollData->itemIndex = aux->index;
@@ -717,6 +725,24 @@ void openFileDialog(SCROLLDATA * openFileData) {
   int     exitFlag = 0;
   int     i;
   int     rows, columns;
+//init values
+  scrollData.scrollActive=0;	//To know whether scroll is active or not.
+  scrollData.scrollLimit=0;		//Last index for scroll.
+  scrollData.listLength=0;		//Total no. of items in the list
+  scrollData.currentListIndex=0;	//Pointer to new sublist of items when scrolling.
+  scrollData.displayLimit=0;	//No. of elements to be displayed.
+  scrollData.scrollDirection=0;	//To keep track of scrolling Direction.
+  scrollData.selector=0;		//Y++
+  scrollData.wherex=0;		
+  scrollData.wherey=0;		
+  scrollData.backColor0=0;		//0 unselected; 1 selected
+  scrollData.foreColor0=0;
+  scrollData.backColor1=0;
+  scrollData.foreColor1=0;
+  scrollData.isDirectory=0;		// Kind of item
+  scrollData.item =NULL;
+  scrollData.path =NULL;
+  scrollData.itemIndex=0;
   get_terminal_dimensions(&rows, &columns);
   //Check if the screen is active in memory first.
 
@@ -773,10 +799,10 @@ void openFileDialog(SCROLLDATA * openFileData) {
   //Return file selected by copying into fileToOpen -> currentFile
   close_window();
   resetch();
-  openFileData->item =
-      (char *)malloc(sizeof(char) * strlen(scrollData.item) + 1);
-  openFileData->path =
-      (char *)malloc(sizeof(char) * strlen(scrollData.path) + 1);
+ // openFileData->item =
+    //  (char *)malloc(sizeof(char) * strlen(scrollData.item) + 1);
+  //openFileData->path =
+      //(char *)malloc(sizeof(char) * strlen(scrollData.path) + 1);
   openFileData->item = scrollData.item;
   openFileData->itemIndex = scrollData.itemIndex;
   openFileData->path = scrollData.path;

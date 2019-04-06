@@ -4,7 +4,8 @@ Module to make a circular linked list to make a selection menu in C.
 
 @author : Velorek
 @version : 1.0
-Last modified : 11/02/2019 - Switch to readch() instead of readch() 
+Last modified : 11/02/2019 - Switch to readch() instead of readch()
+                06/04/2019 - Fixed memory errors and leaks. 
 ======================================================================
 */
 
@@ -117,21 +118,44 @@ void add_item(LISTCHOICE * list_identifier, char *str, int x, int y,
 /*-----------------------*/
 /*Remove list from memory*/
 /*-----------------------*/
+/* Function to delete the entire linked list */
+void free_list(LISTCHOICE *list_identifier) 
+{ 
+   /* deref head_ref to get the real head */
+   LISTCHOICE *cur; 
+   LISTCHOICE *back; 
+   cur = tail;
+   while (cur != head)  
+   { 
+       back = cur->back; 
+       //if (current != NULL){
+         free(cur->item);
+         free(cur);
+       //}
+       cur = back; 
+   } 
+   free(head->item);
+   free(head);  
+   /* deref head_ref to affect the real head back 
+      in the caller. */
+   head = NULL; 
+   tail = NULL;
+} 
+/*
 void free_list(LISTCHOICE * list_identifier) {
   LISTCHOICE *aux, *p;
   aux = tail;
-  do {
+  while (aux != head->back) {
     p = aux;
-    aux = aux->back;
     if (p->item != NULL) free(p->item);		//free off the string field
     if (p != NULL) free(p);			//remove item
-  } while(aux != head->back);
+  } 
   head = NULL;
   tail = NULL;
   former = NULL;
   current = NULL;
 }
-
+*/
 
 /*-----------------------------------------*/
 /* Displays the items contained in the list 

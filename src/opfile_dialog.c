@@ -814,12 +814,12 @@ void openFileDialog(SCROLLDATA * openFileData) {
   close_window();
   resetch();
   if(scrollData.itemIndex != 0){
-  openFileData->item =
-      (char *)malloc(sizeof(char) * strlen(scrollData.item) + 1);
-  openFileData->path =
-      (char *)malloc(sizeof(char) * strlen(scrollData.path) + 1);
-  strcpy(openFileData->item, scrollData.item);
-  strcpy(openFileData->path, scrollData.path);
+   openFileData->item =
+      (char *)malloc(sizeof(char) * strlen(scrollData.item)+1);
+   openFileData->path =
+      (char *)malloc(sizeof(char) * strlen(scrollData.path)+1);
+    strcpy(openFileData->item, scrollData.item);
+    strcpy(openFileData->path, scrollData.path);
   }
   deleteList(&listBox1);
 }

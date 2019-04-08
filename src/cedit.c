@@ -3,7 +3,7 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 09/03/2019 - New File_Basics module 
+Last modified : 08/04/2019 - Fixed memory leaks 
 ======================================================================*/
 
 /*====================================================================*/
@@ -1237,6 +1237,11 @@ void drop_down(char *kglobal) {
 
 void credits() {
 /* Frees memory and displays goodbye message */
+  //Free selected path item/path from opfiledialog 
+  if (openFileData.itemIndex != 0) {
+    free(openFileData.item);
+    free(openFileData.path);
+  }
   free_buffer();
   resetTerm();			//restore terminal settings from failsafe
   showcursor();

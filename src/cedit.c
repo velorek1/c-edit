@@ -246,6 +246,7 @@ int main(int argc, char *argv[]) {
   editScroll.totalLines = 1; //There is just one line active in buffer
   editScroll.bufferX = 1;
   editScroll.bufferY = 1;
+  openFileData.itemIndex = 0; //No file has been opened yet. Memory isn't freed.
   //editBuffer1 = addRear(editBuffer1, newEditCell(20,-67));
   main_screen();		//Draw screen
   resetch();			//Clear keyboard and sets ENTER = 13
@@ -1434,6 +1435,11 @@ int newDialog(char fileName[MAX_TEXT]) {
 int openFileHandler() {
   char    oldFile[MAX_TEXT];
   chdir(currentPath);		//Go back to original path
+  //free current item if it exists
+  if (openFileData.itemIndex != 0){
+        free(openFileData.item);
+        free(openFileData.path);
+  }
   openFileDialog(&openFileData);
   //Update new global file name
   if(openFileData.itemIndex != 0) {

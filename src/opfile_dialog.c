@@ -7,7 +7,8 @@
    are drawn to the terminal on raw mode to have a better scrolling
    animation. Once the file is selected, the window is closed and the
    previous screen is painted to the terminal again.
-   Last modified : 11/9/2019 - Switch to readch() instead of getch()
+   Last modified : 11/1/2019 - Switch to readch() instead of getch()
+                   06/04/2019 - Corrected all memory leaks
    Coded by Velorek.
    Target OS: Linux.                                                  */
 /*====================================================================*/
@@ -90,7 +91,7 @@ typedef struct _scrolldata {
   char   *path;
   char    fullPath[MAX];
   unsigned itemIndex;
-  LISTBOX *head;		//store head of the list
+ // LISTBOX *head;		//store head of the list
 } SCROLLDATA;
 
 /*====================================================================*/
@@ -138,18 +139,26 @@ LISTBOX *newelement(char *text, char *itemPath, unsigned itemType) {
   return newp;
 }
 
-// deleleteList: remove list from memory
-void deleteList(LISTBOX ** head) {
-  LISTBOX *p, *aux;
-  aux = *head;
-  while(aux->next != NULL) {
-    p = aux;
-    aux = aux->next;
-    free(p->item);
-    free(p);			//remove item
-  }
-  *head = NULL;
-}
+void deleteList(LISTBOX **head) 
+{ 
+   /* deref head_ref to get the real head */
+   LISTBOX *current = *head; 
+   LISTBOX *next = NULL; 
+  
+   while (current != NULL)  
+   { 
+       next = current->next; 
+       free(current->item);
+       free(current->path);
+       free(current);
+       current = next; 
+   } 
+    
+   /* deref head_ref to affect the real head back 
+      in the caller. */
+   *head = NULL; 
+} 
+
 
 /* addend: add new LISTBOX to the end of a list  */
 /* usage example: listBox1 = (addend(listBox1, newelement("Item")); */
@@ -483,8 +492,8 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
   if(ch == K_ENTER || ch == K_ENTER2)		// enter key
   {
     //Pass data of last item selected.
-    scrollData->item =
-	(char *)malloc(sizeof(char) * strlen(aux->item) + 1);
+    //scrollData->item =
+	//(char *)imalloc(sizeof(char) * strlen(aux->item) + 1);
     //scrollData->path = (char *)malloc(sizeof(char) *strlen(aux->path) + 1);
     scrollData->item = aux->item;
     scrollData->itemIndex = aux->index;
@@ -671,18 +680,18 @@ void changeDir(SCROLLDATA * scrollData, char fullPath[MAX],
   if(scrollData->isDirectory == DIRECTORY) {
     if(scrollData->itemIndex == 1) {
       //cd ..
-      cleanString(fullPath, strlen(fullPath));
-      cleanString(oldPath, strlen(oldPath));
-      cleanString(newDir, strlen(newDir));
+      cleanString(fullPath, MAX);
+      cleanString(oldPath, MAX);
+      cleanString(newDir, MAX);
       chdir("..");
       getcwd(oldPath, sizeof(oldPath));
       strcpy(newDir, oldPath);
       strcpy(fullPath, oldPath);
     } else {
       //cd newDir
-      cleanString(fullPath, strlen(fullPath));
-      cleanString(newDir, strlen(newDir));
-      cleanString(oldPath, strlen(oldPath));
+      cleanString(fullPath, MAX);
+      cleanString(newDir, MAX);
+      cleanString(oldPath, MAX);
       getcwd(oldPath, sizeof(oldPath));
       strcat(oldPath, "/");
       strcat(oldPath, scrollData->path);
@@ -717,6 +726,24 @@ void openFileDialog(SCROLLDATA * openFileData) {
   int     exitFlag = 0;
   int     i;
   int     rows, columns;
+//init values
+  scrollData.scrollActive=0;	//To know whether scroll is active or not.
+  scrollData.scrollLimit=0;		//Last index for scroll.
+  scrollData.listLength=0;		//Total no. of items in the list
+  scrollData.currentListIndex=0;	//Pointer to new sublist of items when scrolling.
+  scrollData.displayLimit=0;	//No. of elements to be displayed.
+  scrollData.scrollDirection=0;	//To keep track of scrolling Direction.
+  scrollData.selector=0;		//Y++
+  scrollData.wherex=0;		
+  scrollData.wherey=0;		
+  scrollData.backColor0=0;		//0 unselected; 1 selected
+  scrollData.foreColor0=0;
+  scrollData.backColor1=0;
+  scrollData.foreColor1=0;
+  scrollData.isDirectory=0;		// Kind of item
+  scrollData.item =NULL;
+  scrollData.path =NULL;
+  scrollData.itemIndex=0;
   get_terminal_dimensions(&rows, &columns);
   //Check if the screen is active in memory first.
 
@@ -751,7 +778,7 @@ void openFileDialog(SCROLLDATA * openFileData) {
     listFiles(&listBox1, newDir);
     ch = listBox(listBox1, window_x1 + 3, window_y1 + 3, &scrollData,
 		 MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1, 10);
-    deleteList(&listBox1);
+   // deleteList(&listBox1);
 
     //Clean all lines on the window
     for(i = window_y1 + 3; i < window_y2; i++) {
@@ -767,24 +794,34 @@ void openFileDialog(SCROLLDATA * openFileData) {
     if(scrollData.itemIndex == 0)
       exitFlag = 1;		//First item is selected
     if(ch == K_ENTER && scrollData.isDirectory == FILEITEM)
-      exitFlag = 1;		//File selected 
+      exitFlag = 1;		//File selected
+    openFileData->item = scrollData.item;
+    openFileData->itemIndex = scrollData.itemIndex;
+    openFileData->path = scrollData.path;
+    //Save full path
+    strcpy(openFileData->fullPath, fullPath);
+    strcat(openFileData->fullPath, "/");
+    strcat(openFileData->fullPath, scrollData.path);
+    openFileData->isDirectory = scrollData.isDirectory;
+
+    if(listBox1 != NULL && exitFlag != 1) {
+		deleteList(&listBox1);
+		listBox1 = NULL;
+    } 
   } while(exitFlag != 1);
 
   //Return file selected by copying into fileToOpen -> currentFile
   close_window();
   resetch();
+  if(scrollData.itemIndex != 0){
   openFileData->item =
       (char *)malloc(sizeof(char) * strlen(scrollData.item) + 1);
   openFileData->path =
       (char *)malloc(sizeof(char) * strlen(scrollData.path) + 1);
-  openFileData->item = scrollData.item;
-  openFileData->itemIndex = scrollData.itemIndex;
-  openFileData->path = scrollData.path;
-  //Save full path
-  strcpy(openFileData->fullPath, fullPath);
-  strcat(openFileData->fullPath, "/");
-  strcat(openFileData->fullPath, scrollData.path);
-  openFileData->isDirectory = scrollData.isDirectory;
-  //strcpy(filetoOpen, scrollData.path);
-
+  strcpy(openFileData->item, scrollData.item);
+  strcpy(openFileData->path, scrollData.path);
+  }
+  deleteList(&listBox1);
 }
+
+

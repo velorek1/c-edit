@@ -1638,6 +1638,7 @@ int handleopenFile(FILE ** filePtr, char *fileName, char *oldFileName) {
       clearString(fileName, MAX_TEXT);
       strcpy(fileName, oldFileName);
       //Open file again and dump first page to buffer - temporary
+      closeFile(*filePtr);
       openFile(filePtr, currentFile, "r");
       filetoBuffer(*filePtr, editBuffer);
     }

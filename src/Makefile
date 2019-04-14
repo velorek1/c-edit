@@ -1,11 +1,11 @@
 TARGET = cedit
 
-HEADERS = rawterm.h list_choice.h screen_buffer.h edit_buffer.h
+HEADERS = rterm.h listc.h scbuf.h 
 
 # The list of object files.
-OBJS =  cedit.o rawterm.o list_choice.o screen_buffer.o
-OBJS += opfile_dialog.o user_inter.o file_basics.o
-OBJS += keyboard.o edit_buffer.o
+OBJS =  main.o rterm.o listc.o scbuf.o
+OBJS += opfile.o uintf.o fileb.o
+OBJS += keyb.o 
 
 # the list of files to clean
 TOCLEAN = cedit $(OBJS)
@@ -21,12 +21,11 @@ cedit: $(OBJS)
 
 # INCLUDE DEPENDENCIES to compile depending on which
 # source has been touched.
-cedit.o: cedit.c rawterm.h list_choice.h screen_buffer.h edit_buffer.h keyboard.h opfile_dialog.h user_inter.h file_basics.h
-file_basics.o: file_basics.c user_inter.h screen_buffer.h rawterm.h keyboard.h list_choice.h file_basics.h
-keyboard.o: keyboard.c rawterm.h keyboard.h
-list_choice.o: list_choice.c rawterm.h screen_buffer.h keyboard.h
-opfile_dialog.o: opfile_dialog.c screen_buffer.h rawterm.h keyboard.h user_inter.h list_choice.h
-rawterm.o: rawterm.c 
-screen_buffer.o: screen_buffer.c rawterm.h keyboard.h
-edit_buffer.o: rawterm.h
-user_inter.o: user_inter.c screen_buffer.h rawterm.h keyboard.h list_choice.h user_inter.h
+main.o: main.c rterm.h listc.h scbuf.h keyb.h opfile.h uintf.h fileb.h
+fileb.o: fileb.c uintf.h fileb.h
+keyb.o: keyb.c rterm.h keyb.h
+listc.o: listc.c scbuf.h keyb.h
+opfile.o: opfile.c scbuf.h rterm.h keyb.h uintf.h
+rterm.o: rterm.c 
+scbuf.o: scbuf.c rterm.h keyb.h scbuf.h
+uintf.o: uintf.c scbuf.h rterm.h keyb.h listc.h uintf.h

@@ -1,0 +1,11 @@
+* Top Priority:
+- Change editBuffer from static array to dynamic structure.
+- Fix continuous refreshing of the screen and cursor.
+- Expand behaviour of ENTER and BACKSPACE 
+- Add horizontal scroll.
+
+* Less Priority:
+- Highlight text and copy/paste function
+- Find text
+- Full UTF8 support?
+

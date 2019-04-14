@@ -23,14 +23,14 @@ So far I have implemented:
 
 Files in /src/:
 ===============
-* rawterm.c -> code for the library that handles output with Ansi Functions and kbhit() in linux console (with its header file)
-* list_choice.c -> code for the circular linked list responsible for handling menus 
-* screen_buffer.c -> code for controlling display with a double screen buffer (with its header file)
-* keyboard.c -> module to control keyboard input.
-* opfile_dialog.c -> module that list files with scroll capabilities to select the file to open.
-* user_inter.c -> module with user interface widgets: alert windows, confirmation windows, textbox, etc.
-* file_basics.c -> module for single file operations.
-* cedit.c -> Editor in C in the style of MSDOS EDIT (In progress).
+* rterm.c -> code for the library that handles output with Ansi Functions and kbhit() in linux console (with its header file)
+* list.c -> code for the circular linked list responsible for handling menus 
+* scbuf.c -> code for controlling display with a double screen buffer (with its header file)
+* keyb.c -> module to control keyboard input.
+* opfil.c -> module that list files with scroll capabilities to select the file to open.
+* uintf.c -> module with user interface widgets: alert windows, confirmation windows, textbox, etc.
+* fileb.c -> module for single file operations.
+* main.c -> Editor in C in the style of MSDOS EDIT (In progress).
 
 
 As a screen buffer I have implemented a dynamic structure in memory that allows to save the current screen so that you can display new things on top and then go back to the previous (saved) screen. (simple linked list)

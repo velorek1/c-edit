@@ -27,7 +27,7 @@ Files in /src/:
 * list.c -> code for the circular linked list responsible for handling menus 
 * scbuf.c -> code for controlling display with a double screen buffer (with its header file)
 * keyb.c -> module to control keyboard input.
-* opfil.c -> module that list files with scroll capabilities to select the file to open.
+* opfile.c -> module that list files with scroll capabilities to select the file to open.
 * uintf.c -> module with user interface widgets: alert windows, confirmation windows, textbox, etc.
 * fileb.c -> module for single file operations.
 * main.c -> Editor in C in the style of MSDOS EDIT (In progress).

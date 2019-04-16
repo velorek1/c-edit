@@ -71,6 +71,7 @@ void    draw_window(int x1, int y1, int x2, int y2, int backcolor,
 void    close_window();
 int     mapChartoU8(int character);
 void    update_screen();
+void    update_ch(int x, int y, char ch, char specialChar, int backcolor, int forecolor);
 int 	screenChanged();
 int     update_smart();
 void    flush_buffer();

@@ -3,7 +3,7 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 14/04/2019 - Rename headers 
+Last modified : 15/04/2019 - Refresh screen & cursor updated 
 ======================================================================*/
 
 /*====================================================================*/
@@ -149,13 +149,13 @@ LISTCHOICE *mylist, data; //menus handler
 SCREENCELL *my_screen; //display handler
 SCROLLDATA openFileData; //openFile dialog
 EDITBUFFER editBuffer[MAX_LINES]; //edit buffer
-//EDITCELL *editBuffer1;
 EDITSCROLL editScroll; //scroll Values
 
 FILE   *filePtr;
 
 int     rows = 0, columns = 0, old_rows = 0, old_columns = 0;	// Terminal dimensions
 long    cursorX = START_CURSOR_X, cursorY = START_CURSOR_Y; //Cursor position
+long    oldX = START_CURSOR_X, oldY = START_CURSOR_Y; //Cursor position blink
 int     timerCursor = 0;	// Timer
 char    kglobal = 0;		// Global variable for menu animation
 char    currentFile[MAX_TEXT];
@@ -180,7 +180,7 @@ void    flush_editarea();
 void    cleanStatusBar();
 
 //Timers
-void    draw_cursor(long *whereX, long *whereY, int *timer);
+void    draw_cursor(long whereX, long whereY, long oldX, long oldY, int *timer);
 int     timer_1(int *timer1, char onOff);
 void    update_indicators();
 
@@ -211,7 +211,7 @@ int     writetoBuffer(EDITBUFFER editBuffer[MAX_LINES], long whereX,
 int     findEndline(EDITBUFFER editBuffer[MAX_LINES], long line);
 
 //Scroll prototypes
-void    smoothScroll(char direction);
+//void    smoothScroll(char direction);
 short   checkScrollValues(long lines);
 
 //File-handling prototypes
@@ -274,7 +274,7 @@ int main(int argc, char *argv[]) {
   /*------------------------MAIN PROGRAM LOOP-------------------------*/
   do {
     /* CURSOR */
-    draw_cursor(&cursorX, &cursorY, &timerCursor);
+    draw_cursor(cursorX, cursorY, oldX, oldY, &timerCursor);
     /* Query if screen dimensions have changed and resize screen */
     refresh_screen(0);
     /* Wait for key_pressed to read key */
@@ -304,6 +304,8 @@ int main(int argc, char *argv[]) {
       }
     } else {
       //Keypressed = 0 - Reset values
+      oldX = cursorX;
+      oldY = cursorY;
       esc_key = 0;
       ch = 0;
       oldchar = 0;
@@ -390,16 +392,14 @@ int timer_1(int *timer1, char onOff) {
     write_str(columns - strlen(time_str) - 5, 1, temp, MENU_PANEL,
 	      MENU_FOREGROUND0);
     update_indicators();	//update position, indicators display
-    //save_buffer();
-    update_screen();
-    /*
+   //update only the screen bits that change 
+    //update_screen();
     changed=screenChanged();		//update screen - main routine in timer
     if (changed==1) {
-		update_screen();
+		update_smart();
 		save_buffer();
 		changed=0;
 	}
-    */
     c_animation++;  //star animation
     if(c_animation > 6)
       c_animation = 0;
@@ -415,21 +415,36 @@ int timer_1(int *timer1, char onOff) {
 /* Draw cursor on screen and animate it    */
 /*-----------------------------------------*/
 
-void draw_cursor(long *whereX, long *whereY, int *timer) {
+void draw_cursor(long whereX, long whereY, long oldX, long oldY, int *timer) {
 /* CURSOR is drawn directly to screen and not to buffer */
-  long     positionX = 0, limitCol = 0, positionY = 0;
-  char    currentChar = FILL_CHAR;
+  long     positionX = 0, limitCol = 0, positionY = 0, oldPositionX=0, oldPositionY=0;
+  char    currentChar = FILL_CHAR, cursorChar = FILL_CHAR;
   char    specialChar;
 
   *timer = *timer + 1;		//increase timer counter for animation
 
   //Calculate position
-  limitCol = findEndline(editBuffer, *whereY - START_CURSOR_Y);
+  limitCol = findEndline(editBuffer, whereY - START_CURSOR_Y);
   positionX = editScroll.bufferX-1;
   positionY = editScroll.bufferY-1;
-
+  //clean previous cursor  
+  if (oldX != whereX || oldY!=whereY){
+     if(positionX < limitCol) {
+      oldPositionX = positionX+(oldX - whereX);
+      oldPositionY = positionY+(oldY - whereY);
+      currentChar = editBuffer[oldPositionY].charBuf[oldPositionX].ch;
+     } else {
+      currentChar = FILL_CHAR;
+     }
+   gotoxy(oldX, oldY);
+   outputcolor(EDIT_FORECOLOR, EDITAREACOL);
+   //Careful with null char or enter
+   if(currentChar == 0|| currentChar ==10) currentChar=FILL_CHAR;
+   printf("%c",currentChar);
+  }
   if(*timer < LIMIT_TIMER) {
-    gotoxy(*whereX, *whereY);
+    //draw new cursor
+    gotoxy(whereX, whereY);
     outputcolor(EDIT_FORECOLOR, EDITAREACOL);
     printf("|");
   } else {
@@ -440,8 +455,8 @@ void draw_cursor(long *whereX, long *whereY, int *timer) {
     } else {
       currentChar = FILL_CHAR;
     }
-    //Display character in yellow.
-    gotoxy(*whereX, *whereY);
+   //Display character in yellow.
+    gotoxy(whereX, whereY);
     outputcolor(F_YELLOW, EDITAREACOL);
     //Is it an accent or special char?
     if(currentChar < 0) {
@@ -449,6 +464,8 @@ void draw_cursor(long *whereX, long *whereY, int *timer) {
       printf("%c%c", specialChar,
 	     editBuffer[positionY].charBuf[positionX].ch);
     } else {
+     //Careful with null char or enter
+     if(currentChar == 0 || currentChar == 10) currentChar=FILL_CHAR;
       printf("%c", currentChar);
     }
     resetAnsi(0);
@@ -618,7 +635,7 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
 	*whereX = *whereX + 1;
         editScroll.bufferX++;
       }
-      update_screen();
+      //update_screen();
       fileModified = FILE_MODIFIED;
     }
 
@@ -649,8 +666,10 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
         editScroll.bufferY--;
         editScroll.bufferX = findEndline(editBuffer,editScroll.bufferY);
       }
-      if(*whereX > START_CURSOR_X) *whereX = *whereX - 1;
-      editScroll.bufferX--;
+      if(*whereX > START_CURSOR_X){
+        *whereX = *whereX - 1;
+        editScroll.bufferX--;
+      }
     }
 
     if(ch == K_TAB) {
@@ -749,7 +768,7 @@ int special_keys(long *whereX, long *whereY, char ch) {
             editScroll.scrollPointer = editScroll.scrollPointer - 1;
             editScroll.bufferY--;
             oldX = *whereX;
-            smoothScroll(DIRECTION_UP);
+  	    writeBuffertoDisplay(editBuffer);
             *whereY = START_CURSOR_Y;
             *whereX = oldX;
           }
@@ -766,7 +785,7 @@ int special_keys(long *whereX, long *whereY, char ch) {
             editScroll.scrollPointer = editScroll.scrollPointer + 1;
             editScroll.bufferY++;
             oldX = *whereX;
-            smoothScroll(DIRECTION_DOWN);
+  	    writeBuffertoDisplay(editBuffer);
             *whereY = rows-2;
             *whereX = oldX;
           }
@@ -782,10 +801,9 @@ int special_keys(long *whereX, long *whereY, char ch) {
             editScroll.scrollPointer = editScroll.scrollLimit;
             editScroll.bufferY = editScroll.scrollLimit+1;
           }
+  	  writeBuffertoDisplay(editBuffer);
           *whereY = START_CURSOR_Y;
           *whereX = oldX;
-          //smoothScroll(DIRECTION_DOWN);
-          flush_editarea();
       }
      } else if(strcmp(chartrail, K_PAGEUP_TRAIL) == 0) {
       //Page Down key 
@@ -799,10 +817,9 @@ int special_keys(long *whereX, long *whereY, char ch) {
             editScroll.bufferY = 1;
           }
           //*whereY = rows-2;
+  	  writeBuffertoDisplay(editBuffer);
           *whereX = oldX; 
           *whereY = START_CURSOR_Y;
-          //smoothScroll(DIRECTION_UP);
-          flush_editarea();
       }
     } else if(strcmp(chartrail, K_DELETE) == 0) {
       //delete button;
@@ -849,9 +866,6 @@ int main_screen() {
   get_terminal_dimensions(&rows, &columns);
   old_rows = rows;
   old_columns = columns;
-  cursorX = START_CURSOR_X;
-  cursorY = START_CURSOR_Y;
-  draw_cursor(&cursorX, &cursorY, &timerCursor);
   //Failsafe just in case it can't find the terminal dimensions
   if(rows == 0)
     rows = ROWS_FAILSAFE;
@@ -931,50 +945,9 @@ int i,j;
   write_str((columns / 2) - (strlen(currentFile) / 2), 2, currentFile,
 	    MENU_PANEL, MENU_FOREGROUND0);
   writeBuffertoDisplay(editBuffer);
+  update_screen();
 }
-
-/*-------------------*/
-/* Scroll Animation  */
-/*-------------------*/
-
-void smoothScroll(char direction) {
-  int     i, j;
-  long    lastLine,lastLine2;
- //Failsafe just in case it can't find the terminal dimensions
-  //timerOnOFF=0;
-
-//Paint blue edit area
-  for(j = START_CURSOR_Y; j < rows - 1; j++){
-    if (direction==DIRECTION_DOWN){
-      lastLine = findEndline(editBuffer, editScroll.scrollPointer+j-1-START_CURSOR_Y);
-      lastLine2 = findEndline(editBuffer, editScroll.scrollPointer+j-START_CURSOR_Y);    
-    } 
-    else{
-      lastLine = findEndline(editBuffer, editScroll.scrollPointer+j+1-START_CURSOR_Y);
-      lastLine2 = findEndline(editBuffer, editScroll.scrollPointer+j-START_CURSOR_Y);    
-    }
-    if (lastLine2<lastLine){
-    for(i = START_CURSOR_X; i < lastLine+1; i++)
-    {
-       if (i<columns-2){
-       flush_cell(i,j);
-      }
-     }
-    }
-   }
-  for(i = 2; i < columns; i++) {
-    write_ch(i, 2, NHOR_LINE, EDITWINDOW_BACK, EDITWINDOW_FORE);	//horizontal line box-like char
-  }
-  write_ch(1, 2, NUPPER_LEFT_CORNER, EDITWINDOW_BACK, EDITWINDOW_FORE);	//upper-left box-like char
-
-  //Center and diplay file name
-  write_str((columns / 2) - (strlen(currentFile) / 2), 2, currentFile,
-	    MENU_PANEL, MENU_FOREGROUND0);
-
-  //Write editBuffer
-  writeBuffertoDisplay(editBuffer);
-}
-  
+ 
 /*-------------------*/
 /* Clean Status Bar  */
 /*-------------------*/
@@ -1080,7 +1053,7 @@ void optionsmenu() {
   kglobal = start_vmenu(&data);
   close_window();
   write_str(1, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0);
-  update_screen();
+  //update_screen();
 
   free_list(mylist);
   if(data.index == OPTION_1) {
@@ -1543,9 +1516,8 @@ short checkScrollValues(long lines){
 /*-----------------------------*/
 
 int writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES]) {
-  long     i = 0, j = 0, z=0; 
+  long     i = 0, j = 0, z=0,clean=0; 
   char    tempChar, specialChar;
-
   //Dump edit buffer to screen
   if (editScroll.scrollActiveV == 1)
     z=editScroll.scrollPointer;
@@ -1570,7 +1542,10 @@ int writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES]) {
 	i++;
       }
       if(tempChar == END_LINE_CHAR) {
-	i = 0;
+	//clean remaining screen cells
+        for (clean=i+START_CURSOR_X; clean<columns; clean++)
+		write_ch(clean,j+START_CURSOR_Y,FILL_CHAR, EDITAREACOL, EDIT_FORECOLOR);
+ 	i = 0;
 	j++;
         if (j>editScroll.displayLength-1) break;
       }

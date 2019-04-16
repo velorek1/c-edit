@@ -13,7 +13,8 @@ composition to the user.
 
 @author : Velorek
 @version : 1.0
-Last modified : 14/04/2019 Rename headers / screeChanged added
+Last modified : 15/04/2019 ScreeChanged added + update_ch. 
+			   Update_smart corrected
 =====================================================================
 */
 
@@ -431,6 +432,37 @@ int write_num(int x, int y, int num, int length, int backcolor,
   free(astr);
   return len;
 }
+
+/*------------------------------------------*/
+/* Update single char to screen for display */
+/*------------------------------------------*/
+void update_ch(int x, int y, char ch, char specialChar, int backcolor, int forecolor) {
+//It could be interepreted as write_ch - forced update to screen
+//to be used to simplify code in update_smart.
+char tempchar=0;     
+   gotoxy(x, y);
+   outputcolor(forecolor, backcolor);
+   if(ch > 0)
+      // Check whether chars are negative
+      printf("%c", ch);
+   else {
+      /* 
+         For convention, if we have negative chars that means that we 
+         are printing box-like characters or accents to screen.
+         Box characters are mapped to Unicode. */
+  //printf("%c(0",27); //Deprecated - Activate box-like characters in vt-100
+  // printf("%c(B",27); //Deactivate box-like characters
+    if(ch >= -55 && ch <= -50) {
+	//Box chars.
+	setlocale(LC_ALL, "");
+	tempchar = ch * -1;	//Change negative values to positive.
+	printf("%lc", (wint_t) mapChartoU8(tempchar));	//unicode
+    }
+    if(ch >= -128 && ch <= -65)
+	//Accents -61/-62 + char
+	printf("%c%c:%d", specialChar, ch, ch);
+    }
+}
 /*------------------------------------*/
 /* Dumps buffer to screen for display */
 /*------------------------------------*/
@@ -440,102 +472,61 @@ void update_screen() {
   char    tempchar;
   SCREENCELL *aux;
   wherey = 1;
-  wherex = 1;
+  wherex = 0;
   aux = primary_start;
   for(i = 0; i <= buffersize; i++) {
-    gotoxy(wherex, wherey);
-    wherex = wherex + 1;	//line counter
-    if(aux->next != NULL)
+     //Next item
+    update_ch(wherex,wherey, aux->item, aux->specialchar, aux->backcolor0,
+    aux->forecolor0);
+
+   if(aux->next != NULL)
       aux = aux->next;
-    if(wherex == columns + 1) {
+   wherex = wherex + 1;	//line counter
+    if(wherex == columns+1) {
       //new line
       wherex = 1;
       wherey = wherey + 1;
     }
-    outputcolor(aux->forecolor0, aux->backcolor0);
-    if(aux->item > 0)
-      // Check whether chars are negative
-      printf("%c", aux->item);
-    else {
-      /* 
-         For convention, if we have negative chars that means that we 
-         are printing box-like characters or accents to screen.
-         Box characters are mapped to Unicode. */
-      //printf("%c(0",27); //Deprecated - Activate box-like characters in vt-100
-      // printf("%c(B",27); //Deactivate box-like characters
-      if(aux->item >= -55 && aux->item <= -50) {
-	//Box chars.
-	setlocale(LC_ALL, "");
-	tempchar = aux->item * -1;	//Change negative values to positive.
-	printf("%lc", (wint_t) mapChartoU8(tempchar));	//unicode
-      }
-      if(aux->item >= -128 && aux->item <= -65)
-	//Accents -61/-62 + char
-	printf("%c%c:%d", aux->specialchar, aux->item, aux->item);
-    }
-  }
+ }
 }
 
 int update_smart() {
+//Note: if wherex = 0 then wherex=columns i
+// and wherey--; because of the result of modulus operation
   int     i, wherex, wherey;
-  char    tempchar;
-  int update=0, changed=0;
+  int     changed=0;
   SCREENCELL *aux, *aux2;
-  wherey = 1;
-  wherex = 1;
   aux = primary_start;
   aux2 = secondary_start;
   for(i = 0; i <= buffersize; i++) {
     if(aux->item != aux2->item) {
       wherex = aux->index % columns;
       wherey = (int)(aux->index / columns) + 1;
-      gotoxy(wherex, wherey);
-      outputcolor(aux->forecolor0, aux->backcolor0);
-      update=1;
+      if (wherex==0) {wherex=columns; wherey=wherey-1;}
+      update_ch(wherex,wherey,aux->item,aux->specialchar,aux->backcolor0,aux->forecolor0);
       changed=1;
     }
     if(aux->backcolor0 != aux2->backcolor0) {
       wherex = aux->index % columns;
       wherey = (int)(aux->index / columns) + 1;
-      gotoxy(wherex, wherey);
-      outputcolor(aux->forecolor0, aux->backcolor0);
-      update=1;
+      if (wherex==0) {wherex=columns; wherey=wherey-1;}
+      update_ch(wherex,wherey,aux->item,aux->specialchar,aux->backcolor0,
+      aux->forecolor0);
       changed=1;
     }
     if(aux->forecolor0 != aux2->forecolor0) {
       wherex = aux->index % columns;
       wherey = (int)(aux->index / columns) + 1;
-      gotoxy(wherex, wherey);
-      outputcolor(aux->forecolor0, aux->backcolor0);
-      update=1;
+      if (wherex==0) {wherex=columns; wherey=wherey-1;}
+      update_ch(wherex,wherey,aux->item,aux->specialchar,aux->backcolor0,
+      aux->forecolor0);
       changed=1;
     }
-   if (update == 1){
-      if(aux->item > 0)
-        // Check whether chars are negative
-        printf("%c", aux->item);
-      else {
-        /* 
-           For convention, if we have negative chars that means that we 
-           are printing box-like characters or accents to screen.
-           Box characters are mapped to Unicode. */
-        if(aux->item >= -55 && aux->item <= -50) {
-	  //Box chars.
-	  setlocale(LC_ALL, "");
-	  tempchar = aux->item * -1;	//Change negative values to positive.
-	  printf("%lc", (wint_t) mapChartoU8(tempchar));	//unicode
-        }
-        if(aux->item >= -128 && aux->item <= -65)
-	  //Accents -61/-62 + char
-	  printf("%c%c:%d", aux->specialchar, aux->item, aux->item);
-      }
-     update=0;
-    }   
+   //move to next item
    if(aux->next != NULL)
       aux = aux->next;
    if(aux2->next != NULL)
       aux2 = aux2->next;
-
   }
 return changed;
 }
@@ -602,28 +593,6 @@ void free_buffer()
   secondary_start = NULL;
   secondary_end = NULL;
 } 
-
-/*
-void free_buffer() {
-  SCREENCELL *aux, *p;
-  aux = primary_start;
-  do {
-    p = aux;
-    aux = aux->next;
-    free(p);			//remove item
-  } while(aux->next != NULL);
-  aux = secondary_start;
-  do {
-    p = aux;
-    aux = aux->next;
-    free(p);			//remove item
-  } while(aux->next != NULL);
-  primary_start = NULL;
-  primary_end = NULL;
-  secondary_start = NULL;
-  secondary_end = NULL;
-}
-*/
 
 /*------------------------------------------*/
 /* Draw window area with or without border. */

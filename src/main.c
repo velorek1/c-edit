@@ -393,7 +393,6 @@ int timer_1(int *timer1, char onOff) {
 	      MENU_FOREGROUND0);
     update_indicators();	//update position, indicators display
    //update only the screen bits that change 
-    //update_screen();
     changed=screenChanged();		//update screen - main routine in timer
     if (changed==1) {
 		update_smart();
@@ -429,7 +428,7 @@ void draw_cursor(long whereX, long whereY, long oldX, long oldY, int *timer) {
   positionY = editScroll.bufferY-1;
   //clean previous cursor  
   if (oldX != whereX || oldY!=whereY){
-     if(positionX < limitCol) {
+     if(positionX < limitCol || oldY!=whereY) {
       oldPositionX = positionX+(oldX - whereX);
       oldPositionY = positionY+(oldY - whereY);
       currentChar = editBuffer[oldPositionY].charBuf[oldPositionX].ch;

@@ -1368,6 +1368,7 @@ int saveasDialog(char fileName[MAX_TEXT]) {
       ok = yesnoWindow(mylist, WFILEEXISTS_MSG);
       if(ok == CONFIRMATION) {
 	//Save anyway.
+	closeFile(filePtr);
 	openFile(&filePtr, fileName, "w");
 	writeBuffertoFile(filePtr, editBuffer);
 	strcpy(tempMsg, fileName);
@@ -1378,6 +1379,7 @@ int saveasDialog(char fileName[MAX_TEXT]) {
 	//Do nothing.
       }
     } else {
+      closeFile(filePtr);
       openFile(&filePtr, fileName, "w");
       writeBuffertoFile(filePtr, editBuffer);
       strcpy(tempMsg, fileName);

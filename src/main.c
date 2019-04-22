@@ -167,7 +167,6 @@ char    currentPath[MAX_PATH];
 int     exitp = 0;		// Exit flag for main loop
 int     fileModified = FILE_UNMODIFIED;	//Have we modified the buffer?
 char    timerOnOFF = 1;
-
 /*====================================================================*/
 /* PROTOTYPES OF FUNCTIONS                                            */
 /*====================================================================*/
@@ -181,7 +180,7 @@ void    cleanStatusBar();
 
 //Timers
 void    draw_cursor(long whereX, long whereY, long oldX, long oldY, int *timer);
-int     timer_1(int *timer1, char onOff);
+int     timer_1(int *timer1, long whereX, long whereY, char onOff);
 void    update_indicators();
 
 //Dialogs & menus
@@ -280,7 +279,7 @@ int main(int argc, char *argv[]) {
     /* Wait for key_pressed to read key */
     keypressed = kbhit();
     /* Timer for animation to show system time and clean cursor */
-    timer_1(&timer1, timerOnOFF);
+    timer_1(&timer1, oldX, oldY, timerOnOFF);
 
     //update_screen();
     if(keypressed == 1) {
@@ -370,7 +369,7 @@ void update_indicators() {
 /* Timer 1 Animation. Clock and cursor     */
 /*-----------------------------------------*/
 
-int timer_1(int *timer1, char onOff) {
+int timer_1(int *timer1, long whereX, long whereY, char onOff) {
 /* Timer for animations - Display time and clean cursor */
   time_t  mytime = time(NULL);
   char   *time_str = ctime(&mytime);
@@ -392,7 +391,7 @@ int timer_1(int *timer1, char onOff) {
     write_str(columns - strlen(time_str) - 5, 1, temp, MENU_PANEL,
 	      MENU_FOREGROUND0);
     update_indicators();	//update position, indicators display
-   //update only the screen bits that change 
+    //update only the screen bits that change 
     changed=screenChanged();		//update screen - main routine in timer
     if (changed==1) {
 		update_smart();
@@ -426,7 +425,7 @@ void draw_cursor(long whereX, long whereY, long oldX, long oldY, int *timer) {
   limitCol = findEndline(editBuffer, whereY - START_CURSOR_Y);
   positionX = editScroll.bufferX-1;
   positionY = editScroll.bufferY-1;
-  //clean previous cursor  
+ //clean previous cursor  
   if (oldX != whereX || oldY!=whereY){
      if(positionX < limitCol || oldY!=whereY) {
       oldPositionX = positionX+(oldX - whereX);
@@ -575,13 +574,14 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
 	  write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL,
 		   EDIT_FORECOLOR);
 	} else {
-	  write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL,
+          write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL,
 		   EDIT_FORECOLOR);
 	}
 	writetoBuffer(editBuffer, positionX, positionY, accentchar[0]);
 	writetoBuffer(editBuffer, positionX, positionY, accentchar[1]);
 	*whereX = *whereX + 1;
         editScroll.bufferX++;
+
       }
       //INSERT CHAR IN THE MIDDLE OF THE LINE
       if(*whereX < MAX_CHARS && positionX < limitCol - 1) {
@@ -1181,7 +1181,7 @@ void drop_down(char *kglobal) {
    so as to break vertical menu and start the adjacent menu
    kglobal is changed by the menu functions.
 */
-
+  update_screen(); //refresh screen
   do {
     if(*kglobal == K_ESCAPE) {
       //Exit drop-down menu with ESC           
@@ -1633,11 +1633,16 @@ int handleopenFile(FILE ** filePtr, char *fileName, char *oldFileName) {
   } else {
     //Check wheter file is bigger than buffer. 32700 lines
     linesinFile = countLinesFile(*filePtr);
+    if (linesinFile > MAX_LINES) 
+    ok=infoWindow(mylist, WCHECKLINES_MSG);
+    //Reset values
     editScroll.scrollPointer = 0; //Set pointer to 0
     editScroll.pagePointer =0; //set page Pointer to 0
     checkScrollValues(linesinFile); //make calculations for scroll.
-    if (linesinFile > MAX_LINES) 
-    ok=infoWindow(mylist, WCHECKLINES_MSG);
+    editScroll.bufferX = 1;
+    editScroll.bufferY = 1;
+    cursorX=START_CURSOR_X;
+    cursorY=START_CURSOR_Y;
     //Dump file into edit buffer.
     filetoBuffer(*filePtr, editBuffer);
     refresh_screen(-1);

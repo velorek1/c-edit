@@ -460,7 +460,7 @@ char tempchar=0;
     }
     if(ch >= -128 && ch <= -65)
 	//Accents -61/-62 + char
-	printf("%c%c:%d", specialChar, ch, ch);
+	printf("%c%c", specialChar, ch);
     }
 }
 /*------------------------------------*/

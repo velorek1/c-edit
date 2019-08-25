@@ -683,6 +683,7 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
       //TAB key
       if(*whereX < columns - TAB_DISTANCE) *whereX = *whereX + TAB_DISTANCE;
       editScroll.bufferX = editScroll.bufferX + TAB_DISTANCE;
+      writetoBuffer(editBuffer, positionX, positionY, K_TAB);
     }
     //*ch=0;
   } 
@@ -1569,7 +1570,7 @@ void smoothScroll(char direction) {
 /*-----------------------------*/
 
 int writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES]) {
-  long     i = 0, j = 0, z=0,clean=0; 
+  long     i = 0, j = 0, z=0,tabcount=0,clean=0; 
   char    tempChar, specialChar;
   //Dump edit buffer to screen
   if (editScroll.scrollActiveV == 1)
@@ -1580,7 +1581,7 @@ int writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES]) {
     tempChar = editBuffer[z+j].charBuf[i].ch;
     specialChar = editBuffer[z+j].charBuf[i].specialChar;
     if(tempChar != CHAR_NIL) {
-      if(tempChar != END_LINE_CHAR) {
+       if(tempChar != END_LINE_CHAR) {
 	if(i == columns - 4) {
 	  //temporary restriction until vertical scroll is implemented
 	  i = 0;
@@ -1602,6 +1603,14 @@ int writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES]) {
 	j++;
         if (j>editScroll.displayLength-1) break;
       }
+     if(tempChar == 9) {
+	//TAB support
+ 	   write_ch(i+ START_CURSOR_X-1, j + START_CURSOR_Y, FILL_CHAR,
+		   EDITAREACOL, EDIT_FORECOLOR);
+                //update_screen();
+      }
+
+
     }
   } while(tempChar != CHAR_NIL);
   update_screen();

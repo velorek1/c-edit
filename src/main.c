@@ -210,7 +210,7 @@ int     writetoBuffer(EDITBUFFER editBuffer[MAX_LINES], long whereX,
 int     findEndline(EDITBUFFER editBuffer[MAX_LINES], long line);
 
 //Scroll prototypes
-//void    smoothScroll(char direction);
+void    smoothScroll(char direction);
 short   checkScrollValues(long lines);
 
 //File-handling prototypes
@@ -358,6 +358,7 @@ void update_indicators() {
      scrollIndicator = positionY / editScroll.scrollRatio;
      percentage = (scrollIndicator * 100) / displayLength;
      scrollBar = ((displayLength-3) * percentage)/100;
+     if (positionY == 1) percentage = 0;
      write_ch(columns, 4+scrollBar, '*', SCROLLBAR_SEL, SCROLLBAR_FORE);
      write_str(columns-5,rows, "    ", STATUSBAR,F_BLACK);
      i=write_num(columns-5,rows, percentage, 3, STATUSBAR,FH_YELLOW);
@@ -422,7 +423,7 @@ void draw_cursor(long whereX, long whereY, long oldX, long oldY, int *timer) {
   *timer = *timer + 1;		//increase timer counter for animation
 
   //Calculate position
-  limitCol = findEndline(editBuffer, whereY - START_CURSOR_Y);
+  limitCol = findEndline(editBuffer, editScroll.bufferY-1);
   positionX = editScroll.bufferX-1;
   positionY = editScroll.bufferY-1;
  //clean previous cursor  
@@ -436,9 +437,16 @@ void draw_cursor(long whereX, long whereY, long oldX, long oldY, int *timer) {
      }
    gotoxy(oldX, oldY);
    outputcolor(EDIT_FORECOLOR, EDITAREACOL);
-   //Careful with null char or enter
-   if(currentChar == 0|| currentChar ==10) currentChar=FILL_CHAR;
-   printf("%c",currentChar);
+  //Is it an accent or special char?
+    if(currentChar < 0) {
+      specialChar = editBuffer[oldPositionY].charBuf[oldPositionX].specialChar;
+      printf("%c%c", specialChar,
+	     currentChar);
+    } else {
+     //Careful with null char or enter
+     if(currentChar == 0 || currentChar == 10 || currentChar == 9) currentChar=FILL_CHAR;
+      printf("%c", currentChar);
+    }
   }
   if(*timer < LIMIT_TIMER) {
     //draw new cursor
@@ -767,7 +775,8 @@ int special_keys(long *whereX, long *whereY, char ch) {
             editScroll.scrollPointer = editScroll.scrollPointer - 1;
             editScroll.bufferY--;
             oldX = *whereX;
-  	    writeBuffertoDisplay(editBuffer);
+  	    //writeBuffertoDisplay(editBuffer);
+	    smoothScroll(DIRECTION_UP);
             *whereY = START_CURSOR_Y;
             *whereX = oldX;
           }
@@ -784,7 +793,8 @@ int special_keys(long *whereX, long *whereY, char ch) {
             editScroll.scrollPointer = editScroll.scrollPointer + 1;
             editScroll.bufferY++;
             oldX = *whereX;
-  	    writeBuffertoDisplay(editBuffer);
+  	    //writeBuffertoDisplay(editBuffer);
+	    smoothScroll(DIRECTION_DOWN);
             *whereY = rows-2;
             *whereX = oldX;
           }
@@ -1510,6 +1520,48 @@ short checkScrollValues(long lines){
    return VSCROLL_OFF;
  }
 }
+/*-------------------*/
+/* Scroll Animation  */
+/*-------------------*/
+
+void smoothScroll(char direction) {
+  int     i, j;
+  long    lastLine,lastLine2;
+ //Failsafe just in case it can't find the terminal dimensions
+  //timerOnOFF=0;
+
+//Paint blue edit area
+  for(j = START_CURSOR_Y; j < rows - 1; j++){
+    if (direction==DIRECTION_DOWN){
+      lastLine = findEndline(editBuffer, editScroll.scrollPointer+j-1-START_CURSOR_Y);
+      lastLine2 = findEndline(editBuffer, editScroll.scrollPointer+j-START_CURSOR_Y);    
+    } 
+    else{
+      lastLine = findEndline(editBuffer, editScroll.scrollPointer+j+1-START_CURSOR_Y);
+      lastLine2 = findEndline(editBuffer, editScroll.scrollPointer+j-START_CURSOR_Y);    
+    }
+    if (lastLine2<lastLine){
+    for(i = START_CURSOR_X; i < lastLine+1; i++)
+    {
+       if (i<columns-2){
+       flush_cell(i,j);
+      }
+     }
+    }
+   }
+  for(i = 2; i < columns; i++) {
+    write_ch(i, 2, NHOR_LINE, EDITWINDOW_BACK, EDITWINDOW_FORE);	//horizontal line box-like char
+  }
+  write_ch(1, 2, NUPPER_LEFT_CORNER, EDITWINDOW_BACK, EDITWINDOW_FORE);	//upper-left box-like char
+
+  //Center and diplay file name
+  write_str((columns / 2) - (strlen(currentFile) / 2), 2, currentFile,
+	    MENU_PANEL, MENU_FOREGROUND0);
+
+  //Write editBuffer
+  writeBuffertoDisplay(editBuffer);
+}
+  
 
 
 /*-----------------------------*/

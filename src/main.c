@@ -846,11 +846,14 @@ int special_keys(long *whereX, long *whereY, char ch) {
     } else if(strcmp(chartrail, K_DELETE) == 0) {
       //delete button;
     } else if(strcmp(chartrail, K_ALT_F) == 0) {
-      filemenu();
+      data.index=FILE_MENU;
+      drop_down(&kglobal);	//animation  
     } else if(strcmp(chartrail, K_ALT_P) == 0) {
-      optionsmenu();
+      data.index=OPT_MENU;
+      drop_down(&kglobal);	//animation  
     } else if(strcmp(chartrail, K_ALT_H) == 0) {
-      helpmenu();
+      data.index=HELP_MENU;
+      drop_down(&kglobal);	//animation  
     } else if(strcmp(chartrail, K_ALT_O) == 0) {
       openFileHandler();	//Open file Dialog
     } else if(strcmp(chartrail, K_ALT_N) == 0) {

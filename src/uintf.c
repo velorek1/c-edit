@@ -60,6 +60,7 @@ int STATUSBAR =B_BLACK;
 int STATUSMSG =F_WHITE;
 int MENU_PANEL =B_WHITE;
 int MENU_SELECTOR =B_BLUE;
+int MENU_HSELECTOR =BH_BLUE;
 int MENU_FOREGROUND0 =F_BLACK;
 int MENU_FOREGROUND1= F_WHITE;
 int EDITWINDOW_BACK= B_BLUE;
@@ -82,9 +83,9 @@ void loadmenus(LISTCHOICE * mylist, int choice) {
   get_terminal_dimensions(&rows, &columns);
 
   if(choice == HOR_MENU) {
-    add_item(mylist, "File", 1, 1, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
-    add_item(mylist, "Options", 7, 1, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
-    add_item(mylist, "Help", 16, 1, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "File", 1, 1, MENU_PANEL, MENU_FOREGROUND0, MENU_HSELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "Options", 7, 1, MENU_PANEL, MENU_FOREGROUND0, MENU_HSELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "Help", 16, 1, MENU_PANEL, MENU_FOREGROUND0, MENU_HSELECTOR, MENU_FOREGROUND1);
   }
 
   if(choice == FILE_MENU) {
@@ -434,6 +435,7 @@ void setColorScheme(int colorCode)
       STATUSMSG =F_WHITE;
       MENU_PANEL =B_WHITE;
       MENU_SELECTOR =B_BLUE;
+      MENU_HSELECTOR =BH_BLUE;
       MENU_FOREGROUND0 =F_BLACK;
       MENU_FOREGROUND1= F_WHITE;
       EDITWINDOW_BACK= B_BLUE;
@@ -450,6 +452,7 @@ void setColorScheme(int colorCode)
       STATUSMSG =F_BLACK;
       MENU_PANEL =B_WHITE;
       MENU_SELECTOR =B_BLACK;
+      MENU_HSELECTOR =B_BLACK;
       MENU_FOREGROUND0 =F_BLACK;
       MENU_FOREGROUND1= F_WHITE;
       EDITWINDOW_BACK= B_BLACK;
@@ -466,6 +469,7 @@ void setColorScheme(int colorCode)
       STATUSMSG =F_WHITE;
       MENU_PANEL =B_BLACK;
       MENU_SELECTOR = B_WHITE;
+      MENU_HSELECTOR = B_WHITE;
       MENU_FOREGROUND0 = F_WHITE;
       MENU_FOREGROUND1 = F_BLUE;
       EDITWINDOW_BACK= B_BLACK;

@@ -29,8 +29,8 @@ Last modified: 14/04/2019 Rename headers
 #define HELP4 "ALT-N: NEW FILE      |   F4: ABOUT DIALOG \n"
 #define HELP5 "ALT-W: SAVE FILE     |   ALT-A: SAVE AS \n"
 #define HELP6 "ALT-D: FILE INFO     |   CTRL-C: EXIT \n"
-#define HELP7 "CTRL-H: COLORS       |   ALT-V:  RESERVED \n"
-#define HELP8 "ALT-F: RESERVED      |   ALT-D:  RESERVED \n"
+#define HELP7 "CTRL-H: COLORS       |   ALT-P:  OPTIONS MENU \n"
+#define HELP8 "ALT-F: FILE MENU     |   ALT-H:  HELP MENU \n"
 #define HELP9 "CTRL-H: RESERVED     |   ALT-K:  RESERVED \n"
 #define HELP10 "\nFor more info visit  \n [http://oldstuff286.blogspot.com]"
 

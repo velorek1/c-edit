@@ -42,8 +42,10 @@ Last modified : 15/04/2019 - Refresh screen & cursor updated
 
 //USER-DEFINED MESSAGES
 #define UNKNOWN "UNTITLED"
-#define STATUS_BAR_MSG1  " [C-Edit] | F2,CTRL+L: MENU | F1,ALT+H: HELP"
+#define WINDOWMSG "DISPLAY IS TOO SMALL. PLEASE, RESIZE WINDOW"
+#define STATUS_BAR_MSG1  " [C-Edit] | F2,CTRL+L: MENU | F1: HELP"
 #define STATUS_BAR_MSG2 " [C-Edit] Press ESC to exit menu.             "
+#define STATUS_BAR_MSG3 " ENTER: SELECT | <- -> ARROW KEYS             "
 #define WLEAVE_MSG "\n       Are you sure\n    you want to quit?"
 #define WSAVE_MSG ":\nFile saved successfully!"
 #define WSAVELABEL_MSG "[-] File:"
@@ -487,9 +489,18 @@ int refresh_screen(int force) {
    has been produced */
   get_terminal_dimensions(&rows, &columns);
   editScroll.displayLength = rows - 4; //update Scroll 
+  if (columns <55 && rows <17){
+     //free_buffer();		//delete structure from memory 
+     resetAnsi(0);
+     gotoxy(1,1);
+     printf("%s", WINDOWMSG);
+     timerOnOFF=0;
+  }
+  else{
   if(rows != old_rows || columns != old_columns || force == 1
      || force == -1) {
     if(force != -1) {
+      timerOnOFF=1;
       free_buffer();		//delete structure from memory for resize
       create_screen();		//create new structure 
       main_screen();		//Refresh screen in case of resize
@@ -500,6 +511,7 @@ int refresh_screen(int force) {
      return 1;
   } else {
     return 0;
+  }
   }
 }
 
@@ -833,8 +845,12 @@ int special_keys(long *whereX, long *whereY, char ch) {
       }
     } else if(strcmp(chartrail, K_DELETE) == 0) {
       //delete button;
+    } else if(strcmp(chartrail, K_ALT_F) == 0) {
+      filemenu();
+    } else if(strcmp(chartrail, K_ALT_P) == 0) {
+      optionsmenu();
     } else if(strcmp(chartrail, K_ALT_H) == 0) {
-      help_info();
+      helpmenu();
     } else if(strcmp(chartrail, K_ALT_O) == 0) {
       openFileHandler();	//Open file Dialog
     } else if(strcmp(chartrail, K_ALT_N) == 0) {
@@ -892,6 +908,9 @@ int main_screen() {
   }
   // Text messages
   write_str(1, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0);
+  write_str(1, 1, "F", MENU_PANEL, FH_BLUE);
+  write_str(8, 1, "p", MENU_PANEL, FH_BLUE);
+  write_str(16, 1, "H", MENU_PANEL, FH_BLUE);
   write_str(1, rows, STATUS_BAR_MSG1, STATUSBAR, STATUSMSG);
 
   /* Frames */
@@ -977,12 +996,19 @@ void cleanStatusBar(){
 
 char horizontal_menu() {
   char    temp_char;
+  kglobal=-1;
   cleanStatusBar();
-  write_str(1, rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG);
-  //update_screen();
+  write_str(1, rows, STATUS_BAR_MSG3, STATUSBAR, STATUSMSG);
   loadmenus(mylist, HOR_MENU);
   temp_char = start_hmenu(&data);
   free_list(mylist);
+  write_str(1, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0);
+  write_str(1, 1, "F", MENU_PANEL, FH_BLUE);
+  write_str(8, 1, "p", MENU_PANEL, FH_BLUE);
+  write_str(16, 1, "H", MENU_PANEL, FH_BLUE);
+  write_str(1, rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG);
+  update_screen();
+
   return temp_char;
 }
 
@@ -1000,7 +1026,10 @@ void filemenu() {
   kglobal = start_vmenu(&data);
   close_window();
   write_str(1, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0);
-  //update_screen();
+  write_str(1, 1, "F", MENU_PANEL, FH_BLUE);
+  write_str(8, 1, "p", MENU_PANEL, FH_BLUE);
+  write_str(16, 1, "H", MENU_PANEL, FH_BLUE);
+ //update_screen();
   free_list(mylist);
 
   if(data.index == OPTION_1) {
@@ -1063,7 +1092,10 @@ void optionsmenu() {
   kglobal = start_vmenu(&data);
   close_window();
   write_str(1, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0);
-  //update_screen();
+  write_str(1, 1, "F", MENU_PANEL, FH_BLUE);
+  write_str(8, 1, "p", MENU_PANEL, FH_BLUE);
+  write_str(16, 1, "H", MENU_PANEL, FH_BLUE);
+ //update_screen();
 
   free_list(mylist);
   if(data.index == OPTION_1) {
@@ -1098,6 +1130,9 @@ void helpmenu() {
   kglobal = start_vmenu(&data);
   close_window();
   write_str(1, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0);
+  write_str(1, 1, "F", MENU_PANEL, FH_BLUE);
+  write_str(8, 1, "p", MENU_PANEL, FH_BLUE);
+  write_str(16, 1, "H", MENU_PANEL, FH_BLUE);
   //update_screen();
   free_list(mylist);
   if(data.index == OPTION_1) {

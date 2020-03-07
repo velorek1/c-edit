@@ -44,6 +44,8 @@ Last modified: 14/04/2019 + Rename headers
 #define F_MAGENTA 35
 #define F_CYAN 36
 #define F_WHITE 37
+//#define F_WHITE 37
+#define F_GREY 90
 
 // Background colors high intensity                                                                                                                                     
 #define BH_BLACK 100

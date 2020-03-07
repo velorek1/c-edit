@@ -69,6 +69,7 @@ Last modified : 15/04/2019 - Refresh screen & cursor updated
 #define START_CURSOR_X 2
 #define START_CURSOR_Y 3
 #define TIME_MS 3000
+#define TIME_CREDITS 100000
 #define LIMIT_TIMER 10
 #define ROWS_FAILSAFE 25
 #define COLUMNS_FAILSAFE 80
@@ -184,6 +185,7 @@ void    cleanStatusBar();
 void    draw_cursor(long whereX, long whereY, long oldX, long oldY, int *timer);
 int     timer_1(int *timer1, long whereX, long whereY, char onOff);
 void    update_indicators();
+void    delay(long milliseconds);
 
 //Dialogs & menus
 void    filemenu();
@@ -327,7 +329,16 @@ int main(int argc, char *argv[]) {
 /*====================================================================*/
 
 // TIMERS SECTION
-
+void delay(long milliseconds)
+{
+   long i=1;
+    while (i<milliseconds){
+      // gotoxy(1,1);
+       //outputcolor(0,37);
+       printf("\r%c",0);
+       i++;
+    }
+}
 /*----------------------------------------- */
 /* Update cursor position display on screen */
 /*----------------------------------------- */
@@ -1270,11 +1281,12 @@ void drop_down(char *kglobal) {
 /*---------*/
 /* Credits */
 /*---------*/
-
 void credits() {
 /* Frees memory and displays goodbye message */
   //Free selected path item/path from opfiledialog 
-  if (openFileData.itemIndex != 0) {
+  int i;
+ char auth[22] ="Coded by v3l0r3k 2019";  
+if (openFileData.itemIndex != 0) {
     free(openFileData.item);
     free(openFileData.path);
   }
@@ -1291,8 +1303,28 @@ void credits() {
   printf(cedit_ascii_5);
   printf(cedit_ascii_6);
 
-  printf("\nCoded by v3l0r3k 2019.\n");
-
+  outputcolor(0, 90);
+  printf("\n%s",auth);
+  outputcolor(0, 37);
+  for(i=1;i<23;i++){
+     delay(TIME_CREDITS);
+     gotoxy(i,8);
+     printf("%c", auth[i-1]);
+  }
+  outputcolor(0, 97);
+  for(i=1;i<23;i++){
+     delay(TIME_CREDITS);
+     gotoxy(i,8);
+     printf("%c", auth[i-1]);
+  }
+  outputcolor(0, 90);
+  for(i=10;i<17;i++){
+     delay(TIME_CREDITS);
+     gotoxy(i,8);
+     if (i%2!=0) printf("%c", auth[i-1]);
+  }
+  printf("\n");
+  outputcolor(7, 0);
 }
 
 /*=================*/

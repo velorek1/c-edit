@@ -49,9 +49,6 @@ Last modified : 15/04/2019 - Refresh screen & cursor updated
 #define WLEAVE_MSG "\n       Are you sure\n    you want to quit?"
 #define WSAVE_MSG ":\nFile saved successfully!"
 #define WSAVELABEL_MSG "[-] File:"
-#define WSAVETITLE_MSG "[C-EDIT SAVE AS]"
-#define WNEWTITLE_MSG "[C-EDIT NEW FILE]"
-#define WTITLEABOUT_MSG "[ABOUT]"
 #define WINFO_NOPEN "Error:\nThere isn't any file open!"
 #define WINFO_SIZE "-File size: "
 #define WINFO_SIZE2 "\n-No. of lines: "
@@ -69,7 +66,7 @@ Last modified : 15/04/2019 - Refresh screen & cursor updated
 #define START_CURSOR_X 2
 #define START_CURSOR_Y 3
 #define TIME_MS 3000
-#define TIME_CREDITS 100000
+#define TIME_CREDITS 30000
 #define LIMIT_TIMER 10
 #define ROWS_FAILSAFE 25
 #define COLUMNS_FAILSAFE 80
@@ -726,7 +723,7 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
     }
     if(ch == K_CTRL_H) {
       //Change color Scheme
-      setColorScheme(colorsWindow(mylist));
+      setColorScheme(colorsWindow(mylist, COLORSWTITLE));
       refresh_screen(1);
     }
   }
@@ -1036,7 +1033,7 @@ void filemenu() {
   write_str(1, rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG);
   loadmenus(mylist, FILE_MENU);
   write_str(1, 1, "File", MENU_SELECTOR, MENU_FOREGROUND1);
-  draw_window(1, 2, 13, 8, MENU_PANEL, MENU_FOREGROUND0, 1);
+  draw_window(1, 2, 13, 8, MENU_PANEL, MENU_FOREGROUND0,0, 1,0);
   kglobal = start_vmenu(&data);
   close_window();
   write_str(1, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0);
@@ -1067,7 +1064,7 @@ void filemenu() {
     }
     else{
       //Error: We are on readmode
-      infoWindow(mylist, WFILEINREADMODE_MSG);
+      infoWindow(mylist, WFILEINREADMODE_MSG, READMODEWTITLE);
     }
     //Update new global file name
     refresh_screen(-1);
@@ -1102,7 +1099,7 @@ void optionsmenu() {
   write_str(1, rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG);
   loadmenus(mylist, OPT_MENU);
   write_str(7, 1, "Options", MENU_SELECTOR, MENU_FOREGROUND1);
-  draw_window(7, 2, 20, 6, MENU_PANEL, MENU_FOREGROUND0, 1);
+  draw_window(7, 2, 20, 6, MENU_PANEL, MENU_FOREGROUND0,0, 1,0);
   kglobal = start_vmenu(&data);
   close_window();
   write_str(1, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0);
@@ -1118,7 +1115,7 @@ void optionsmenu() {
   }
   if(data.index == OPTION_3) {
     //Set Colors
-    setColor = colorsWindow(mylist);
+    setColor = colorsWindow(mylist,COLORSWTITLE);
     setColorScheme(setColor);
     checkConfigFile(setColor);	//save new configuration in config file
     refresh_screen(1);
@@ -1140,7 +1137,7 @@ void helpmenu() {
   write_str(1, rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG);
   loadmenus(mylist, HELP_MENU);
   write_str(16, 1, "Help", MENU_SELECTOR, MENU_FOREGROUND1);
-  draw_window(16, 2, 26, 5, MENU_PANEL, MENU_FOREGROUND0, 1);
+  draw_window(16, 2, 26, 5, MENU_PANEL, MENU_FOREGROUND0, 0,1,0);
   kglobal = start_vmenu(&data);
   close_window();
   write_str(1, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0);
@@ -1171,7 +1168,7 @@ void helpmenu() {
 int confirmation() {
   int     ok = 0;
   if(fileModified == 1) {
-    ok = yesnoWindow(mylist, WMODIFIED_MSG);
+    ok = yesnoWindow(mylist, WMODIFIED_MSG, CONFIRMWTITLE);
     data.index = OPTION_NIL;
     //save file if modified?
     if(ok == 1) {
@@ -1202,7 +1199,7 @@ int about_info() {
   strcat(msg, ABOUT_ASC_2);
   strcat(msg, ABOUT_ASC_3);
   strcat(msg, "\0");
-  alertWindow(mylist, WTITLEABOUT_MSG, msg);
+  alertWindow(mylist, msg,ABOUTWTITLE);
   return ok;
 }
 
@@ -1214,7 +1211,6 @@ int help_info() {
   int     ok = 0;
   char    msg[500];
   msg[0] = '\0';
-  strcat(msg, HELP0);		//located in user_inter.h
   strcat(msg, HELP1);		//located in user_inter.h
   strcat(msg, HELP2);		//located in user_inter.h
   strcat(msg, HELP3);		//located in user_inter.h
@@ -1226,7 +1222,8 @@ int help_info() {
   strcat(msg, HELP9);		//located in user_inter.h
   strcat(msg, HELP10);		//located in user_inter.h
   strcat(msg, "\0");
-  helpWindow(mylist, msg);
+  helpWindow(mylist, msg, HELPWTITLE);
+  refresh_screen(0);
   return ok;
 }
 
@@ -1423,7 +1420,7 @@ int saveDialog(char fileName[MAX_TEXT]) {
   writeBuffertoFile(filePtr, editBuffer);
   strcpy(tempMsg, fileName);
   strcat(tempMsg, WSAVE_MSG);
-  ok = infoWindow(mylist, tempMsg);
+  ok = infoWindow(mylist, tempMsg, FILESAVEDWTITLE);
   fileModified = 0;		//reset modified flag
 
   return ok;
@@ -1436,7 +1433,7 @@ int saveasDialog(char fileName[MAX_TEXT]) {
 
   clearString(tempFile, MAX_TEXT);
 
-  count = inputWindow(WSAVETITLE_MSG, WSAVELABEL_MSG, tempFile);
+  count = inputWindow(WSAVELABEL_MSG, tempFile, SAVEWTITLE);
 
   if(count > 0) {
     //Save file
@@ -1446,7 +1443,7 @@ int saveasDialog(char fileName[MAX_TEXT]) {
 
     //Check whether file exists.
     if(file_exists(fileName)) {
-      ok = yesnoWindow(mylist, WFILEEXISTS_MSG);
+      ok = yesnoWindow(mylist, WFILEEXISTS_MSG, EXISTSWTITLE);
       if(ok == CONFIRMATION) {
 	//Save anyway.
 	closeFile(filePtr);
@@ -1454,7 +1451,7 @@ int saveasDialog(char fileName[MAX_TEXT]) {
 	writeBuffertoFile(filePtr, editBuffer);
 	strcpy(tempMsg, fileName);
 	strcat(tempMsg, WSAVE_MSG);
-	ok = infoWindow(mylist, tempMsg);
+	ok = infoWindow(mylist, tempMsg, FILESAVEDWTITLE);
 	fileModified = 0;
       } else {
 	//Do nothing.
@@ -1465,7 +1462,7 @@ int saveasDialog(char fileName[MAX_TEXT]) {
       writeBuffertoFile(filePtr, editBuffer);
       strcpy(tempMsg, fileName);
       strcat(tempMsg, WSAVE_MSG);
-      ok = infoWindow(mylist, tempMsg);
+      ok = infoWindow(mylist, tempMsg, FILESAVEDWTITLE);
       fileModified = 0;
     }
   }
@@ -1484,7 +1481,7 @@ int newDialog(char fileName[MAX_TEXT]) {
 
   data.index = OPTION_NIL;
 
-  count = inputWindow(WNEWTITLE_MSG, WSAVELABEL_MSG, tempFile);
+  count = inputWindow(WSAVELABEL_MSG, tempFile, NEWFILEWTITLE);
   if(count > 0) {
     //Check whether file exists and create file.
     ok = createnewFile(&filePtr, tempFile, 1);
@@ -1561,9 +1558,9 @@ int fileInfoDialog() {
     }
     pathtxt[60] = CHAR_NIL;
     strcat(tempMsg, pathtxt);
-    alertWindow(mylist, currentFile, tempMsg);
+    alertWindow(mylist, tempMsg, INFOWTITLE);
   } else {
-    infoWindow(mylist, WINFO_NOPEN);
+    infoWindow(mylist, WINFO_NOPEN, NOFILEOPENWTITLE);
   }
   return 0;
 }
@@ -1748,7 +1745,7 @@ int handleopenFile(FILE ** filePtr, char *fileName, char *oldFileName) {
   checkF = checkFile(*filePtr);
   if(checkF > 5) {
     //File doesn't seem to be a text file. Open anyway?  
-    ok = yesnoWindow(mylist, WCHECKFILE_MSG);
+    ok = yesnoWindow(mylist, WCHECKFILE_MSG, OPENANYWAYWTITLE);
     if(ok == 1) {
      filetoBuffer(*filePtr, editBuffer);
       refresh_screen(-1);
@@ -1767,7 +1764,7 @@ int handleopenFile(FILE ** filePtr, char *fileName, char *oldFileName) {
     //Check wheter file is bigger than buffer. 32700 lines
     linesinFile = countLinesFile(*filePtr);
     if (linesinFile > MAX_LINES) 
-    ok=infoWindow(mylist, WCHECKLINES_MSG);
+    ok=infoWindow(mylist, WCHECKLINES_MSG, FILETOBIGWTITLE);
     //Reset values
     editScroll.scrollPointer = 0; //Set pointer to 0
     editScroll.pagePointer =0; //set page Pointer to 0
@@ -1793,7 +1790,7 @@ int createnewFile(FILE ** filePtr, char *fileName, int checkFile) {
 //Check if file exists if indicated.
   if(checkFile == 1) {
     if(file_exists(fileName)) {
-      ok = yesnoWindow(mylist, WFILEEXISTS_MSG);
+      ok = yesnoWindow(mylist, WFILEEXISTS_MSG, CREATEWTITLE);
       if(ok == CONFIRMATION) {
 	//Overwrite anyway.
 	openFile(filePtr, fileName, "w");

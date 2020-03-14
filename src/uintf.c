@@ -68,6 +68,8 @@ int SCROLLBAR_BACK= B_WHITE;
 int SCROLLBAR_FORE= F_WHITE;
 int SCROLLBAR_SEL= B_CYAN;
 int SCROLLBAR_ARR= B_BLACK;
+int WINDOW_TITLEB = B_CYAN; 
+int WINDOW_TITLEF = FH_WHITE;
 
 /*====================================================================*/
 /* FUNCTIONS - CODE                                                   */
@@ -230,7 +232,7 @@ int textbox(int wherex, int wherey, int displayLength,
   return charCount;
 }
 
-int infoWindow(LISTCHOICE * mylist, char *message) {
+int infoWindow(LISTCHOICE * mylist, char *message, char *windowTitle) {
   int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
   int     ok = 0;
   int     i = 0;
@@ -249,7 +251,8 @@ int infoWindow(LISTCHOICE * mylist, char *message) {
   loadmenus(mylist, OK_MENU);
 
   draw_window(window_x1, window_y1, window_x2, window_y2, MENU_PANEL, MENU_FOREGROUND0,
-	      1);
+	      WINDOW_TITLEB,1,1);
+  write_str((window_x2-window_x1) /2 + window_x1 - (strlen(windowTitle)/2) , window_y1-1, windowTitle, WINDOW_TITLEB, WINDOW_TITLEF);
   //Write message to info window  
   for(i = 0; i < strlen(message); i++) {
     tempChar = message[i];
@@ -274,7 +277,7 @@ int infoWindow(LISTCHOICE * mylist, char *message) {
   return ok;
 }
 
-int alertWindow(LISTCHOICE * mylist, char *title, char *message) {
+int alertWindow(LISTCHOICE * mylist, char *message, char *windowTitle) {
   int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
   int     tempx = 0;
   int     titlex = 0;
@@ -295,24 +298,8 @@ int alertWindow(LISTCHOICE * mylist, char *title, char *message) {
   loadmenus(mylist, OK_MENU2);
 
   draw_window(window_x1, window_y1, window_x2, window_y2, MENU_PANEL, MENU_FOREGROUND0,
-	      1);
-  //Window title
-  tempx = (window_x2 - window_x1) / 2;	//Center title
-  if(strlen(title) > 0)
-    titlex = tempx - strlen(title) / 2;
-  write_str(window_x1 + titlex, window_y1 + 1, title, MENU_FOREGROUND0, MENU_PANEL);
-  update_screen();
-
-  for(i = window_x1 + 1; i < window_x2; i++) {
-    //Draw a horizontal line
-    write_ch(i, window_y1 + 2, NHOR_LINE, MENU_PANEL, MENU_FOREGROUND0);
-  }
-  //Corners of lines
-  write_ch(window_x1, window_y1 + 2, NLOWER_LEFT_CORNER, MENU_PANEL, MENU_FOREGROUND0);
-  write_ch(window_x2, window_y1 + 2, NLOWER_RIGHT_CORNER, MENU_PANEL,
-	   MENU_FOREGROUND0);
-  update_screen();
-
+	      WINDOW_TITLEB,1,1);
+  write_str((window_x2-window_x1) /2 + window_x1 - (strlen(windowTitle)/2) , window_y1-1, windowTitle, WINDOW_TITLEB, WINDOW_TITLEF);
   //Write message to alert window  
   for(i = 0; i < strlen(message); i++) {
     tempChar = message[i];
@@ -323,7 +310,7 @@ int alertWindow(LISTCHOICE * mylist, char *title, char *message) {
 	j++;
 	ix = 0;
       } else {
-	write_ch(window_x1 + 1 + ix, window_y1 + 3 + j, tempChar, MENU_FOREGROUND0,
+	write_ch(window_x1 + 1 + ix, window_y1 + 1 + j, tempChar, MENU_FOREGROUND0,
 		 MENU_PANEL);
 	ix++;
       }
@@ -337,7 +324,7 @@ int alertWindow(LISTCHOICE * mylist, char *title, char *message) {
   return ok;
 }
 
-int yesnoWindow(LISTCHOICE * mylist, char *message) {
+int yesnoWindow(LISTCHOICE * mylist, char *message, char *windowTitle) {
 
   int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
   int     ok = 0;
@@ -356,8 +343,8 @@ int yesnoWindow(LISTCHOICE * mylist, char *message) {
   window_x2 = (columns / 2) + 13;
   loadmenus(mylist, YESNO_MENU);
   draw_window(window_x1, window_y1, window_x2, window_y2, MENU_PANEL, MENU_FOREGROUND0,
-	      1);
-
+	      WINDOW_TITLEB,1,1);
+  write_str((window_x2-window_x1) /2 + window_x1 - (strlen(windowTitle)/2) , window_y1-1, windowTitle, WINDOW_TITLEB, WINDOW_TITLEF);
   //Write message to yes/no window  
   for(i = 0; i < strlen(message); i++) {
     tempChar = message[i];
@@ -382,7 +369,7 @@ int yesnoWindow(LISTCHOICE * mylist, char *message) {
   return ok;
 }
 
-int inputWindow(char *title, char *label, char *tempFile) {
+int inputWindow(char *label, char *tempFile, char *windowTitle) {
   int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
   int     i;
   int     tempx = 0;
@@ -393,30 +380,15 @@ int inputWindow(char *title, char *label, char *tempFile) {
   get_terminal_dimensions(&rows, &columns);
 
   window_y1 = (rows / 2) - 2;
-  window_y2 = (rows / 2) + 2;
+  window_y2 = (rows / 2);
   window_x1 = (columns / 2) - 14;
   window_x2 = (columns / 2) + 14;
 
   draw_window(window_x1, window_y1, window_x2, window_y2, MENU_PANEL, MENU_FOREGROUND0,
-	      1);
-  //Window title
-  tempx = (window_x2 - window_x1) / 2;	//Center title
-  if(strlen(title) > 0)
-    titlex = tempx - strlen(title) / 2;
-  write_str(window_x1 + titlex, window_y1 + 1, title, MENU_FOREGROUND0, MENU_PANEL);
-  update_screen();
-
-  for(i = window_x1 + 1; i < window_x2; i++) {
-    //Draw a horizontal line
-    write_ch(i, window_y1 + 2, NHOR_LINE, MENU_PANEL, MENU_FOREGROUND0);
-  }
-  //Corners of lines
-  write_ch(window_x1, window_y1 + 2, NLOWER_LEFT_CORNER, MENU_PANEL, MENU_FOREGROUND0);
-  write_ch(window_x2, window_y1 + 2, NLOWER_RIGHT_CORNER, MENU_PANEL,
-	   MENU_FOREGROUND0);
-  update_screen();
+	      WINDOW_TITLEB,1,1);
+  write_str((window_x2-window_x1) /2 + window_x1 - (strlen(windowTitle)/2) , window_y1-1, windowTitle, WINDOW_TITLEB, WINDOW_TITLEF);
   count =
-      textbox(window_x1 + 1, window_y1 + 3, 12, label, tempFile, MENU_PANEL,
+      textbox(window_x1 + 1, window_y1 + 1, 16, label, tempFile, MENU_PANEL,
 	      MENU_FOREGROUND0, MENU_FOREGROUND0);
   close_window();
   return count;
@@ -442,6 +414,8 @@ void setColorScheme(int colorCode)
       SCROLLBAR_FORE= F_WHITE;
       SCROLLBAR_SEL= B_CYAN;
       SCROLLBAR_ARR= B_BLACK;
+      WINDOW_TITLEB = B_CYAN;
+      WINDOW_TITLEF = FH_WHITE;
     break;
     case 1: //Classic color scheme
       EDITAREACOL= B_BLUE;
@@ -458,7 +432,9 @@ void setColorScheme(int colorCode)
       SCROLLBAR_FORE= F_WHITE;
       SCROLLBAR_SEL= B_BLACK;
       SCROLLBAR_ARR= B_CYAN;
-      break;
+      WINDOW_TITLEB = B_BLACK;
+      WINDOW_TITLEF = F_WHITE;
+     break;
    case 2: //Dark color scheme
       EDITAREACOL= B_BLACK;
       EDIT_FORECOLOR=F_WHITE;
@@ -474,13 +450,15 @@ void setColorScheme(int colorCode)
       SCROLLBAR_FORE= F_BLACK;
       SCROLLBAR_SEL= B_BLUE;
       SCROLLBAR_ARR= B_WHITE;
+      WINDOW_TITLEB = B_WHITE;
+      WINDOW_TITLEF = F_BLACK;
       break;
    default:
       break;
   }
 }
 
-int colorsWindow(LISTCHOICE * mylist) {
+int colorsWindow(LISTCHOICE * mylist, char *windowTitle) {
   int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
   LISTCHOICE data;
   int     rows, columns;
@@ -494,14 +472,15 @@ int colorsWindow(LISTCHOICE * mylist) {
   loadmenus(mylist, COLORS_MENU);
 
   draw_window(window_x1, window_y1, window_x2, window_y2, MENU_PANEL, MENU_FOREGROUND0,
-	      1);
+	      WINDOW_TITLEB,1,1);
+ write_str((window_x2-window_x1) /2 + window_x1 - (strlen(windowTitle)/2) , window_y1-1, windowTitle, WINDOW_TITLEB, WINDOW_TITLEF);
   start_vmenu(&data);
   free_list(mylist);
   close_window();
   return data.index;
 }
 
-int helpWindow(LISTCHOICE * mylist, char *message) {
+int helpWindow(LISTCHOICE * mylist, char *message, char *windowTitle) {
   int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
   int     ok = 0;
   int     i = 0;
@@ -513,13 +492,14 @@ int helpWindow(LISTCHOICE * mylist, char *message) {
 
   get_terminal_dimensions(&rows, &columns);
 
-  window_y1 = (rows / 2) - 8;
+  window_y1 = (rows / 2) - 7;
   window_y2 = (rows / 2) + 8;
   window_x1 = (columns / 2) - 25;
   window_x2 = (columns / 2) + 25;
 
-  draw_window(window_x1, window_y1, window_x2, window_y2, MENU_PANEL, MENU_FOREGROUND0,
-	      1);
+  draw_window(window_x1, window_y1, window_x2, window_y2, MENU_PANEL, MENU_FOREGROUND0,WINDOW_TITLEB,1,1);
+  write_str((window_x2-window_x1) /2 + window_x1 - (strlen(windowTitle)/2) , window_y1-1, windowTitle, WINDOW_TITLEB, WINDOW_TITLEF);
+
   //Write message to info window  
   for(i = 0; i < strlen(message); i++) {
     tempChar = message[i];

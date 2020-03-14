@@ -22,7 +22,6 @@ Last modified: 14/04/2019 Rename headers
 #include "keyb.h"
 
 //HELP MESSAGE
-#define HELP0 "Here is a list of the most common keys: \n\n"
 #define HELP1 "ALT-X: EXIT PROGRAM  |   F1 OR ALT-H: HELP \n"
 #define HELP2 "CTRL-L: OPEN MENUS   |   F2: OPEN MENUS \n"
 #define HELP3 "ALT-O: OPEN FILE     |   F3: REFRESH SCREEN \n"
@@ -34,6 +33,21 @@ Last modified: 14/04/2019 Rename headers
 #define HELP9 "CTRL-H: COLORS       |   ALT-K:  RESERVED \n"
 #define HELP10 "\nFor more info visit  \n [http://oldstuff286.blogspot.com]"
 
+#define HELPWTITLE "[-] HELP: MOST COMMON KEYS"
+#define ABOUTWTITLE "[-] ABOUT INFORMATION"
+#define READMODEWTITLE "[-] ALERT INFORMATION"
+#define INFOWTITLE "[-] C-EDIT INFO"
+#define NOFILEOPENWTITLE "[-] C-EDIT INFO"
+#define NEWFILEWTITLE "[-] NEW FILE INPUT"
+#define COLORSWTITLE "[-] SET COLOR"
+#define OPENWTITLE "[-] SELECT FILE"
+#define SAVEWTITLE "[-] SAVE FILE AS"
+#define FILESAVEDWTITLE "[-] C-EDIT INFO"
+#define CREATEWTITLE "[-] NEW FILE INPUT"
+#define CONFIRMWTITLE "[-] C-EDIT INFO"
+#define FILETOBIGWTITLE "[-] C-EDIT INFO"
+#define OPENANYWAYWTITLE "[-] C-EDIT INFO"
+#define EXISTSWTITLE "[-] C-EDIT INFO"
 //END
 
 #define MAX_TEXT 150
@@ -76,6 +90,8 @@ extern int SCROLLBAR_BACK;
 extern int SCROLLBAR_FORE;
 extern int SCROLLBAR_SEL;
 extern int SCROLLBAR_ARR;
+extern int WINDOW_TITLEB; // to be accessible from opfile.c
+extern int WINDOW_TITLEF;
 
 /*====================================================================*/
 /* FUNCTION PROTOTYPES                                                */
@@ -90,12 +106,12 @@ void    loadmenus(LISTCHOICE * mylist, int choice);
 int     textbox(int wherex, int wherey, int displayLength,
 		char label[MAX_TEXT], char text[MAX_TEXT], int backcolor,
 		int labelcolor, int textcolor);
-int     alertWindow(LISTCHOICE * mylist, char *title, char *message);
-int     infoWindow(LISTCHOICE * mylist, char *message);
-int     inputWindow(char *title, char *label, char *tempFile);
-int     yesnoWindow(LISTCHOICE * mylist, char *message);
-int     helpWindow(LISTCHOICE * mylist, char *message);
+int     alertWindow(LISTCHOICE * mylist, char *message, char *windowTitle);
+int     infoWindow(LISTCHOICE * mylist, char *message, char *windowTitle);
+int     inputWindow(char *label, char *tempFile, char *windowTitle);
+int     yesnoWindow(LISTCHOICE * mylist, char *message, char *windowTitle);
+int     helpWindow(LISTCHOICE * mylist, char *message, char *windowTitle);
 void    setColorScheme(int colorCode);
-int     colorsWindow(LISTCHOICE * mylist);
+int     colorsWindow(LISTCHOICE * mylist, char *windowTitle);
 
 #endif

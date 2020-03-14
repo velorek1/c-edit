@@ -23,7 +23,6 @@
 #include "rterm.h"
 #include "keyb.h"
 #include "uintf.h"
-
 /*====================================================================*/
 /* CONSTANTS */
 /*====================================================================*/
@@ -346,10 +345,8 @@ unselecting previous item
 
       //Metrics
 
-      cleanLine(window_y1 + 1, MENU_PANEL, MENU_FOREGROUND0, window_x1 + 1, window_x2);
-      outputcolor(MENU_FOREGROUND0, MENU_PANEL);
-      gotoxy(window_x1 + 2, window_y1 + 1);
-      printf("Open File: w/s ^/v");
+      //cleanLine(window_y1 + 1, MENU_PANEL, MENU_FOREGROUND0, window_x1 + 1, window_x2);
+      //outputcolor(MENU_FOREGROUND0, MENU_PANEL);
       gotoxy(window_x1 + 3, window_y2 - 1);
       outputcolor(F_BLUE, MENU_PANEL);
       printf("    [%d/%d]     ", aux->index, scrollData->listLength - 1);
@@ -376,10 +373,10 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
 
   gotoIndex(&aux, scrollData, scrollData->currentListIndex);
   //Metrics
-  cleanLine(window_y1 + 1, MENU_PANEL, MENU_FOREGROUND0, window_x1 + 1, window_x2);
-  outputcolor(MENU_FOREGROUND0, MENU_PANEL);
-  gotoxy(window_x1 + 2, window_y1 + 1);
-  printf("Open File: w/s ^/v");
+  //cleanLine(window_y1 + 1, MENU_PANEL, MENU_FOREGROUND0, window_x1 + 1, window_x2);
+  //outputcolor(MENU_FOREGROUND0, MENU_PANEL);
+  //gotoxy(window_x1 + 2, window_y1 + 1);
+  //printf("Open File: w/s ^/v");
   gotoxy(window_x1 + 3, window_y2 - 1);
   outputcolor(F_BLUE, MENU_PANEL);
   printf("    [%d/%d]     ", aux->index, scrollData->listLength - 1);
@@ -742,8 +739,8 @@ void openFileDialog(SCROLLDATA * openFileData) {
   get_terminal_dimensions(&rows, &columns);
   //Check if the screen is active in memory first.
 
-  window_y1 = (rows / 2) - 7;
-  window_y2 = (rows / 2) + 7;
+  window_y1 = (rows / 2) - 6;
+  window_y2 = (rows / 2) + 6;
   window_x1 = (columns / 2) - 10;
   window_x2 = (columns / 2) + 10;
 
@@ -753,8 +750,9 @@ void openFileDialog(SCROLLDATA * openFileData) {
   getcwd(fullPath, sizeof(fullPath));	//Get path
 
   //Directories loop
-  draw_window(window_x1, window_y1, window_x2, window_y2, MENU_PANEL, MENU_FOREGROUND0, 1);	
-
+  draw_window(window_x1, window_y1, window_x2, window_y2, MENU_PANEL, MENU_FOREGROUND0, WINDOW_TITLEB,1,1);
+  write_str((window_x2-window_x1) /2 + window_x1 - (strlen(OPENWTITLE)/2) , window_y1-1, OPENWTITLE, WINDOW_TITLEB, WINDOW_TITLEB);	
+/*
   for(i = window_x1 + 1; i < window_x2; i++) {
     //Draw a horizontal line
     write_ch(i, window_y1 + 2, NHOR_LINE, MENU_PANEL, MENU_FOREGROUND0);
@@ -765,13 +763,13 @@ void openFileDialog(SCROLLDATA * openFileData) {
 	   MENU_FOREGROUND0);
   cleanLine(window_y1 + 1, MENU_PANEL, MENU_FOREGROUND0, window_x1 + 1, window_x2);
   write_str(window_x1 + 2, window_y1 + 1,"Open File: w/s ^/v",MENU_FOREGROUND0, MENU_PANEL);
-
+*/
   update_screen();
 
   do {
     //Add items to list
     listFiles(&listBox1, newDir);
-    ch = listBox(listBox1, window_x1 + 3, window_y1 + 3, &scrollData,
+    ch = listBox(listBox1, window_x1 + 3, window_y1 + 1, &scrollData,
 		 MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1, 10);
    // deleteList(&listBox1);
 

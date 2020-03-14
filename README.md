@@ -33,5 +33,5 @@ Files in /src/:
 
 As a screen buffer I have implemented a dynamic structure in memory that allows to save the current screen so that you can display new things on top and then go back to the previous (saved) screen. (simple linked list)
 
-![Alt text](screencaps/cedit3.png?raw=true "Demo")
-![Alt text](screencaps/cedit4.png?raw=true "Demo")
+![Alt text](cedit3.jpg?raw=true "Demo")
+![Alt text](cedit4.jpg?raw=true "Demo")

@@ -751,7 +751,7 @@ void openFileDialog(SCROLLDATA * openFileData) {
 
   //Directories loop
   draw_window(window_x1, window_y1, window_x2, window_y2, MENU_PANEL, MENU_FOREGROUND0, WINDOW_TITLEB,1,1);
-  write_str((window_x2-window_x1) /2 + window_x1 - (strlen(OPENWTITLE)/2) , window_y1-1, OPENWTITLE, WINDOW_TITLEB, WINDOW_TITLEB);	
+  write_str((window_x2-window_x1) /2 + window_x1 - (strlen(OPENWTITLE)/2) , window_y1-1, OPENWTITLE, WINDOW_TITLEB, WINDOW_TITLEF);	
 /*
   for(i = window_x1 + 1; i < window_x2; i++) {
     //Draw a horizontal line

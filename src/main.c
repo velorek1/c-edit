@@ -919,9 +919,9 @@ int main_screen() {
   }
   // Text messages
   write_str(1, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0);
-  write_str(1, 1, "F", MENU_PANEL, F_BLUE);
-  write_str(8, 1, "p", MENU_PANEL, F_BLUE);
-  write_str(16, 1, "H", MENU_PANEL, F_BLUE);
+  write_str(1, 1, "F", MENU_PANEL, F_RED);
+  write_str(8, 1, "p", MENU_PANEL, F_RED);
+  write_str(16, 1, "H", MENU_PANEL, F_RED);
   write_str(1, rows, STATUS_BAR_MSG1, STATUSBAR, STATUSMSG);
 
   /* Frames */
@@ -1014,9 +1014,9 @@ char horizontal_menu() {
   temp_char = start_hmenu(&data);
   free_list(mylist);
   write_str(1, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0);
-  write_str(1, 1, "F", MENU_PANEL, F_BLUE);
-  write_str(8, 1, "p", MENU_PANEL, F_BLUE);
-  write_str(16, 1, "H", MENU_PANEL, F_BLUE);
+  write_str(1, 1, "F", MENU_PANEL, F_RED);
+  write_str(8, 1, "p", MENU_PANEL, F_RED);
+  write_str(16, 1, "H", MENU_PANEL, F_RED);
   write_str(1, rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG);
   update_screen();
 
@@ -1037,9 +1037,9 @@ void filemenu() {
   kglobal = start_vmenu(&data);
   close_window();
   write_str(1, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0);
-  write_str(1, 1, "F", MENU_PANEL, F_BLUE);
-  write_str(8, 1, "p", MENU_PANEL, F_BLUE);
-  write_str(16, 1, "H", MENU_PANEL, F_BLUE);
+  write_str(1, 1, "F", MENU_PANEL, F_RED);
+  write_str(8, 1, "p", MENU_PANEL, F_RED);
+  write_str(16, 1, "H", MENU_PANEL, F_RED);
  //update_screen();
   free_list(mylist);
 
@@ -1103,9 +1103,9 @@ void optionsmenu() {
   kglobal = start_vmenu(&data);
   close_window();
   write_str(1, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0);
-  write_str(1, 1, "F", MENU_PANEL, F_BLUE);
-  write_str(8, 1, "p", MENU_PANEL, F_BLUE);
-  write_str(16, 1, "H", MENU_PANEL, F_BLUE);
+  write_str(1, 1, "F", MENU_PANEL, F_RED);
+  write_str(8, 1, "p", MENU_PANEL, F_RED);
+  write_str(16, 1, "H", MENU_PANEL, F_RED);
  //update_screen();
 
   free_list(mylist);
@@ -1141,9 +1141,9 @@ void helpmenu() {
   kglobal = start_vmenu(&data);
   close_window();
   write_str(1, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0);
-  write_str(1, 1, "F", MENU_PANEL, F_BLUE);
-  write_str(8, 1, "p", MENU_PANEL, F_BLUE);
-  write_str(16, 1, "H", MENU_PANEL, F_BLUE);
+  write_str(1, 1, "F", MENU_PANEL, F_RED);
+  write_str(8, 1, "p", MENU_PANEL, F_RED);
+  write_str(16, 1, "H", MENU_PANEL, F_RED);
   //update_screen();
   free_list(mylist);
   if(data.index == OPTION_1) {
@@ -1314,7 +1314,7 @@ if (openFileData.itemIndex != 0) {
      gotoxy(i,8);
      printf("%c", auth[i-1]);
   }
-  outputcolor(0, 90);
+  outputcolor(0, 93);
   for(i=10;i<17;i++){
      delay(TIME_CREDITS);
      gotoxy(i,8);

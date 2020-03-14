@@ -59,7 +59,7 @@ int EDIT_FORECOLOR=F_WHITE;
 int STATUSBAR =B_BLACK;
 int STATUSMSG =F_WHITE;
 int MENU_PANEL =B_WHITE;
-int MENU_SELECTOR =B_BLUE;
+int MENU_SELECTOR =B_CYAN;
 int MENU_FOREGROUND0 =F_BLACK;
 int MENU_FOREGROUND1= F_WHITE;
 int EDITWINDOW_BACK= B_BLUE;
@@ -68,8 +68,8 @@ int SCROLLBAR_BACK= B_WHITE;
 int SCROLLBAR_FORE= F_WHITE;
 int SCROLLBAR_SEL= B_CYAN;
 int SCROLLBAR_ARR= B_BLACK;
-int WINDOW_TITLEB = B_CYAN; 
-int WINDOW_TITLEF = FH_WHITE;
+int WINDOW_TITLEB = B_BLACK; 
+int WINDOW_TITLEF = F_WHITE;
 
 /*====================================================================*/
 /* FUNCTIONS - CODE                                                   */
@@ -405,7 +405,7 @@ void setColorScheme(int colorCode)
       STATUSBAR =B_BLACK;
       STATUSMSG =F_WHITE;
       MENU_PANEL =B_WHITE;
-      MENU_SELECTOR = B_BLUE;
+      MENU_SELECTOR = B_CYAN;
       MENU_FOREGROUND0 =F_BLACK;
       MENU_FOREGROUND1= F_WHITE;
       EDITWINDOW_BACK= B_BLUE;
@@ -414,8 +414,8 @@ void setColorScheme(int colorCode)
       SCROLLBAR_FORE= F_WHITE;
       SCROLLBAR_SEL= B_CYAN;
       SCROLLBAR_ARR= B_BLACK;
-      WINDOW_TITLEB = B_CYAN;
-      WINDOW_TITLEF = FH_WHITE;
+      WINDOW_TITLEB = B_BLACK;
+      WINDOW_TITLEF = F_WHITE;
     break;
     case 1: //Classic color scheme
       EDITAREACOL= B_BLUE;

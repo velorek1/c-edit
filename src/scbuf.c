@@ -599,7 +599,7 @@ void free_buffer()
 /*------------------------------------------*/
 
 void draw_window(int x1, int y1, int x2, int y2, int backcolor,
-		 int bordercolor, int border) {
+		 int bordercolor, int titlecolor, int border, int title) {
 /* 
    Chars for drawing box-like characters will be passed as negative values.
    When the update_screen routine is called, it will check for negative
@@ -639,6 +639,10 @@ void draw_window(int x1, int y1, int x2, int y2, int backcolor,
     write_ch(x1, y2, NLOWER_LEFT_CORNER, backcolor, bordercolor);	//lower-left corner box-like char
     write_ch(x2, y1, NUPPER_RIGHT_CORNER, backcolor, bordercolor);	//upper-right corner box-like char
     write_ch(x2, y2, NLOWER_RIGHT_CORNER, backcolor, bordercolor);	//lower-right corner box-like char
+  }
+  if (title == 1) {
+    for(i = x1; i <= x2; i++)
+      write_ch(i, y1-1, ' ', titlecolor, titlecolor);
   }
   //update_smart();
 }

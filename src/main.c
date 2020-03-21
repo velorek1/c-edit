@@ -1308,13 +1308,13 @@ if (openFileData.itemIndex != 0) {
   outputcolor(0, 90);
   printf("\n%s",auth);
   outputcolor(0, 37);
-  for(i=1;i<23;i++){
+  for(i=1;i<28;i++){
      delay(TIME_CREDITS);
      gotoxy(i,8);
      printf("%c", auth[i-1]);
   }
   outputcolor(0, 97);
-  for(i=1;i<23;i++){
+  for(i=1;i<28;i++){
      delay(TIME_CREDITS);
      gotoxy(i,8);
      printf("%c", auth[i-1]);

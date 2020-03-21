@@ -1,7 +1,7 @@
 * Top Priority:
 - Change editBuffer from static array to dynamic structure.
-- Expand behaviour of ENTER and BACKSPACE and add TAB SUPPORT!
-- Add horizontal scroll and design a smoother scroll animation.
+- Expand behaviour of ENTER and BACKSPACE and REAL TAB SUPPORT!
+- Add horizontal scroll.
 - Clean code, reduce global variables and redundancies.
 
 * Less Priority:

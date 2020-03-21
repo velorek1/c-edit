@@ -169,6 +169,8 @@ char    currentPath[MAX_PATH];
 int     exitp = 0;		// Exit flag for main loop
 int     fileModified = FILE_UNMODIFIED;	//Have we modified the buffer?
 char    timerOnOFF = 1;
+int	forceBufferUpdate = 0; //To allow a smoother scroll animation.
+
 /*====================================================================*/
 /* PROTOTYPES OF FUNCTIONS                                            */
 /*====================================================================*/
@@ -204,7 +206,7 @@ int     fileInfoDialog();
 //Keyhandling and input prototypes
 int     process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
 		      long *whereY, char ch);
-int     special_keys(long *whereX, long *whereY, char ch, char *oldch);
+int     special_keys(long *whereX, long *whereY, char ch);
 
 //Edit prototypes
 void    cleanBuffer(EDITBUFFER editBuffer[MAX_LINES]);
@@ -229,7 +231,7 @@ int     createnewFile(FILE ** filePtr, char *fileName, int checkFile);
 /*====================================================================*/
 
 int main(int argc, char *argv[]) {
-  char    ch = 0, oldchar = 0, oldch=0;
+  char    ch = 0, oldchar = 0;
 
   int     esc_key = 0;		//To control key input and scan for keycodes.
   int     keypressed = 0;
@@ -288,7 +290,7 @@ int main(int argc, char *argv[]) {
     //update_screen();
     if(keypressed == 1) {
       /* Process SPECIAL KEYS and other ESC-related issues */
-      esc_key = special_keys(&cursorX, &cursorY, ch, &oldch);
+      esc_key = special_keys(&cursorX, &cursorY, ch);
 
       //If arrow keys are used repeatedly. This avoids printing unwanted chars.   
       if(oldchar == K_ESCAPE)
@@ -737,7 +739,7 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
 /* Manage keys that send a ESC sequence    */
 /*-----------------------------------------*/
 
-int special_keys(long *whereX, long *whereY, char ch, char *oldch) {
+int special_keys(long *whereX, long *whereY, char ch) {
 /* MANAGE SPECIAL KEYS */
 /* 
    New implementation: Trail of chars found in keyboard.c
@@ -801,6 +803,7 @@ int special_keys(long *whereX, long *whereY, char ch, char *oldch) {
             editScroll.bufferY--;
             oldX = *whereX;
   	    writeBuffertoDisplayRaw(editBuffer);
+	    forceBufferUpdate = 1; 
             *whereY = START_CURSOR_Y;
             *whereX = oldX;
           }
@@ -818,6 +821,7 @@ int special_keys(long *whereX, long *whereY, char ch, char *oldch) {
             editScroll.bufferY++;
             oldX = *whereX;
 	    writeBuffertoDisplayRaw(editBuffer); 
+	    forceBufferUpdate = 1; 
             *whereY = rows-2;
             *whereX = oldX;
           }
@@ -1010,7 +1014,10 @@ void cleanStatusBar(){
 char horizontal_menu() {
   char    temp_char;
   kglobal=-1;
-  writeBuffertoDisplay(editBuffer);
+  if (forceBufferUpdate == 1 ) {
+      writeBuffertoDisplay(editBuffer);
+      forceBufferUpdate = 0;
+   }
   cleanStatusBar();
   write_str(1, rows, STATUS_BAR_MSG3, STATUSBAR, STATUSMSG);
   loadmenus(mylist, HOR_MENU);
@@ -1169,7 +1176,10 @@ void helpmenu() {
 /* Displays a window to asks user for confirmation */
 int confirmation() {
   int     ok = 0;
-  writeBuffertoDisplay(editBuffer);
+   if (forceBufferUpdate == 1 ) {
+      writeBuffertoDisplay(editBuffer);
+      forceBufferUpdate = 0;
+   }
   if(fileModified == 1) {
     ok = yesnoWindow(mylist, WMODIFIED_MSG, CONFIRMWTITLE);
     data.index = OPTION_NIL;
@@ -1197,7 +1207,10 @@ int confirmation() {
 int about_info() {
   int     ok = 0;
   char    msg[100];
-  writeBuffertoDisplay(editBuffer);
+  if (forceBufferUpdate == 1) {
+    writeBuffertoDisplay(editBuffer);
+    forceBufferUpdate = 0;
+  }
   msg[0] = '\0';
   strcat(msg, ABOUT_ASC_1);
   strcat(msg, ABOUT_ASC_2);
@@ -1214,7 +1227,11 @@ int about_info() {
 int help_info() {
   int     ok = 0;
   char    msg[500];
-  writeBuffertoDisplay(editBuffer);
+  if (forceBufferUpdate == 1) {
+    writeBuffertoDisplay(editBuffer);
+    forceBufferUpdate = 0;
+  }
+ //writeBuffertoDisplay(editBuffer);
   msg[0] = '\0';
   strcat(msg, HELP1);		//located in user_inter.h
   strcat(msg, HELP2);		//located in user_inter.h
@@ -1243,7 +1260,11 @@ void drop_down(char *kglobal) {
    so as to break vertical menu and start the adjacent menu
    kglobal is changed by the menu functions.
 */
-  writeBuffertoDisplay(editBuffer);
+  if (forceBufferUpdate == 1) {
+    writeBuffertoDisplay(editBuffer);
+    forceBufferUpdate = 0;
+  }
+ //  writeBuffertoDisplay(editBuffer);
   do {
     if(*kglobal == K_ESCAPE) {
       //Exit drop-down menu with ESC           

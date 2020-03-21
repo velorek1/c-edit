@@ -22,7 +22,7 @@ Last modified: 14/04/2019 Rename headers
 #include "keyb.h"
 
 //HELP MESSAGE
-#define HELP1 "ALT-X: EXIT PROGRAM  |   F1 OR ALT-H: HELP \n"
+#define HELP1 "ALT-X: EXIT PROGRAM  |   F1: HELP \n"
 #define HELP2 "CTRL-L: OPEN MENUS   |   F2: OPEN MENUS \n"
 #define HELP3 "ALT-O: OPEN FILE     |   F3: REFRESH SCREEN \n"
 #define HELP4 "ALT-N: NEW FILE      |   F4: ABOUT DIALOG \n"
@@ -81,8 +81,10 @@ extern int EDIT_FORECOLOR;
 extern int STATUSBAR;
 extern int STATUSMSG;
 extern int MENU_PANEL;
+extern int MENU2_PANEL;
 extern int MENU_SELECTOR;
 extern int MENU_FOREGROUND0;
+extern int MENU2_FOREGROUND0;
 extern int MENU_FOREGROUND1;
 extern int EDITWINDOW_BACK;
 extern int EDITWINDOW_FORE;

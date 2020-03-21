@@ -45,6 +45,7 @@ LAST MODIFIED : 14/04/2019 - Rename headers
 #define OPTION_5 4
 #define OPTION_NIL -1		//Reset option
 #define CONFIRMATION 1
+#define CANCEL 2
 
 // DISPLAY CONSTANTS
 #define FILL_CHAR 32
@@ -59,8 +60,10 @@ int EDIT_FORECOLOR=F_WHITE;
 int STATUSBAR =B_BLACK;
 int STATUSMSG =F_WHITE;
 int MENU_PANEL =B_WHITE;
+int MENU2_PANEL = B_BLACK;
 int MENU_SELECTOR =B_RED;
 int MENU_FOREGROUND0 =F_BLACK;
+int MENU2_FOREGROUND0 = F_WHITE;
 int MENU_FOREGROUND1= F_WHITE;
 int EDITWINDOW_BACK= B_BLUE;
 int EDITWINDOW_FORE= F_WHITE;
@@ -107,14 +110,15 @@ void loadmenus(LISTCHOICE * mylist, int choice) {
   }
 
   if(choice == YESNO_MENU) {
-    add_item(mylist, "<YES>", (columns / 2) - 6, (rows / 2) + 2,MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
-    add_item(mylist, "<NO>", (columns / 2) + 4, (rows / 2) + 2, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "[YES]", (columns / 2) - 11, (rows / 2) + 2, MENU2_PANEL, MENU2_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "[NO]", (columns / 2) - 3, (rows / 2) + 2,  MENU2_PANEL, MENU2_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "[CANCEL]", (columns / 2) + 4, (rows / 2) + 2,  MENU2_PANEL, MENU2_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
   }
   if(choice == OK_MENU) {
-    add_item(mylist, "<OK>", (columns / 2) - 1, (rows / 2) + 2, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "[OK]", (columns / 2) - 1, (rows / 2) + 2, MENU2_PANEL, MENU2_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
   }
   if(choice == OK_MENU2) {
-    add_item(mylist, "<OK>", (columns / 2) - 1, (rows / 2) + 3, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+    add_item(mylist, "[OK]", (columns / 2) - 1, (rows / 2) + 3, MENU2_PANEL, MENU2_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
   }
   if(choice == COLORS_MENU) {
     add_item(mylist, "C-Edit Theme", (columns / 2) - 6, (rows / 2) - 2, 
@@ -365,6 +369,8 @@ int yesnoWindow(LISTCHOICE * mylist, char *message, char *windowTitle) {
   free_list(mylist);
   if(data.index == OPTION_1)
     ok = CONFIRMATION;		//Confirmation has been given
+  if(data.index == OPTION_3)
+    ok = CANCEL;
   close_window();
   return ok;
 }
@@ -405,8 +411,10 @@ void setColorScheme(int colorCode)
       STATUSBAR =B_BLACK;
       STATUSMSG =F_WHITE;
       MENU_PANEL =B_WHITE;
+      MENU2_PANEL =B_BLACK;
       MENU_SELECTOR = B_RED;
       MENU_FOREGROUND0 =F_BLACK;
+      MENU2_FOREGROUND0 =F_WHITE;
       MENU_FOREGROUND1= F_WHITE;
       EDITWINDOW_BACK= B_BLUE;
       EDITWINDOW_FORE= F_WHITE;
@@ -423,8 +431,10 @@ void setColorScheme(int colorCode)
       STATUSBAR =B_CYAN;
       STATUSMSG =F_BLACK;
       MENU_PANEL =B_WHITE;
+      MENU2_PANEL =B_WHITE;
       MENU_SELECTOR = B_BLACK;
       MENU_FOREGROUND0 = F_BLACK;
+      MENU2_FOREGROUND0 = F_BLACK;
       MENU_FOREGROUND1= F_WHITE;
       EDITWINDOW_BACK= B_BLACK;
       EDITWINDOW_FORE= F_WHITE;
@@ -441,8 +451,10 @@ void setColorScheme(int colorCode)
       STATUSBAR =B_BLUE;
       STATUSMSG =F_WHITE;
       MENU_PANEL =B_BLACK;
+      MENU2_PANEL =B_BLACK;
       MENU_SELECTOR = B_WHITE;
       MENU_FOREGROUND0 = F_WHITE;
+      MENU2_FOREGROUND0 = F_WHITE;
       MENU_FOREGROUND1 = F_BLACK;
       EDITWINDOW_BACK= B_BLACK;
       EDITWINDOW_FORE= F_WHITE;
@@ -516,7 +528,7 @@ int helpWindow(LISTCHOICE * mylist, char *message, char *windowTitle) {
       }
     }
   }
-  add_item(mylist, "<OK>", (columns / 2)-2, window_y2-1, MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
+  add_item(mylist, "[OK]", (columns / 2)-2, window_y2-1, MENU2_PANEL, MENU2_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1);
   start_hmenu(&data);
   free_list(mylist);
   close_window();

@@ -180,15 +180,29 @@ void displayItem2(LISTBOX * aux, SCROLLDATA * scrollData, int select)
   switch (select) {
 
     case SELECT_ITEM:
-      gotoxy(scrollData->wherex, scrollData->selector);
-      outputcolor(scrollData->foreColor1, scrollData->backColor1);
-      printf("%s\n", aux->item);
+      if (aux->index != 0) {
+        gotoxy(scrollData->wherex, scrollData->selector);
+        outputcolor(scrollData->foreColor1, scrollData->backColor1);
+        printf("%s\n", aux->item);
+      }
+      else{//First item is a button
+        gotoxy(scrollData->wherex, scrollData->selector);
+        outputcolor(scrollData->foreColor1, B_CYAN);
+        printf("%s\n", aux->item);      
+      }
       break;
 
     case UNSELECT_ITEM:
-      gotoxy(scrollData->wherex, scrollData->selector);
-      outputcolor(scrollData->foreColor0, scrollData->backColor0);
-      printf("%s\n", aux->item);
+      if (aux->index != 0) {
+        gotoxy(scrollData->wherex, scrollData->selector);
+        outputcolor(scrollData->foreColor0, scrollData->backColor0);
+        printf("%s\n", aux->item);
+      }
+      else{ //First item is a button
+        gotoxy(scrollData->wherex, scrollData->selector);
+        outputcolor(scrollData->foreColor0, scrollData -> backColor0);
+        printf("%s\n", aux->item);       
+      }
       break;
   }
 }
@@ -348,8 +362,8 @@ unselecting previous item
       //cleanLine(window_y1 + 1, MENU_PANEL, MENU_FOREGROUND0, window_x1 + 1, window_x2);
       //outputcolor(MENU_FOREGROUND0, MENU_PANEL);
       gotoxy(window_x1 + 3, window_y2 - 1);
-      outputcolor(F_BLUE, MENU_PANEL);
-      printf("    [%d/%d]     ", aux->index, scrollData->listLength - 1);
+      outputcolor(MENU_FOREGROUND0, B_CYAN);
+      printf("    [%d/%d]    ", aux->index, scrollData->listLength - 1);
 
       //Highlight new item
       displayItem2(aux, scrollData, SELECT_ITEM);
@@ -378,8 +392,8 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
   //gotoxy(window_x1 + 2, window_y1 + 1);
   //printf("Open File: w/s ^/v");
   gotoxy(window_x1 + 3, window_y2 - 1);
-  outputcolor(F_BLUE, MENU_PANEL);
-  printf("    [%d/%d]     ", aux->index, scrollData->listLength - 1);
+  outputcolor(MENU_FOREGROUND0, B_CYAN);
+  printf("    [%d/%d]    ", aux->index, scrollData->listLength - 1);
 
   if(scrollData->scrollDirection == DOWN_SCROLL
      && scrollData->currentListIndex != 0) {
@@ -481,6 +495,7 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
           ch = control;         
       }
       }
+ // if (ch == K_TAB) break;
   if(ch == K_ENTER || ch == K_ENTER2)		// enter key
   {
     //Pass data of last item selected.
@@ -551,6 +566,7 @@ char listBox(LISTBOX * head,
       loadlist(aux, scrollData, currentListIndex);
       gotoIndex(&aux, scrollData, currentListIndex);
       ch = selectorMenu(aux, scrollData);
+      //if (ch == K_TAB) break;
     } while(ch != K_ENTER);
 
   } else {
@@ -591,11 +607,11 @@ int listFiles(LISTBOX ** listBox1, char *directory) {
   int     lenDir;		//length of directory
 
   //Add elements to switch directory at the beginning for convenience.
-  strcpy(temp, "|CLOSE WINDOW|");
+  strcpy(temp, "[CLOSE WINDOW]");
   //Add spaces
   addSpaces(temp);
   *listBox1 =
-      addend(*listBox1, newelement(temp, "|CLOSE WINDOW|", DIRECTORY));
+      addend(*listBox1, newelement(temp, "[CLOSE WINDOW]", DIRECTORY));
   strcpy(temp, CHANGEDIR);
   //Add spaces
   addSpaces(temp);
@@ -652,6 +668,7 @@ int listFiles(LISTBOX ** listBox1, char *directory) {
 	    temp[i] = dir->d_name[i];
 	  }
 	} else {
+	  cleanString(temp, MAX_ITEM_LENGTH);
 	  strcpy(temp, dir->d_name);
 	  //Add spaces
 	  addSpaces(temp);
@@ -739,8 +756,8 @@ void openFileDialog(SCROLLDATA * openFileData) {
   get_terminal_dimensions(&rows, &columns);
   //Check if the screen is active in memory first.
 
-  window_y1 = (rows / 2) - 6;
-  window_y2 = (rows / 2) + 6;
+  window_y1 = (rows / 2) - 7;
+  window_y2 = (rows / 2) + 7;
   window_x1 = (columns / 2) - 10;
   window_x2 = (columns / 2) + 10;
 
@@ -757,6 +774,7 @@ void openFileDialog(SCROLLDATA * openFileData) {
     //Draw a horizontal line
     write_ch(i, window_y1 + 2, NHOR_LINE, MENU_PANEL, MENU_FOREGROUND0);
   }
+
   //Corners of lines
   write_ch(window_x1, window_y1 + 2, NLOWER_LEFT_CORNER, MENU_PANEL, MENU_FOREGROUND0);
   write_ch(window_x2, window_y1 + 2, NLOWER_RIGHT_CORNER, MENU_PANEL,
@@ -765,29 +783,42 @@ void openFileDialog(SCROLLDATA * openFileData) {
   write_str(window_x1 + 2, window_y1 + 1,"Open File: w/s ^/v",MENU_FOREGROUND0, MENU_PANEL);
 */
   update_screen();
+  for (i=window_y1+1; i<window_y2-1;i++){
+    gotoxy(window_x1 + 1, i);
+    outputcolor(MENU_FOREGROUND0, MENU_PANEL);
+    printf("                   ");
+  }
 
+  outputcolor(MENU2_FOREGROUND0, B_CYAN);
+  gotoxy(window_x1 + 1, window_y2-1);
+  printf("                   ");
   do {
     //Add items to list
     listFiles(&listBox1, newDir);
     ch = listBox(listBox1, window_x1 + 3, window_y1 + 1, &scrollData,
-		 MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1, 10);
+		 MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1, 12);
    // deleteList(&listBox1);
-
+    //if (ch == K_TAB) break;
+        
     //Clean all lines on the window
     for(i = window_y1 + 3; i < window_y2; i++) {
       cleanLine(i, MENU_PANEL, MENU_FOREGROUND0, window_x1 + 1, window_x2);
     }
+    outputcolor(MENU2_FOREGROUND0, B_CYAN);
+    gotoxy(window_x1 + 1, window_y2-1);
+    printf("                   ");
     //Change Dir. New directory is copied in newDir
     changeDir(&scrollData, fullPath, newDir);
 
     //Display current path
-    write_str(window_x1 + 1, window_y1 + 1, fullPath, MENU_PANEL, MENU_FOREGROUND0);
+    write_str(window_x1 + 1, window_y1 + 1, fullPath, MENU2_PANEL, MENU2_FOREGROUND0);
 
     //Scroll Loop exit conditions
     if(scrollData.itemIndex == 0)
       exitFlag = 1;		//First item is selected
     if(ch == K_ENTER && scrollData.isDirectory == FILEITEM)
       exitFlag = 1;		//File selected
+    //if (ch == K_TAB) break;
     openFileData->item = scrollData.item;
     openFileData->itemIndex = scrollData.itemIndex;
     openFileData->path = scrollData.path;

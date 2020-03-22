@@ -10,6 +10,7 @@
    Last modified : 11/1/2019 - Switch to readch() instead of getch()
                    06/04/2019 - Corrected all memory leaks
 		   14/04/2019 - Rename headers
+		   22/04/2020 - Added Set File to Open
    Coded by Velorek.
    Target OS: Linux.                                                  */
 /*====================================================================*/
@@ -180,12 +181,12 @@ void displayItem2(LISTBOX * aux, SCROLLDATA * scrollData, int select)
   switch (select) {
 
     case SELECT_ITEM:
-      if (aux->index != 0) {
+      if (aux->index != 0 && aux->index != 1) {
         gotoxy(scrollData->wherex, scrollData->selector);
         outputcolor(scrollData->foreColor1, scrollData->backColor1);
         printf("%s\n", aux->item);
       }
-      else{//First item is a button
+      else{//First&second items are buttons
         gotoxy(scrollData->wherex, scrollData->selector);
         outputcolor(scrollData->foreColor1, B_CYAN);
         printf("%s\n", aux->item);      
@@ -193,12 +194,12 @@ void displayItem2(LISTBOX * aux, SCROLLDATA * scrollData, int select)
       break;
 
     case UNSELECT_ITEM:
-      if (aux->index != 0) {
+      if (aux->index != 0 && aux->index != 1) {
         gotoxy(scrollData->wherex, scrollData->selector);
         outputcolor(scrollData->foreColor0, scrollData->backColor0);
         printf("%s\n", aux->item);
       }
-      else{ //First item is a button
+      else{ //First and second items are buttons
         gotoxy(scrollData->wherex, scrollData->selector);
         outputcolor(scrollData->foreColor0, scrollData -> backColor0);
         printf("%s\n", aux->item);       
@@ -363,7 +364,8 @@ unselecting previous item
       //outputcolor(MENU_FOREGROUND0, MENU_PANEL);
       gotoxy(window_x1 + 3, window_y2 - 1);
       outputcolor(MENU_FOREGROUND0, B_CYAN);
-      printf("    [%d/%d]    ", aux->index, scrollData->listLength - 1);
+      if (aux->index != 0 && aux->index != 1) printf("    [%d/%d]    ", aux->index-1, scrollData->listLength - 2);
+      else printf("               ");
 
       //Highlight new item
       displayItem2(aux, scrollData, SELECT_ITEM);
@@ -393,7 +395,8 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
   //printf("Open File: w/s ^/v");
   gotoxy(window_x1 + 3, window_y2 - 1);
   outputcolor(MENU_FOREGROUND0, B_CYAN);
-  printf("    [%d/%d]    ", aux->index, scrollData->listLength - 1);
+  if (aux->index != 0 && aux->index != 1) printf("    [%d/%d]    ", aux->index-1, scrollData->listLength - 2);
+  else printf("               ");
 
   if(scrollData->scrollDirection == DOWN_SCROLL
      && scrollData->currentListIndex != 0) {
@@ -612,6 +615,11 @@ int listFiles(LISTBOX ** listBox1, char *directory) {
   addSpaces(temp);
   *listBox1 =
       addend(*listBox1, newelement(temp, "[CLOSE WINDOW]", DIRECTORY));
+  strcpy(temp, "[SET FILENAME]");
+  //Add spaces
+  addSpaces(temp);
+ *listBox1 =
+      addend(*listBox1, newelement(temp, "[SET FILENAME]", DIRECTORY));
   strcpy(temp, CHANGEDIR);
   //Add spaces
   addSpaces(temp);
@@ -710,6 +718,22 @@ void changeDir(SCROLLDATA * scrollData, char fullPath[MAX],
     }
   }
 }
+int setFileName(char fileName[MAX]) {
+  char    tempFile[MAX];
+  int     ok, count;
+
+  clearString(tempFile, MAX);
+
+  ok = 0;
+  count = inputWindow("Set file:", tempFile, "[-] C-EDIT INFO");
+  if(count > 0) {
+    //Check whether file exists and create file.
+      strcpy(fileName, tempFile);
+      ok = 1;
+  }
+  return ok;
+}
+
 
 /* ---------------- */
 /* Main             */
@@ -731,10 +755,13 @@ void openFileDialog(SCROLLDATA * openFileData) {
   SCROLLDATA scrollData;
   char    ch;
   char    fullPath[MAX];
+  char	  fileName[MAX];
   char    newDir[MAX];
   int     exitFlag = 0;
-  int     i;
+  int     i,ok;
   int     rows, columns;
+  LISTCHOICE optionHandle;
+
 //init values
   scrollData.scrollActive=0;	//To know whether scroll is active or not.
   scrollData.scrollLimit=0;		//Last index for scroll.
@@ -769,20 +796,8 @@ void openFileDialog(SCROLLDATA * openFileData) {
   //Directories loop
   draw_window(window_x1, window_y1, window_x2, window_y2, MENU_PANEL, MENU_FOREGROUND0, WINDOW_TITLEB,1,1);
   write_str((window_x2-window_x1) /2 + window_x1 - (strlen(OPENWTITLE)/2) , window_y1-1, OPENWTITLE, WINDOW_TITLEB, WINDOW_TITLEF);	
-/*
-  for(i = window_x1 + 1; i < window_x2; i++) {
-    //Draw a horizontal line
-    write_ch(i, window_y1 + 2, NHOR_LINE, MENU_PANEL, MENU_FOREGROUND0);
-  }
-
-  //Corners of lines
-  write_ch(window_x1, window_y1 + 2, NLOWER_LEFT_CORNER, MENU_PANEL, MENU_FOREGROUND0);
-  write_ch(window_x2, window_y1 + 2, NLOWER_RIGHT_CORNER, MENU_PANEL,
-	   MENU_FOREGROUND0);
-  cleanLine(window_y1 + 1, MENU_PANEL, MENU_FOREGROUND0, window_x1 + 1, window_x2);
-  write_str(window_x1 + 2, window_y1 + 1,"Open File: w/s ^/v",MENU_FOREGROUND0, MENU_PANEL);
-*/
   update_screen();
+ 
   for (i=window_y1+1; i<window_y2-1;i++){
     gotoxy(window_x1 + 1, i);
     outputcolor(MENU_FOREGROUND0, MENU_PANEL);
@@ -797,9 +812,31 @@ void openFileDialog(SCROLLDATA * openFileData) {
     listFiles(&listBox1, newDir);
     ch = listBox(listBox1, window_x1 + 3, window_y1 + 1, &scrollData,
 		 MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1, 12);
-   // deleteList(&listBox1);
-    //if (ch == K_TAB) break;
         
+
+    //Scroll Loop exit conditions
+    if(scrollData.itemIndex == 0)
+      exitFlag = 1;		//First item is selected
+
+    //Second item is selected - set file
+    if(scrollData.itemIndex == 1)
+    {
+       ok = setFileName(fileName);
+	if (ok==1) {
+	   //Let's send data to main module
+	    strcpy(scrollData.item, "\0");
+	    strcpy(scrollData.item, fileName);
+	    strcpy(scrollData.path, "\0");
+	    strcpy(scrollData.path, fileName);
+   	    exitFlag = 1;
+	}     
+	
+    } else
+    {
+      //Change Dir. New directory is copied in newDir
+      changeDir(&scrollData, fullPath, newDir);
+    }
+    
     //Clean all lines on the window
     for(i = window_y1 + 3; i < window_y2; i++) {
       cleanLine(i, MENU_PANEL, MENU_FOREGROUND0, window_x1 + 1, window_x2);
@@ -807,15 +844,7 @@ void openFileDialog(SCROLLDATA * openFileData) {
     outputcolor(MENU2_FOREGROUND0, B_CYAN);
     gotoxy(window_x1 + 1, window_y2-1);
     printf("                   ");
-    //Change Dir. New directory is copied in newDir
-    changeDir(&scrollData, fullPath, newDir);
-
-    //Display current path
-    write_str(window_x1 + 1, window_y1 + 1, fullPath, MENU2_PANEL, MENU2_FOREGROUND0);
-
-    //Scroll Loop exit conditions
-    if(scrollData.itemIndex == 0)
-      exitFlag = 1;		//First item is selected
+ 
     if(ch == K_ENTER && scrollData.isDirectory == FILEITEM)
       exitFlag = 1;		//File selected
     //if (ch == K_TAB) break;

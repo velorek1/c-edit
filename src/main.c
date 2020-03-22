@@ -55,6 +55,7 @@ Last modified : 21/03/2020 - TABS ARE CONVERTED INTO SPACES
 #define WINFO_SIZE "-File size: "
 #define WINFO_SIZE2 "\n-No. of lines: "
 #define WINFO_SIZE3 "\n-File name: "
+#define WCHECKFILE2_MSG " File does not exist!  \n\n A new buffer will be created. \n"
 #define WCHECKFILE_MSG " This file isn't a  \n text file. Program \n may crash. Open anyway?"
 #define WINFONOTYET_MSG "Not implemented yet!"
 #define WCHECKLINES_MSG " File longer than 3000 \n lines. You'll view those \n lines as read Mode! "
@@ -982,7 +983,7 @@ int i,j;
       gotoxy(i,j);
       outputcolor(EDITAREACOL,EDITAREACOL);
       printf("%c",FILL_CHAR);
-      flush_cell(i,j);
+      write_ch(i,j,FILL_CHAR,EDITAREACOL,EDITWINDOW_FORE);
      }
   for(i = 2; i < columns; i++) {
     write_ch(i, 2, NHOR_LINE, EDITWINDOW_BACK, EDITWINDOW_FORE);	//horizontal line box-like char
@@ -992,6 +993,7 @@ int i,j;
 	    MENU_PANEL, MENU_FOREGROUND0);
   writeBuffertoDisplay(editBuffer);
   update_screen();
+  update_smart();
 }
  
 /*-------------------*/
@@ -1061,6 +1063,7 @@ void filemenu() {
   if(data.index == OPTION_2) {
     //External Module - Open file dialog.
     openFileHandler();
+    //flush_editarea();
   }
   if(data.index == OPTION_3) {
     //Save option
@@ -1533,8 +1536,15 @@ int openFileHandler() {
         free(openFileData.path);
   }
   openFileDialog(&openFileData);
-  //Update new global file name
+ //Update new global file name
+  //refresh_screen(1);
+  flush_editarea();
+  writeBuffertoDisplay(editBuffer);
   if(openFileData.itemIndex != 0) {
+    //check if file exists
+    if (!file_exists(openFileData.path)) {
+	alertWindow(mylist, WCHECKFILE2_MSG, INFOWTITLE);
+    }
     //Change current File Name 
     //if the index is different than CLOSE_WINDOW
     clearString(oldFile, MAX_TEXT);

@@ -101,5 +101,6 @@ void    changeDir(SCROLLDATA * scrollData, char fullPath[MAX],
 		  char newDir[MAX]);
 //OPEN FILE DIALOG
 void    openFileDialog(SCROLLDATA * openFileData);
+int	setFileName(char fileName[MAX]);
 
 #endif

@@ -991,7 +991,7 @@ int i,j;
   //Center and diplay file name
   write_str((columns / 2) - (strlen(currentFile) / 2), 2, currentFile,
 	    MENU_PANEL, MENU_FOREGROUND0);
-  writeBuffertoDisplay(editBuffer);
+  //writeBuffertoDisplay(editBuffer);
   update_screen();
   update_smart();
 }
@@ -1544,7 +1544,6 @@ int openFileHandler() {
  //Update new global file name
   //refresh_screen(1);
   flush_editarea();
-  writeBuffertoDisplay(editBuffer);
   if(openFileData.itemIndex != 0) {
     //check if file exists
     if (!file_exists(openFileData.path)) {
@@ -1561,7 +1560,10 @@ int openFileHandler() {
     if(filePtr != NULL)
       closeFile(filePtr);
     handleopenFile(&filePtr, currentFile, oldFile);
-  }
+  } 
+  
+  //Write current buffer	
+  writeBuffertoDisplay(editBuffer);
   return 1;
 }
 

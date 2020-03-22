@@ -1530,6 +1530,11 @@ int newDialog(char fileName[MAX_TEXT]) {
 int openFileHandler() {
   char    oldFile[MAX_TEXT];
   chdir(currentPath);		//Go back to original path
+  //Update screen if not scrolling
+  if (forceBufferUpdate == 1) {
+    writeBuffertoDisplay(editBuffer);
+    forceBufferUpdate = 0;
+  } 
   //free current item if it exists
   if (openFileData.itemIndex != 0){
         free(openFileData.item);

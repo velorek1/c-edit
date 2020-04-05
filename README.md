@@ -3,6 +3,9 @@ C-EDIT Project in C language (NO NCURSES)
 C-EDIT for linux - IN PROGRESS - A linux text editor in the style of the MSDOS EDIT - WITHOUT USING NCURSES
 * WARNING: DO NOT EDIT YOUR PRECIOUS FILES WITH THIS EDITOR!!
 
+ON IPFS:
+   * https://ipfs.io/ipfs/Qmcowz4JV65qGS7qNmyfXaTNJoTKjaAx1tz9tRLKQa9azA
+   
 If you want to support this project:
 https://tippin.me/@Velorek
 

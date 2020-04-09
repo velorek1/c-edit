@@ -519,9 +519,13 @@ int refresh_screen(int force) {
       create_screen();		//create new structure 
       main_screen();		//Refresh screen in case of resize
       checkScrollValues(editScroll.totalLines);      //Update scroll values
+      writeBuffertoDisplay(editBuffer);
+       update_screen();
     } else
       //only update edit area to avoid flickering effect
        flush_editarea();
+       writeBuffertoDisplay(editBuffer);
+       update_screen();
      return 1;
   } else {
     return 0;

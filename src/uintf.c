@@ -221,6 +221,7 @@ int textbox(int wherex, int wherey, int displayLength,
       if (positionx>0 && charCount>0){
        positionx--;
        charCount--;
+       text[charCount] = '\0';
        write_ch(positionx + 1, wherey, '.', backcolor, textcolor);
        if (positionx < limitCursor-2) write_ch(positionx + 2, wherey, '.', backcolor, textcolor);
        update_screen();

@@ -233,6 +233,7 @@ int textbox(int wherex, int wherey, int displayLength,
 
     //ENTER OR TAB FINISH LOOP
   } while(exitFlag != 1);
+  text[charCount] = '\0';
   resetch();
   return charCount;
 }

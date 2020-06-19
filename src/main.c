@@ -290,6 +290,7 @@ int main(int argc, char *argv[]) {
 
     //update_screen();
     if(keypressed == 1) {
+      keypressed = 0;
       /* Process SPECIAL KEYS and other ESC-related issues */
       esc_key = special_keys(&cursorX, &cursorY, ch);
 
@@ -309,6 +310,7 @@ int main(int argc, char *argv[]) {
       }
     } else {
       //Keypressed = 0 - Reset values
+      resetch();
       oldX = cursorX;
       oldY = cursorY;
       esc_key = 0;

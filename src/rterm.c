@@ -24,7 +24,7 @@ LAST MODIFIED : 14/04/2019 Rename Headers
 /*====================================================================*/
 
 struct winsize max;
-static struct termios newp, failsafe;
+static struct termios term,term2, failsafe;
 static int peek_character = -1;
 
 /*====================================================================*/
@@ -49,35 +49,34 @@ int resetTerm() {
   return 0;
 }
 
+
 /*--------------------------------------.*/
 /* Detect whether a key has been pressed.*/
 /*---------------------------------------*/
-int kbhit() {
-  unsigned char ch;
-  int     nread;
-  // tcgetattr(0, &old);               /* grab old terminal i/o settings */
-  if(peek_character != -1)
-    return 1;
-  newp.c_cc[VMIN] = 0;
-  tcsetattr(0, TCSANOW, &newp);
-  nread = read(0, &ch, 1);
-  newp.c_cc[VMIN] = 1;
-  tcsetattr(0, TCSANOW, &newp);
-  if(nread == 1) {
-    peek_character = ch;
-    return 1;
-  }
-  return 0;
-}
 
+int kbhit()
+{
+    if(peek_character != -1)
+    return 1;
+
+    tcgetattr(0, &term);
+    term2.c_lflag &= ~ICANON;
+    tcsetattr(0, TCSANOW, &term2);
+
+    int byteswaiting;
+    ioctl(0, FIONREAD, &byteswaiting);
+
+    tcsetattr(0, TCSANOW, &term);
+
+    return byteswaiting > 0;
+}
 
 /*----------------------*/
 /*Read char with control*/
 /*----------------------*/
 int readch() {
   char    ch;
-
-  if(peek_character != -1) {
+ if(peek_character != -1) {
     ch = peek_character;
     peek_character = -1;
     return ch;
@@ -88,11 +87,10 @@ int readch() {
 
 void resetch() {
 //Clear ch  
-  newp.c_cc[VMIN] = 0;
-  tcsetattr(0, TCSANOW, &newp);
+  term.c_cc[VMIN] = 0;
+  tcsetattr(0, TCSANOW, &term);
   peek_character = 0;
 }
-
 /*------------------------------------------ */
 /* Read 1 character - echo defines echo mode */
 /*------------------------------------------ */

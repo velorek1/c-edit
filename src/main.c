@@ -68,8 +68,8 @@ Last modified : 21/03/2020 - TABS ARE CONVERTED INTO SPACES
 #define TAB_DISTANCE 8		//How many spaces TAB key will send.
 #define START_CURSOR_X 2
 #define START_CURSOR_Y 3
-#define TIME_MS 3000
-#define TIME_CREDITS 30000
+#define TIME_MS 300
+#define TIME_CREDITS 3000
 #define LIMIT_TIMER 10
 #define ROWS_FAILSAFE 25
 #define COLUMNS_FAILSAFE 80
@@ -310,7 +310,7 @@ int main(int argc, char *argv[]) {
       }
     } else {
       //Keypressed = 0 - Reset values
-      resetch();
+      //resetch();
       oldX = cursorX;
       oldY = cursorY;
       esc_key = 0;

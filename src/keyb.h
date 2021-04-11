@@ -5,7 +5,7 @@ Module to handle keyboard input in Linux and create
 a further layer of abstraction.
 @author : Velorek
 @version : 1.0  
-Last modified: 14/04/2019 Rename Headers                                                                
+Last modified: 11/03/2021 +Added home/end keys                                                                
 ========================================================================
 */
 
@@ -45,6 +45,10 @@ Last modified: 14/04/2019 Rename Headers
 
 #define K_PAGEDOWN_TRAIL "\e[6~"
 #define K_PAGEUP_TRAIL "\e[5~"
+#define K_HOME_TRAIL "\e[H"
+#define K_END_TRAIL "\e[F"
+#define K_HOME_TRAIL2 "\e[1~"
+#define K_END_TRAIL2 "\e[4~"
 
 #define K_DELETE "\e[3~"
 

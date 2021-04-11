@@ -3,9 +3,8 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 21/03/2020 - TABS ARE CONVERTED INTO SPACES
-			     TEXT UI OVERHAUL
-			     SMOOTHER SCROLL ANIMATION WITH RAW OUTPUT 
+Last modified : 11/04/2021 - Added real MilliSecond timer (tm.c)
+			     Added home/end keys
 ======================================================================*/
 
 /*====================================================================*/
@@ -23,7 +22,7 @@ Last modified : 21/03/2020 - TABS ARE CONVERTED INTO SPACES
 #include "uintf.h"
 #include "fileb.h"
 #include "keyb.h"
-
+#include "tm.h"
 /*====================================================================*/
 /* CONSTANT VALUES                                                    */
 /*====================================================================*/
@@ -68,9 +67,6 @@ Last modified : 21/03/2020 - TABS ARE CONVERTED INTO SPACES
 #define TAB_DISTANCE 8		//How many spaces TAB key will send.
 #define START_CURSOR_X 2
 #define START_CURSOR_Y 3
-#define TIME_MS 300
-#define TIME_CREDITS 3000
-#define LIMIT_TIMER 10
 #define ROWS_FAILSAFE 25
 #define COLUMNS_FAILSAFE 80
 #define K_LEFTMENU -1		//Left arrow key pressed while in menu
@@ -171,7 +167,7 @@ int     exitp = 0;		// Exit flag for main loop
 int     fileModified = FILE_UNMODIFIED;	//Have we modified the buffer?
 char    timerOnOFF = 1;
 int	forceBufferUpdate = 0; //To allow a smoother scroll animation.
-
+NTIMER  _timer1; //Timer for animations and screen update
 /*====================================================================*/
 /* PROTOTYPES OF FUNCTIONS                                            */
 /*====================================================================*/
@@ -184,10 +180,10 @@ void    flush_editarea();
 void    cleanStatusBar();
 
 //Timers
-void    draw_cursor(long whereX, long whereY, long oldX, long oldY, int *timer);
-int     timer_1(int *timer1, long whereX, long whereY, char onOff);
+void    draw_cursor(long whereX, long whereY, long oldX, long oldY);
+//int     timer_1(int *timer1, long whereX, long whereY, char onOff);
+int     _tick();
 void    update_indicators();
-void    delay(long milliseconds);
 
 //Dialogs & menus
 void    filemenu();
@@ -253,6 +249,8 @@ int main(int argc, char *argv[]) {
   editScroll.bufferY = 1;
   openFileData.itemIndex = 0; //No file has been opened yet. Memory isn't freed.
   //editBuffer1 = addRear(editBuffer1, newEditCell(20,-67));
+  _timer1.ms = 30;  // Timer 1 - Clock & animation
+  _timer1.ticks = 0; 
   main_screen();		//Draw screen
   update_screen();
   save_buffer();
@@ -279,16 +277,18 @@ int main(int argc, char *argv[]) {
   
   /*------------------------MAIN PROGRAM LOOP-------------------------*/
   do {
-    /* CURSOR */
-    draw_cursor(cursorX, cursorY, oldX, oldY, &timerCursor);
-    /* Query if screen dimensions have changed and resize screen */
+    /* CURSOR is drawn in RAW MODE, i.e, directly to screen */
+    draw_cursor(cursorX, cursorY, oldX, oldY);
+    /* Query if screen dimensions have changed and if so, resize screen */
     refresh_screen(0);
+    /* Timer for animation to show system time and update screen */
+    if (timerC(&_timer1) == 1) { 
+        _tick();
+    	if (screenChanged()) update_smart();
+	save_buffer();
+    }
     /* Wait for key_pressed to read key */
     keypressed = kbhit();
-    /* Timer for animation to show system time and clean cursor */
-    timer_1(&timer1, oldX, oldY, timerOnOFF);
-
-    //update_screen();
     if(keypressed == 1) {
       keypressed = 0;
       /* Process SPECIAL KEYS and other ESC-related issues */
@@ -310,13 +310,11 @@ int main(int argc, char *argv[]) {
       }
     } else {
       //Keypressed = 0 - Reset values
-      //resetch();
       oldX = cursorX;
       oldY = cursorY;
       esc_key = 0;
       ch = 0;
       oldchar = 0;
-      //oldch = 0;
     }
   } while(exitp != EXIT_FLAG);	//exit flag for the whole program
   /*------------------------------------------------------------------*/
@@ -333,17 +331,101 @@ int main(int argc, char *argv[]) {
 /* FUNCTION DEFINITIONS                                               */
 /*====================================================================*/
 
-// TIMERS SECTION
-void delay(long milliseconds)
-{
-   long i=1;
-    while (i<milliseconds){
-      // gotoxy(1,1);
-       //outputcolor(0,37);
-       printf("\r%c",0);
-       i++;
+/*-----------------------------------------*/
+/* Draw cursor on screen and animate it    */
+/*-----------------------------------------*/
+
+void draw_cursor(long whereX, long whereY, long oldX, long oldY) {
+/* CURSOR is drawn directly to screen and not to buffer */
+  long     positionX = 0, limitCol = 0, positionY = 0, oldPositionX=0, oldPositionY=0;
+  char    currentChar = FILL_CHAR, cursorChar = FILL_CHAR;
+  char    specialChar;
+
+
+  //Calculate position
+  limitCol = findEndline(editBuffer, editScroll.bufferY-1);
+  positionX = editScroll.bufferX-1;
+  positionY = editScroll.bufferY-1;
+ //clean previous cursor  
+  if (oldX != whereX || oldY!=whereY){
+     if(positionX < limitCol || oldY!=whereY) {
+      oldPositionX = positionX+(oldX - whereX);
+      oldPositionY = positionY+(oldY - whereY);
+      currentChar = editBuffer[oldPositionY].charBuf[oldPositionX].ch;
+     } else {
+      currentChar = FILL_CHAR;
+     }
+   gotoxy(oldX, oldY);
+   outputcolor(EDIT_FORECOLOR, EDITAREACOL);
+  //Is it an accent or special char?
+    if(currentChar < 0) {
+      specialChar = editBuffer[oldPositionY].charBuf[oldPositionX].specialChar;
+      printf("%c%c", specialChar,
+	     currentChar);
+    } else {
+     //Careful with null char or enter or tab chars
+     if(currentChar == 0 || currentChar == 10 || currentChar == 9) currentChar=FILL_CHAR;
+      printf("%c", currentChar);
     }
+  }
+    
+   //draw new cursor
+    gotoxy(whereX, whereY);
+    outputcolor(EDIT_FORECOLOR, EDITAREACOL);
+    printf("|");
+    //Is the cursor at the end or in the middle of text?
+    if(positionX < limitCol) {
+      currentChar = editBuffer[positionY].charBuf[positionX].ch;
+    } else {
+      currentChar = FILL_CHAR;
+    }
+   //Display character in yellow.
+    gotoxy(whereX, whereY);
+    outputcolor(F_YELLOW, EDITAREACOL);
+    //Is it an accent or special char?
+    if(currentChar < 0) {
+      specialChar = editBuffer[positionY].charBuf[positionX].specialChar;
+      printf("%c%c", specialChar,
+	     editBuffer[positionY].charBuf[positionX].ch);
+    } else {
+     //Careful with null char or enter
+     if(currentChar == 0 || currentChar == 10) currentChar=FILL_CHAR;
+      printf("%c", currentChar);
+    }
+    resetAnsi(0);
 }
+
+/*-----------------------------------------*/
+/* Timer 1 Animation. Clock and cursor     */
+/*-----------------------------------------*/
+
+int _tick() {
+/* Timer for animations - Display time and clean cursor */
+  time_t  mytime = time(NULL);
+  char   *time_str = ctime(&mytime);
+  char    temp[4];
+  int    changed=0;
+
+  temp[0] = '[';
+  temp[1] = ANIMATION[c_animation];
+  temp[2] = ']';
+  temp[3] = '\0';
+  //save_buffer();
+    time_str[strlen(time_str) - 1] = '\0';
+    //display system time
+    write_str(columns - strlen(time_str), 1, time_str, MENU_PANEL,
+	      MENU_FOREGROUND0);
+    write_str(columns - strlen(time_str) - 5, 1, temp, MENU_PANEL,
+	      MENU_FOREGROUND0);
+    update_indicators();	//update position, indicators display
+    //update only the screen bits that change 
+    c_animation++;  //star animation
+    if(c_animation > 6)
+      c_animation = 0;
+    return 0;
+}
+
+
 /*----------------------------------------- */
 /* Update cursor position display on screen */
 /*----------------------------------------- */
@@ -381,118 +463,6 @@ void update_indicators() {
      write_str(columns-5,rows, "    ", STATUSBAR,F_BLACK);
      i=write_num(columns-5,rows, percentage, 3, STATUSBAR,F_YELLOW);
      write_ch(columns-5+i,rows, '%', STATUSBAR,F_YELLOW);
-  }
-}
-
-/*-----------------------------------------*/
-/* Timer 1 Animation. Clock and cursor     */
-/*-----------------------------------------*/
-
-int timer_1(int *timer1, long whereX, long whereY, char onOff) {
-/* Timer for animations - Display time and clean cursor */
-  time_t  mytime = time(NULL);
-  char   *time_str = ctime(&mytime);
-  char    temp[4];
-  int    changed=0;
-
-  temp[0] = '[';
-  temp[1] = ANIMATION[c_animation];
-  temp[2] = ']';
-  temp[3] = '\0';
-  //save_buffer();
-  if (onOff == 1){
-  if(*timer1 == TIME_MS) {
-    *timer1 = 0;
-    time_str[strlen(time_str) - 1] = '\0';
-    //display system time
-    write_str(columns - strlen(time_str), 1, time_str, MENU_PANEL,
-	      MENU_FOREGROUND0);
-    write_str(columns - strlen(time_str) - 5, 1, temp, MENU_PANEL,
-	      MENU_FOREGROUND0);
-    update_indicators();	//update position, indicators display
-    //update only the screen bits that change 
-    changed=screenChanged();		//update screen - main routine in timer
-    if (changed==1) {
-		update_smart();
-		save_buffer();
-		changed=0;
-	}
-    c_animation++;  //star animation
-    if(c_animation > 6)
-      c_animation = 0;
-    return 0;
-  } else {
-    *timer1 = *timer1 + 1;
-  }
-  }
-  return 1;
-}
-
-/*-----------------------------------------*/
-/* Draw cursor on screen and animate it    */
-/*-----------------------------------------*/
-
-void draw_cursor(long whereX, long whereY, long oldX, long oldY, int *timer) {
-/* CURSOR is drawn directly to screen and not to buffer */
-  long     positionX = 0, limitCol = 0, positionY = 0, oldPositionX=0, oldPositionY=0;
-  char    currentChar = FILL_CHAR, cursorChar = FILL_CHAR;
-  char    specialChar;
-
-  *timer = *timer + 1;		//increase timer counter for animation
-
-  //Calculate position
-  limitCol = findEndline(editBuffer, editScroll.bufferY-1);
-  positionX = editScroll.bufferX-1;
-  positionY = editScroll.bufferY-1;
- //clean previous cursor  
-  if (oldX != whereX || oldY!=whereY){
-     if(positionX < limitCol || oldY!=whereY) {
-      oldPositionX = positionX+(oldX - whereX);
-      oldPositionY = positionY+(oldY - whereY);
-      currentChar = editBuffer[oldPositionY].charBuf[oldPositionX].ch;
-     } else {
-      currentChar = FILL_CHAR;
-     }
-   gotoxy(oldX, oldY);
-   outputcolor(EDIT_FORECOLOR, EDITAREACOL);
-  //Is it an accent or special char?
-    if(currentChar < 0) {
-      specialChar = editBuffer[oldPositionY].charBuf[oldPositionX].specialChar;
-      printf("%c%c", specialChar,
-	     currentChar);
-    } else {
-     //Careful with null char or enter or tab chars
-     if(currentChar == 0 || currentChar == 10 || currentChar == 9) currentChar=FILL_CHAR;
-      printf("%c", currentChar);
-    }
-  }
-  if(*timer < LIMIT_TIMER) {
-    //draw new cursor
-    gotoxy(whereX, whereY);
-    outputcolor(EDIT_FORECOLOR, EDITAREACOL);
-    printf("|");
-  } else {
-    *timer = 0;			//reset timer
-    //Is the cursor at the end or in the middle of text?
-    if(positionX < limitCol) {
-      currentChar = editBuffer[positionY].charBuf[positionX].ch;
-    } else {
-      currentChar = FILL_CHAR;
-    }
-   //Display character in yellow.
-    gotoxy(whereX, whereY);
-    outputcolor(F_YELLOW, EDITAREACOL);
-    //Is it an accent or special char?
-    if(currentChar < 0) {
-      specialChar = editBuffer[positionY].charBuf[positionX].specialChar;
-      printf("%c%c", specialChar,
-	     editBuffer[positionY].charBuf[positionX].ch);
-    } else {
-     //Careful with null char or enter
-     if(currentChar == 0 || currentChar == 10) currentChar=FILL_CHAR;
-      printf("%c", currentChar);
-    }
-    resetAnsi(0);
   }
 }
 
@@ -864,6 +834,18 @@ int special_keys(long *whereX, long *whereY, char ch) {
           *whereX = oldX; 
           *whereY = START_CURSOR_Y;
       }
+     }else if(strcmp(chartrail, K_HOME_TRAIL) == 0 || strcmp(chartrail, K_HOME_TRAIL2) == 0 ) {
+           editScroll.scrollPointer = 0;
+           editScroll.bufferY = 1; 
+  	   writeBuffertoDisplay(editBuffer);
+           //*whereX = oldX; 
+           *whereY = START_CURSOR_Y;
+     }else if(strcmp(chartrail, K_END_TRAIL) == 0 || strcmp(chartrail, K_END_TRAIL2) == 0 ) {
+           editScroll.scrollPointer = editScroll.scrollLimit;
+           editScroll.bufferY = editScroll.scrollLimit+(rows-4);
+  	   writeBuffertoDisplay(editBuffer);
+           //*whereX = oldX; 
+           *whereY = rows-2;
     } else if(strcmp(chartrail, K_DELETE) == 0) {
       //delete button;
     } else if(strcmp(chartrail, K_ALT_F) == 0) {
@@ -1317,7 +1299,7 @@ void credits() {
 /* Frees memory and displays goodbye message */
   //Free selected path item/path from opfiledialog 
   int i;
- char auth[27] ="Coded by v3l0r3k 2019-2020";  
+ char auth[27] ="Coded by v3l0r3k 2019-2021";  
 if (openFileData.itemIndex != 0) {
     free(openFileData.item);
     free(openFileData.path);
@@ -1338,23 +1320,22 @@ if (openFileData.itemIndex != 0) {
   outputcolor(0, 90);
   printf("\n%s",auth);
   outputcolor(0, 37);
-  for(i=1;i<28;i++){
-     delay(TIME_CREDITS);
-     gotoxy(i,8);
-     printf("%c", auth[i-1]);
-  }
+  _timer1.ms=10;
+  _timer1.ticks=0;
+  i=0;
+
   outputcolor(0, 97);
-  for(i=1;i<28;i++){
-     delay(TIME_CREDITS);
-     gotoxy(i,8);
-     printf("%c", auth[i-1]);
-  }
-  outputcolor(0, 93);
-  for(i=10;i<17;i++){
-     delay(TIME_CREDITS);
-     gotoxy(i,8);
-     if (i%2!=0) printf("%c", auth[i-1]);
-  }
+  do{
+    if (timerC(&_timer1) == 1) { 
+       gotoxy(i,8);
+       if (i==strlen(auth)) outputcolor(0,93);
+       if (i<10 || i>16) 
+	if (i<=strlen(auth)) printf("%c", auth[i-1]);
+       printf("\n");
+       i++;
+     }
+    } while (_timer1.ticks <30);
+
   printf("\n");
   outputcolor(7, 0);
 }
@@ -1523,6 +1504,12 @@ int newDialog(char fileName[MAX_TEXT]) {
     if(ok == 1) {
       cleanBuffer(editBuffer);
       strcpy(fileName, tempFile);
+  	editScroll.scrollActiveV = VSCROLL_OFF; //Scroll is inactive.
+  	editScroll.totalLines = 1; //There is just one line active in buffer
+  	editScroll.bufferX = 1;
+  	editScroll.bufferY = 1;
+   	cursorX=START_CURSOR_X;
+    	cursorY=START_CURSOR_Y;
     }
     ok = 1;
   }

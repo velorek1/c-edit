@@ -193,6 +193,8 @@ void save_buffer() {
   bufferON = SECONDARYBUFFER_ON;	// =1
   aux = primary_start;		// Points to the first item of the first buffer
   aux2 = secondary_start;	//Points to the first item of the second buffer 
+//  memcpy(aux2,aux,sizeof(aux));
+
   for(i = 0; i < buffersize; i++) {
     //Copy buffer 1 into buffer 2.
     aux2->forecolor0 = aux->forecolor0;
@@ -202,6 +204,7 @@ void save_buffer() {
     aux2 = aux2->next;
   }
 }
+
 /*----------------------*/
 /* FLUSH primary buffer */
 /*----------------------*/

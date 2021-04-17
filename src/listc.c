@@ -119,7 +119,7 @@ void add_item(LISTCHOICE * list_identifier, char *str, int x, int y,
 /*Remove list from memory*/
 /*-----------------------*/
 /* Function to delete the entire linked list */
-void free_list(LISTCHOICE *list_identifier) 
+void free_list() 
 { 
    /* deref head_ref to get the real head */
    LISTCHOICE *cur; 
@@ -162,14 +162,13 @@ void free_list(LISTCHOICE * list_identifier) {
    with the properties specified.          */
 /*-----------------------------------------*/
 
-void display_list(LISTCHOICE * list_identifier) {
+void display_list() {
 /* 
 Displays the items contained in the list with the properties specified
 in init_list.
 until the auxiliary pointer reaches the first item again
 First item is equal to tail->next.
 */
-
   LISTCHOICE *aux;
   aux = head;
   do {

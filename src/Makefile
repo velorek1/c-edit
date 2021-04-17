@@ -1,6 +1,9 @@
+.POSIX:
 TARGET = cedit
-
-HEADERS = rterm.h listc.h scbuf.h 
+CC     = cc
+CFLAGS = -Wall -Wextra -fsigned-char 
+LDFLAGS =
+LDLIBS  =
 
 # The list of object files.
 OBJS =  main.o rterm.o listc.o scbuf.o
@@ -17,7 +20,7 @@ clean:
 	$(RM) $(TOCLEAN)
 
 cedit: $(OBJS)
-	$(CC)  $(LDFLAGS) $(OBJS) -Wall -Wextra -Os -o $(TARGET) 
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
 
 # INCLUDE DEPENDENCIES to compile depending on which
 # source has been touched.
@@ -27,6 +30,6 @@ keyb.o: keyb.c rterm.h keyb.h
 listc.o: listc.c scbuf.h keyb.h
 opfile.o: opfile.c scbuf.h rterm.h keyb.h uintf.h
 rterm.o: rterm.c 
-tm.o: tm.c 
+tm.o: tm.c tm.h
 scbuf.o: scbuf.c rterm.h keyb.h scbuf.h
 uintf.o: uintf.c scbuf.h rterm.h keyb.h listc.h uintf.h

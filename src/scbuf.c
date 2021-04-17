@@ -27,7 +27,7 @@ Last modified : 15/04/2019 ScreeChanged added + update_ch.
 #include <locale.h>
 #include <wchar.h>		/* wint_t */
 #include "rterm.h"
-#include "keyb.h"
+//#include "keyb.h"
 #include "scbuf.h"
 /*====================================================================*/
 /* CONSTANT VALUES                                                    */
@@ -64,7 +64,8 @@ Last modified : 15/04/2019 ScreeChanged added + update_ch.
 #define LOWER_LEFT_CORNER_UNICODE 9492
 #define UPPER_RIGHT_CORNER_UNICODE 9488
 #define LOWER_RIGHT_CORNER_UNICODE 9496
-
+#define SPECIAL_CHARS_SET1 -61
+#define SPECIAL_CHARS_SET2 -62
 /*====================================================================*/
 /* TYPEDEF DEFINITIONS                                                */
 /*====================================================================*/
@@ -193,8 +194,6 @@ void save_buffer() {
   bufferON = SECONDARYBUFFER_ON;	// =1
   aux = primary_start;		// Points to the first item of the first buffer
   aux2 = secondary_start;	//Points to the first item of the second buffer 
-//  memcpy(aux2,aux,sizeof(aux));
-
   for(i = 0; i < buffersize; i++) {
     //Copy buffer 1 into buffer 2.
     aux2->forecolor0 = aux->forecolor0;
@@ -204,7 +203,6 @@ void save_buffer() {
     aux2 = aux2->next;
   }
 }
-
 /*----------------------*/
 /* FLUSH primary buffer */
 /*----------------------*/
@@ -292,12 +290,9 @@ int mapChartoU8(int character) {
 
 int screenChanged() {
 
-  int     i, wherex, wherey;
-  char    tempchar;
+  int     i;
   int     changed=0;
   SCREENCELL *aux, *aux2;
-  wherey = 1;
-  wherex = 1;
   aux = primary_start;
   aux2 = secondary_start; 
   for(i = 0; i <= buffersize; i++) {
@@ -406,7 +401,7 @@ void write_ch(int x, int y, char ch, int backcolor, int forecolor) {
 void write_str(int x, int y, char *str, int backcolor, int forecolor) {
   //Writes a string of characters to buffer.
   char   *astr;
-  int     i, wherex;
+  unsigned int     i, wherex;
   wherex = x;
   //astr = (char *)malloc(sizeof(char) * strlen(str) + 1);
   astr = str;
@@ -442,7 +437,7 @@ int write_num(int x, int y, int num, int length, int backcolor,
 void update_ch(int x, int y, char ch, char specialChar, int backcolor, int forecolor) {
 //It could be interepreted as write_ch - forced update to screen
 //to be used to simplify code in update_smart.
-char tempchar=0;     
+signed char tempchar=0;     
    gotoxy(x, y);
    outputcolor(forecolor, backcolor);
    if(ch > 0)
@@ -461,7 +456,7 @@ char tempchar=0;
 	tempchar = ch * -1;	//Change negative values to positive.
 	printf("%lc", (wint_t) mapChartoU8(tempchar));	//unicode
     }
-    if(ch >= -128 && ch <= -65)
+    if(ch <= -65)
 	//Accents -61/-62 + char
 	printf("%c%c", specialChar, ch);
     }
@@ -472,7 +467,6 @@ char tempchar=0;
 
 void update_screen() {
   int     i, wherex, wherey;
-  char    tempchar;
   SCREENCELL *aux;
   wherey = 1;
   wherex = 0;

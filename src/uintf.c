@@ -241,7 +241,7 @@ int textbox(int wherex, int wherey, int displayLength,
 int infoWindow(LISTCHOICE * mylist, char *message, char *windowTitle) {
   int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
   int     ok = 0;
-  int     i = 0;
+  size_t   i = 0;
   int     ix = 0;
   int     j = 0;
   char    tempChar;
@@ -285,10 +285,8 @@ int infoWindow(LISTCHOICE * mylist, char *message, char *windowTitle) {
 
 int alertWindow(LISTCHOICE * mylist, char *message, char *windowTitle) {
   int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
-  int     tempx = 0;
-  int     titlex = 0;
   int     ok = 0;
-  int     i = 0;
+  size_t     i = 0;
   int     ix = 0;
   int     j = 0;
   char    tempChar;
@@ -334,7 +332,7 @@ int yesnoWindow(LISTCHOICE * mylist, char *message, char *windowTitle) {
 
   int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
   int     ok = 0;
-  int     i = 0;
+  size_t     i = 0;
   int     ix = 0;
   int     j = 0;
   char    tempChar;
@@ -379,9 +377,6 @@ int yesnoWindow(LISTCHOICE * mylist, char *message, char *windowTitle) {
 
 int inputWindow(char *label, char *tempFile, char *windowTitle) {
   int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
-  int     i;
-  int     tempx = 0;
-  int     titlex = 0;
   int     count = 0;
   int     rows, columns;
 
@@ -497,7 +492,7 @@ int colorsWindow(LISTCHOICE * mylist, char *windowTitle) {
 int helpWindow(LISTCHOICE * mylist, char *message, char *windowTitle) {
   int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
   int     ok = 0;
-  int     i = 0;
+  size_t     i = 0;
   int     ix = 0;
   int     j = 0;
   char    tempChar;

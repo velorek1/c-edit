@@ -45,8 +45,8 @@ typedef struct _listchoice {
 
 void    add_item(LISTCHOICE * list_identifier, char *str, int x, int y,
 		 int bcolor0, int fcolor0, int bcolor1, int fcolor1);
-void    free_list(LISTCHOICE * list_identifier);
-void    display_list(LISTCHOICE * list_identifier);
+void    free_list();
+void    display_list();
 char    start_vmenu(LISTCHOICE * list_data);
 char    start_hmenu(LISTCHOICE * list_data);
 void    move_selector(LISTCHOICE * aux, short direction);

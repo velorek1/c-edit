@@ -380,7 +380,7 @@ unselecting previous item
 
 char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
   char    ch;
-  unsigned control = 0;
+  int control = 0;
   unsigned continueScroll;
   unsigned counter = 0;
   unsigned keypressed = 0;
@@ -760,7 +760,6 @@ void openFileDialog(SCROLLDATA * openFileData) {
   int     exitFlag = 0;
   int     i,ok;
   int     rows, columns;
-  LISTCHOICE optionHandle;
 
 //init values
   scrollData.scrollActive=0;	//To know whether scroll is active or not.

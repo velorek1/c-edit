@@ -3,8 +3,10 @@
 PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
-Last modified : 11/04/2021 - Added real MilliSecond timer (tm.c)
+Last modified : 17/04/2021 - Added real MilliSecond timer (tm.c)
 			     Added home/end keys
+			     Clean -wExtra warnings
+			     Added signedchar to makefile
 ======================================================================*/
 
 /*====================================================================*/
@@ -229,10 +231,9 @@ int     createnewFile(FILE ** filePtr, char *fileName, int checkFile);
 
 int main(int argc, char *argv[]) {
   char    ch = 0, oldchar = 0;
-
+  char *ok1 = NULL;
   int     esc_key = 0;		//To control key input and scan for keycodes.
   int     keypressed = 0;
-  int     timer1 = 0;		// Timer to display animation
 
   /*------------------------INITIAL VALUES----------------------------*/
   hidecursor();
@@ -242,7 +243,8 @@ int main(int argc, char *argv[]) {
   clearString(currentFile, MAX_TEXT);
   strcpy(currentFile, UNKNOWN);
   checkConfigFile(-1);		//Check config file for colorScheme. -1 -> first time
-  getcwd(currentPath, sizeof(currentPath));	//Save current path
+  ok1=getcwd(currentPath, sizeof(currentPath));	//Save current path
+  ok1++; //to avoid warning
   editScroll.scrollActiveV = VSCROLL_OFF; //Scroll is inactive.
   editScroll.totalLines = 1; //There is just one line active in buffer
   editScroll.bufferX = 1;
@@ -284,12 +286,14 @@ int main(int argc, char *argv[]) {
     /* Timer for animation to show system time and update screen */
     if (timerC(&_timer1) == 1) { 
         _tick();
-    	if (screenChanged()) update_smart();
-	save_buffer();
+        if (screenChanged()){ 
+		update_smart();
+        	save_buffer();
+	}
     }
-    /* Wait for key_pressed to read key */
-    keypressed = kbhit();
-    if(keypressed == 1) {
+   /* Wait for key_pressed to read key */
+   keypressed = kbhit();
+   if(keypressed == 1) {
       keypressed = 0;
       /* Process SPECIAL KEYS and other ESC-related issues */
       esc_key = special_keys(&cursorX, &cursorY, ch);
@@ -338,7 +342,7 @@ int main(int argc, char *argv[]) {
 void draw_cursor(long whereX, long whereY, long oldX, long oldY) {
 /* CURSOR is drawn directly to screen and not to buffer */
   long     positionX = 0, limitCol = 0, positionY = 0, oldPositionX=0, oldPositionY=0;
-  char    currentChar = FILL_CHAR, cursorChar = FILL_CHAR;
+  char    currentChar = FILL_CHAR;
   char    specialChar;
 
 
@@ -404,7 +408,6 @@ int _tick() {
   time_t  mytime = time(NULL);
   char   *time_str = ctime(&mytime);
   char    temp[4];
-  int    changed=0;
 
   temp[0] = '[';
   temp[1] = ANIMATION[c_animation];
@@ -483,26 +486,27 @@ int refresh_screen(int force) {
      timerOnOFF=0;
   }
   else{
-  if(rows != old_rows || columns != old_columns || force == 1
-     || force == -1) {
-    if(force != -1) {
-      timerOnOFF=1;
-      free_buffer();		//delete structure from memory for resize
-      create_screen();		//create new structure 
-      main_screen();		//Refresh screen in case of resize
-      checkScrollValues(editScroll.totalLines);      //Update scroll values
-      writeBuffertoDisplay(editBuffer);
-       update_screen();
-    } else
+  if(rows != old_rows || columns != old_columns || force == 1 || force == -1) {
+      if(force != -1) {
+        timerOnOFF=1;
+        free_buffer();		//delete structure from memory for resize
+        create_screen();		//create new structure 
+        main_screen();		//Refresh screen in case of resize
+        checkScrollValues(editScroll.totalLines);      //Update scroll values
+        writeBuffertoDisplay(editBuffer);
+        update_screen();
+       } else{
       //only update edit area to avoid flickering effect
        flush_editarea();
        writeBuffertoDisplay(editBuffer);
        update_screen();
-     return 1;
+       return 1;
+       }
   } else {
     return 0;
   }
   }
+return 0;
 }
 
 
@@ -1197,7 +1201,7 @@ int confirmation() {
 
 int about_info() {
   int     ok = 0;
-  char    msg[100];
+  char    msg[105];
   if (forceBufferUpdate == 1) {
     writeBuffertoDisplay(editBuffer);
     forceBufferUpdate = 0;
@@ -1298,8 +1302,8 @@ void drop_down(char *kglobal) {
 void credits() {
 /* Frees memory and displays goodbye message */
   //Free selected path item/path from opfiledialog 
-  int i;
- char auth[27] ="Coded by v3l0r3k 2019-2021";  
+  size_t i; //to be compatible with strlen
+  char auth[27] ="Coded by v3l0r3k 2019-2021";  
 if (openFileData.itemIndex != 0) {
     free(openFileData.item);
     free(openFileData.path);
@@ -1390,7 +1394,7 @@ int writetoBuffer(EDITBUFFER editBuffer[MAX_LINES], long whereX, long whereY,
 /*--------------------------*/
 
 int writeBuffertoFile(FILE * filePtr, EDITBUFFER editBuffer[MAX_LINES]) {
-  char    tempChar, oldChar;
+  char    tempChar=0, oldChar=0;
   long     lineCounter = 0;
   long     inlineChar = 0;
   int     specialChar = 0;
@@ -1412,7 +1416,7 @@ int writeBuffertoFile(FILE * filePtr, EDITBUFFER editBuffer[MAX_LINES]) {
       }
       if(tempChar > 0) {
 	fprintf(filePtr, "%c", tempChar);
-      } else if(tempChar >= -128 && tempChar <= -65) {
+      } else {
 	//Special accents
 	fprintf(filePtr, "%c%c", specialChar, tempChar);
       }
@@ -1443,7 +1447,7 @@ int saveDialog(char fileName[MAX_TEXT]) {
 }
 
 int saveasDialog(char fileName[MAX_TEXT]) {
-  int     ok, count;
+  int     ok=0, count=0;
   char    tempFile[MAX_TEXT], tempMsg[MAX_TEXT];
   data.index = OPTION_NIL;
 
@@ -1522,7 +1526,9 @@ int newDialog(char fileName[MAX_TEXT]) {
 
 int openFileHandler() {
   char    oldFile[MAX_TEXT];
-  chdir(currentPath);		//Go back to original path
+  
+  int ok=chdir(currentPath);		//Go back to original path
+  ok++; //to avoid warning
   //Update screen if not scrolling
   if (forceBufferUpdate == 1) {
     writeBuffertoDisplay(editBuffer);
@@ -1567,8 +1573,8 @@ int openFileHandler() {
 int fileInfoDialog() {
   long    size = 0, lines = 0;
   int     i;
-  char    sizeStr[12];
-  char    linesStr[12];
+  char    sizeStr[20];
+  char    linesStr[20];
   char    tempMsg[150];
   char    pathtxt[60];
   if(filePtr != NULL) {
@@ -1592,7 +1598,7 @@ int fileInfoDialog() {
         if (i!=31) pathtxt[i] = openFileData.fullPath[i];
         else pathtxt[31] = '\n';
     }
-    pathtxt[60] = CHAR_NIL;
+    pathtxt[59] = CHAR_NIL;
     strcat(tempMsg, pathtxt);
     alertWindow(mylist, tempMsg, INFOWTITLE);
   } else {
@@ -1827,7 +1833,7 @@ int handleopenFile(FILE ** filePtr, char *fileName, char *oldFileName) {
 /*-----------------*/
 
 int createnewFile(FILE ** filePtr, char *fileName, int checkFile) {
-  int     ok;
+  int     ok=0;
 
 //Check if file exists if indicated.
   if(checkFile == 1) {

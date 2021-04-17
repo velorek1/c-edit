@@ -18,6 +18,7 @@ So far I have implemented:
 * Automatic display resizing.
 * Open file dialog with a Listbox and SCROLL capabilities to navigate and find the file to open.
 * Rudimentary Edit buffer with vertical scroll. 
+* A millisecond timer for animations.
 
 Files in /src/:
 ===============
@@ -28,6 +29,7 @@ Files in /src/:
 * opfile.c -> module that list files with scroll capabilities to select the file to open.
 * uintf.c -> module with user interface widgets: alert windows, confirmation windows, textbox, etc.
 * fileb.c -> module for single file operations.
+* tm.c -> module for a millisecond timer for animations
 * main.c -> Editor in C in the style of MSDOS EDIT (In progress).
 
 

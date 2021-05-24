@@ -6,7 +6,7 @@ Module to create a double screen buffer to control how things are
 displayed on the terminal. Simple linked list with a "cell" that 
 stores the character to be shown along with its background and 
 foreground colors. The size of our buffer will be determined by 
-rows x columns. 
+sc_rows x sc_columns. 
 Everything you want to show on screen will be printed to the 
 buffer first. Then the update routine will finally show the final 
 composition to the user.
@@ -90,7 +90,7 @@ SCREENCELL *secondary_start = NULL;	//backup secondary buffer
 SCREENCELL *secondary_end = NULL;	//backup secondary buffer
 SCREENCELL *screen, *old_screen;
 
-int     rows, columns;
+int     sc_rows, sc_columns;
 int     buffersize;
 int     bufferON = 0;		//It keeps track of whether the 2nd buffer is full (active).
 
@@ -115,12 +115,12 @@ void create_screen() {
 
   //We attempt to get terminal dimensions. If not
   //successful failsafe values (80x25) apply.
-  get_terminal_dimensions(&rows, &columns);
-  if(rows == 0)
-    rows = ROWS_FAILSAFE;
-  if(columns == 0)
-    columns = COLUMNS_FAILSAFE;
-  buffersize = rows * columns;
+  get_terminal_dimensions(&sc_rows, &sc_columns);
+  if(sc_rows == 0)
+    sc_rows = ROWS_FAILSAFE;
+  if(sc_columns == 0)
+    sc_columns = COLUMNS_FAILSAFE;
+  buffersize = sc_rows * sc_columns;
 
   // Primary Screen buffer
   if(primary_start == NULL && primary_end == NULL) {
@@ -131,8 +131,8 @@ void create_screen() {
     screen->item = FILL_CHAR;
     screen->next = NULL;
     screen->index = 0;
-    screen->rows = rows;
-    screen->columns = columns;
+    screen->sc_rows = sc_rows;
+    screen->sc_columns = sc_columns;
     primary_start = screen;	// Pointer to first cell
     primary_end = screen;	// Pointer to last/previous cell
     primary_end->next = NULL;	//Last item of the list next points to NULL
@@ -144,8 +144,8 @@ void create_screen() {
     new_cell->forecolor0 = F_WHITE;
     new_cell->item = FILL_CHAR;
     new_cell->index = i;
-    new_cell->rows = rows;	//Each cell stores screen dimensions
-    new_cell->columns = columns;
+    new_cell->sc_rows = sc_rows;	//Each cell stores screen dimensions
+    new_cell->sc_columns = sc_columns;
     primary_end->next = new_cell;
     primary_end = new_cell;
     primary_end->next = NULL;	//Last item of the list next points to NULL
@@ -159,8 +159,8 @@ void create_screen() {
     old_screen->forecolor0 = F_WHITE;
     old_screen->item = FILL_CHAR;
     old_screen->next = NULL;
-    old_screen->rows = rows;
-    old_screen->columns = columns;
+    old_screen->sc_rows = sc_rows;
+    old_screen->sc_columns = sc_columns;
     old_screen->index = 0;
     secondary_start = old_screen;	// Pointer to first cell
     secondary_end = old_screen;	// Pointer to last/previous cell
@@ -173,8 +173,8 @@ void create_screen() {
     newo_cell->forecolor0 = F_WHITE;
     newo_cell->item = FILL_CHAR;
     newo_cell->index = i;
-    newo_cell->rows = rows;	//Each cell stores screen dimensions
-    newo_cell->columns = columns;
+    newo_cell->sc_rows = sc_rows;	//Each cell stores screen dimensions
+    newo_cell->sc_columns = sc_columns;
     secondary_end->next = newo_cell;
     secondary_end = newo_cell;
     secondary_end->next = NULL;	//Last item of the list next points to NULL
@@ -324,7 +324,7 @@ char read_char(int x, int y) {
     aux = secondary_start;		// we set our auxiliary pointer at the beginning of the list.
   else
     aux = primary_start;
-  pos = (y - 1) * columns + x;	//this is the formula to calculate the position index in the screen buffer
+  pos = (y - 1) * sc_columns + x;	//this is the formula to calculate the position index in the screen buffer
  if(pos <= buffersize) {
   for(i = 0; i <= pos; i++) {
       //run through the buffer until reaching desired position
@@ -350,7 +350,7 @@ void flush_cell(int x, int y) {
     aux = secondary_start;		// we set our auxiliary pointer at the beginning of the list.
   else
     aux = primary_start;
-  pos = (y - 1) * columns + x;	//this is the formula to calculate the position index in the screen buffer
+  pos = (y - 1) * sc_columns + x;	//this is the formula to calculate the position index in the screen buffer
  if(pos <= buffersize) {
   for(i = 0; i <= pos; i++) {
       //run through the buffer until reaching desired position
@@ -372,7 +372,7 @@ void write_ch(int x, int y, char ch, int backcolor, int forecolor) {
   int     i, pos;
   SCREENCELL *aux;
   aux = primary_start;		// we set our auxiliary pointer at the beginning of the list.
-  pos = (y - 1) * columns + x;	//This is the formula to calculate the position index in the screen buffer
+  pos = (y - 1) * sc_columns + x;	//This is the formula to calculate the position index in the screen buffer
 
   if(pos <= buffersize) {
     // If it is within buffer limits, otherwise do nothing.  
@@ -479,7 +479,7 @@ void update_screen() {
    if(aux->next != NULL)
       aux = aux->next;
    wherex = wherex + 1;	//line counter
-    if(wherex == columns+1) {
+    if(wherex == sc_columns+1) {
       //new line
       wherex = 1;
       wherey = wherey + 1;
@@ -488,7 +488,7 @@ void update_screen() {
 }
 
 int update_smart() {
-//Note: if wherex = 0 then wherex=columns i
+//Note: if wherex = 0 then wherex=sc_columns i
 // and wherey--; because of the result of modulus operation
   int     i, wherex, wherey;
   int     changed=0;
@@ -497,24 +497,24 @@ int update_smart() {
   aux2 = secondary_start;
   for(i = 0; i <= buffersize; i++) {
     if(aux->item != aux2->item) {
-      wherex = aux->index % columns;
-      wherey = (int)(aux->index / columns) + 1;
-      if (wherex==0) {wherex=columns; wherey=wherey-1;}
+      wherex = aux->index % sc_columns;
+      wherey = (int)(aux->index / sc_columns) + 1;
+      if (wherex==0) {wherex=sc_columns; wherey=wherey-1;}
       update_ch(wherex,wherey,aux->item,aux->specialchar,aux->backcolor0,aux->forecolor0);
       changed=1;
     }
     if(aux->backcolor0 != aux2->backcolor0) {
-      wherex = aux->index % columns;
-      wherey = (int)(aux->index / columns) + 1;
-      if (wherex==0) {wherex=columns; wherey=wherey-1;}
+      wherex = aux->index % sc_columns;
+      wherey = (int)(aux->index / sc_columns) + 1;
+      if (wherex==0) {wherex=sc_columns; wherey=wherey-1;}
       update_ch(wherex,wherey,aux->item,aux->specialchar,aux->backcolor0,
       aux->forecolor0);
       changed=1;
     }
     if(aux->forecolor0 != aux2->forecolor0) {
-      wherex = aux->index % columns;
-      wherey = (int)(aux->index / columns) + 1;
-      if (wherex==0) {wherex=columns; wherey=wherey-1;}
+      wherex = aux->index % sc_columns;
+      wherey = (int)(aux->index / sc_columns) + 1;
+      if (wherex==0) {wherex=sc_columns; wherey=wherey-1;}
       update_ch(wherex,wherey,aux->item,aux->specialchar,aux->backcolor0,
       aux->forecolor0);
       changed=1;

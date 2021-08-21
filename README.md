@@ -2,7 +2,9 @@ C-EDIT Project in C language (NO NCURSES)
 =========================================
 C-EDIT for linux - IN PROGRESS - A linux text editor in the style of the MSDOS EDIT - WITHOUT USING NCURSES
 * WARNING: DO NOT EDIT YOUR PRECIOUS FILES WITH THIS EDITOR!!
-   
+
+I'm working on adding the Dynamic buffer(vector of lines) -> tests in https://github.com/velorek1/ceditbuf
+
 If you want to support this project:
 https://tippin.me/@Velorek
 

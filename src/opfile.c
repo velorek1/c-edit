@@ -9,8 +9,8 @@
    previous screen is painted to the terminal again.
    Last modified : 11/1/2019 - Switch to readch() instead of getch()
                    06/04/2019 - Corrected all memory leaks
-		   14/04/2019 - Rename headers
-		   22/04/2020 - Added Set File to Open
+           14/04/2019 - Rename headers
+           22/04/2020 - Added Set File to Open
    Coded by Velorek.
    Target OS: Linux.                                                  */
 /*====================================================================*/
@@ -42,11 +42,11 @@
 #define FILL_CHAR 32
 
 //Keys used.
-#define K_ENTER 13 
-#define K_ENTER2 10 
+#define K_ENTER 13
+#define K_ENTER2 10
 #define K_ESCAPE 27
-#define K_UP_ARROW 'A'		// K_ESCAPE + 'A' -> UP_ARROW
-#define K_DOWN_ARROW 'B'	// K_ESCAPE + 'B' -> DOWN_ARROW
+#define K_UP_ARROW 'A'      // K_ESCAPE + 'A' -> UP_ARROW
+#define K_DOWN_ARROW 'B'    // K_ESCAPE + 'B' -> DOWN_ARROW
 //Directories
 #define CURRENTDIR "."
 #define CHANGEDIR ".."
@@ -59,41 +59,41 @@
 /* TYPEDEF STRUCTS DEFINITIONS */
 /*====================================================================*/
 typedef struct _listbox {
-  unsigned index;		// Item number
-  char   *item;			// Item string
-  char   *path;			// Item path
-  unsigned isDirectory;		// Kind of item
-  struct _listbox *next;	// Pointer to next item
-  struct _listbox *back;	// Pointer to previous item
+  unsigned index;       // Item number
+  char   *item;         // Item string
+  char   *path;         // Item path
+  unsigned isDirectory;     // Kind of item
+  struct _listbox *next;    // Pointer to next item
+  struct _listbox *back;    // Pointer to previous item
 } LISTBOX;
 
 typedef struct _scrolldata {
-  unsigned scrollActive;	//To know whether scroll is active or not.
-  unsigned scrollLimit;		//Last index for scroll.
-  unsigned listLength;		//Total no. of items in the list
-  unsigned currentListIndex;	//Pointer to new sublist of items when scrolling.
-  unsigned displayLimit;	//No. of elements to be displayed.
-  unsigned scrollDirection;	//To keep track of scrolling Direction.
+  unsigned scrollActive;    //To know whether scroll is active or not.
+  unsigned scrollLimit;     //Last index for scroll.
+  unsigned listLength;      //Total no. of items in the list
+  unsigned currentListIndex;    //Pointer to new sublist of items when scrolling.
+  unsigned displayLimit;    //No. of elements to be displayed.
+  unsigned scrollDirection; //To keep track of scrolling Direction.
   unsigned wherex;
   unsigned wherey;
-  unsigned selector;		//Y++
-  unsigned backColor0;		//0 unselected; 1 selected
+  unsigned selector;        //Y++
+  unsigned backColor0;      //0 unselected; 1 selected
   unsigned foreColor0;
   unsigned backColor1;
   unsigned foreColor1;
-  unsigned isDirectory;		// Kind of item
+  unsigned isDirectory;     // Kind of item
   char   *item;
   char   *path;
   char    fullPath[MAX];
   unsigned itemIndex;
- // LISTBOX *head;		//store head of the list
+ // LISTBOX *head;      //store head of the list
 } SCROLLDATA;
 
 /*====================================================================*/
 /* GLOBAL VARIABLES */
 /*====================================================================*/
 
-LISTBOX *listBox1 = NULL;	//Head pointer.
+LISTBOX *listBox1 = NULL;   //Head pointer.
 int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
 
 /*====================================================================*/
@@ -104,14 +104,14 @@ int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
 /* Terminal manipulation routines */
 /* ------------------------------ */
 void cleanLine(int line, int backcolor, int forecolor, int startx,
-	       int numchars) {
+           int numchars) {
 //Cleans line of console.
   int     i;
   for(i = startx; i < numchars; i++) {
     //clean line where path is displayed.
     outputcolor(forecolor, backcolor);
     gotoxy(i, line);
-    printf("%c", FILL_CHAR);	//space
+    printf("%c", FILL_CHAR);    //space
   }
 }
 
@@ -134,25 +134,25 @@ LISTBOX *newelement(char *text, char *itemPath, unsigned itemType) {
   return newp;
 }
 
-void deleteList(LISTBOX **head) 
-{ 
+void deleteList(LISTBOX **head)
+{
    /* deref head_ref to get the real head */
-   LISTBOX *current = *head; 
-   LISTBOX *next = NULL; 
-  
-   while (current != NULL)  
-   { 
-       next = current->next; 
+   LISTBOX *current = *head;
+   LISTBOX *next = NULL;
+
+   while (current != NULL)
+   {
+       next = current->next;
        free(current->item);
        free(current->path);
        free(current);
-       current = next; 
-   } 
-    
-   /* deref head_ref to affect the real head back 
+       current = next;
+   }
+
+   /* deref head_ref to affect the real head back
       in the caller. */
-   *head = NULL; 
-} 
+   *head = NULL;
+}
 
 
 /* addend: add new LISTBOX to the end of a list  */
@@ -189,7 +189,7 @@ void displayItem2(LISTBOX * aux, SCROLLDATA * scrollData, int select)
       else{//First&second items are buttons
         gotoxy(scrollData->wherex, scrollData->selector);
         outputcolor(scrollData->foreColor1, B_CYAN);
-        printf("%s\n", aux->item);      
+        printf("%s\n", aux->item);
       }
       break;
 
@@ -202,14 +202,14 @@ void displayItem2(LISTBOX * aux, SCROLLDATA * scrollData, int select)
       else{ //First and second items are buttons
         gotoxy(scrollData->wherex, scrollData->selector);
         outputcolor(scrollData->foreColor0, scrollData -> backColor0);
-        printf("%s\n", aux->item);       
+        printf("%s\n", aux->item);
       }
       break;
   }
 }
 
 void gotoIndex(LISTBOX ** aux, SCROLLDATA * scrollData,
-	       unsigned indexAt)
+           unsigned indexAt)
 //Go to a specific location on the list.
 {
   LISTBOX *aux2;
@@ -246,9 +246,9 @@ in scrollData.
     displayItem2(aux, scrollData, UNSELECT_ITEM);
     aux = aux->next;
     counter++;
-    scrollData->selector++;	// wherey++
+    scrollData->selector++; // wherey++
   } while(counter != scrollData->displayLimit);
-  scrollData->selector = wherey;	//restore value
+  scrollData->selector = wherey;    //restore value
 }
 
 int query_length(LISTBOX ** head) {
@@ -268,7 +268,7 @@ int query_length(LISTBOX ** head) {
 }
 
 int move_display(LISTBOX ** selector, SCROLLDATA * scrollData) {
-/* 
+/*
 Creates animation by moving a selector highlighting next item and
 unselecting previous item
 */
@@ -314,48 +314,48 @@ unselecting previous item
       //Check whether we move UP or Down
       switch (scrollData->scrollDirection) {
 
-	case UP_SCROLL:
-	  //Calculate new top index if scroll is active 
-	  //otherwise it defaults to 0 (top)
-	  if(scrollData->scrollActive == SCROLL_ACTIVE)
-	    scrollControl = scrollData->currentListIndex;
-	  else
-	    scrollControl = 0;
+    case UP_SCROLL:
+      //Calculate new top index if scroll is active
+      //otherwise it defaults to 0 (top)
+      if(scrollData->scrollActive == SCROLL_ACTIVE)
+        scrollControl = scrollData->currentListIndex;
+      else
+        scrollControl = 0;
 
-	  //Move selector
-	  if(aux->back->index >= scrollControl) {
-	    scrollData->selector--;	//whereY--
-	    aux = aux->back;	//Go to previous item
-	  } else {
-	    if(scrollData->scrollActive == SCROLL_ACTIVE)
-	      continueScroll = 1;
-	    else
-	      continueScroll = 0;
-	  }
-	  break;
+      //Move selector
+      if(aux->back->index >= scrollControl) {
+        scrollData->selector--; //whereY--
+        aux = aux->back;    //Go to previous item
+      } else {
+        if(scrollData->scrollActive == SCROLL_ACTIVE)
+          continueScroll = 1;
+        else
+          continueScroll = 0;
+      }
+      break;
 
-	case DOWN_SCROLL:
-	  //Calculate bottom index limit if scroll is ACTIVE
-	  //Otherwise it defaults to scrollData->ListLength-1
+    case DOWN_SCROLL:
+      //Calculate bottom index limit if scroll is ACTIVE
+      //Otherwise it defaults to scrollData->ListLength-1
 
-	  if(scrollData->scrollActive == SCROLL_ACTIVE)
-	    scrollControl =
-		scrollData->currentListIndex + (scrollData->displayLimit -
-						1);
-	  else
-	    scrollControl = scrollData->listLength - 1;
+      if(scrollData->scrollActive == SCROLL_ACTIVE)
+        scrollControl =
+        scrollData->currentListIndex + (scrollData->displayLimit -
+                        1);
+      else
+        scrollControl = scrollData->listLength - 1;
 
-	  //Move selector
-	  if(aux->next->index <= scrollControl) {
-	    aux = aux->next;	//Go to next item
-	    scrollData->selector++;	//whereY++;
-	  } else {
-	    if(scrollData->scrollActive == SCROLL_ACTIVE)
-	      continueScroll = 1;
-	    else
-	      continueScroll = 0;
-	  }
-	  break;
+      //Move selector
+      if(aux->next->index <= scrollControl) {
+        aux = aux->next;    //Go to next item
+        scrollData->selector++; //whereY++;
+      } else {
+        if(scrollData->scrollActive == SCROLL_ACTIVE)
+          continueScroll = 1;
+        else
+          continueScroll = 0;
+      }
+      break;
       }
 
       //Metrics
@@ -400,7 +400,7 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
 
   if(scrollData->scrollDirection == DOWN_SCROLL
      && scrollData->currentListIndex != 0) {
-    //If we are going down we'll select the last item 
+    //If we are going down we'll select the last item
     //to create a better scrolling transition (animation)
     for(counter = 0; counter < scrollData->displayLimit; counter++) {
       scrollData->scrollDirection = DOWN_SCROLL;
@@ -419,91 +419,91 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
       keypressed = 0;
       //if enter key pressed - break loop
       if(ch == K_ENTER)
-        control = CONTINUE_SCROLL;	//Break the loop
+        control = CONTINUE_SCROLL;  //Break the loop
       //fail-safe keys
       if (ch == 'w'){
-	  //Move selector up
-	  scrollData->scrollDirection = UP_SCROLL;
-	  continueScroll = move_display(&aux, scrollData);
-	  //Break the loop if we are scrolling
-	  if(scrollData->scrollActive == SCROLL_ACTIVE
-	     && continueScroll == 1) {
-	    control = CONTINUE_SCROLL;
-	    //Update data
-	    scrollData->currentListIndex =
-		scrollData->currentListIndex - 1;
-	    scrollData->selector = scrollData->wherey;
-	    scrollData->itemIndex = aux->index;
-	    //Return value
-	    ch = control;
-	  }
+      //Move selector up
+      scrollData->scrollDirection = UP_SCROLL;
+      continueScroll = move_display(&aux, scrollData);
+      //Break the loop if we are scrolling
+      if(scrollData->scrollActive == SCROLL_ACTIVE
+         && continueScroll == 1) {
+        control = CONTINUE_SCROLL;
+        //Update data
+        scrollData->currentListIndex =
+        scrollData->currentListIndex - 1;
+        scrollData->selector = scrollData->wherey;
+        scrollData->itemIndex = aux->index;
+        //Return value
+        ch = control;
+      }
        }
       if (ch == 's'){
-	  //Move selector down
-	  scrollData->scrollDirection = DOWN_SCROLL;
-	  continueScroll = move_display(&aux, scrollData);
-	  //Break the loop if we are scrolling
-	  if(scrollData->scrollActive == SCROLL_ACTIVE
-	     && continueScroll == 1) {
-	    control = CONTINUE_SCROLL;
-	    //Update data  
-	    scrollData->currentListIndex =
-		scrollData->currentListIndex + 1;
-	    scrollData->selector = scrollData->wherey;
-	    scrollData->itemIndex = aux->index;
-	    scrollData->scrollDirection = DOWN_SCROLL;
-	  }
-	  //Return value  
+      //Move selector down
+      scrollData->scrollDirection = DOWN_SCROLL;
+      continueScroll = move_display(&aux, scrollData);
+      //Break the loop if we are scrolling
+      if(scrollData->scrollActive == SCROLL_ACTIVE
+         && continueScroll == 1) {
+        control = CONTINUE_SCROLL;
+        //Update data
+        scrollData->currentListIndex =
+        scrollData->currentListIndex + 1;
+        scrollData->selector = scrollData->wherey;
+        scrollData->itemIndex = aux->index;
+        scrollData->scrollDirection = DOWN_SCROLL;
+      }
+      //Return value
           ch = control;
        }
       //Check arrow keys
-      if(ch == K_ESCAPE)		// escape key
+      if(ch == K_ESCAPE)        // escape key
       {
-        read_keytrail(chartrail);	// read key again for arrow key combinations
+        read_keytrail(chartrail);   // read key again for arrow key combinations
         if(strcmp(chartrail, K_UP_TRAIL) == 0) {
-	  // escape key + A => arrow key up
-	  //Move selector up
-	  scrollData->scrollDirection = UP_SCROLL;
-	  continueScroll = move_display(&aux, scrollData);
-	  //Break the loop if we are scrolling
-	  if(scrollData->scrollActive == SCROLL_ACTIVE
-	     && continueScroll == 1) {
-	    control = CONTINUE_SCROLL;
-	    //Update data
-	    scrollData->currentListIndex =
-		scrollData->currentListIndex - 1;
-	    scrollData->selector = scrollData->wherey;
-	    scrollData->itemIndex = aux->index;
-	    //Return value
-	    ch = control;
-	  }
+      // escape key + A => arrow key up
+      //Move selector up
+      scrollData->scrollDirection = UP_SCROLL;
+      continueScroll = move_display(&aux, scrollData);
+      //Break the loop if we are scrolling
+      if(scrollData->scrollActive == SCROLL_ACTIVE
+         && continueScroll == 1) {
+        control = CONTINUE_SCROLL;
+        //Update data
+        scrollData->currentListIndex =
+        scrollData->currentListIndex - 1;
+        scrollData->selector = scrollData->wherey;
+        scrollData->itemIndex = aux->index;
+        //Return value
+        ch = control;
+      }
        }
       if(strcmp(chartrail, K_DOWN_TRAIL) == 0) {
-	// escape key + B => arrow key down
-	  //Move selector down
-	  scrollData->scrollDirection = DOWN_SCROLL;
-	  continueScroll = move_display(&aux, scrollData);
-	  //Break the loop if we are scrolling
-	  if(scrollData->scrollActive == SCROLL_ACTIVE
-	     && continueScroll == 1) {
-	    control = CONTINUE_SCROLL;
-	    //Update data  
-	    scrollData->currentListIndex =
-		scrollData->currentListIndex + 1;
-	    scrollData->selector = scrollData->wherey;
-	    scrollData->itemIndex = aux->index;
-	    scrollData->scrollDirection = DOWN_SCROLL;
-	  }
-	  //Return value  
-          ch = control;         
+    // escape key + B => arrow key down
+      //Move selector down
+      scrollData->scrollDirection = DOWN_SCROLL;
+      continueScroll = move_display(&aux, scrollData);
+      //Break the loop if we are scrolling
+      if(scrollData->scrollActive == SCROLL_ACTIVE
+         && continueScroll == 1) {
+        control = CONTINUE_SCROLL;
+        //Update data
+        scrollData->currentListIndex =
+        scrollData->currentListIndex + 1;
+        scrollData->selector = scrollData->wherey;
+        scrollData->itemIndex = aux->index;
+        scrollData->scrollDirection = DOWN_SCROLL;
+      }
+      //Return value
+          ch = control;
       }
       }
  // if (ch == K_TAB) break;
-  if(ch == K_ENTER || ch == K_ENTER2)		// enter key
+  if(ch == K_ENTER || ch == K_ENTER2)       // enter key
   {
     //Pass data of last item selected.
     //scrollData->item =
-	//(char *)imalloc(sizeof(char) * strlen(aux->item) + 1);
+    //(char *)imalloc(sizeof(char) * strlen(aux->item) + 1);
     //scrollData->path = (char *)malloc(sizeof(char) *strlen(aux->path) + 1);
     scrollData->item = aux->item;
     scrollData->itemIndex = aux->index;
@@ -518,10 +518,10 @@ char selectorMenu(LISTBOX * aux, SCROLLDATA * scrollData) {
 }
 
 char listBox(LISTBOX * head,
-	     unsigned whereX, unsigned whereY,
-	     SCROLLDATA * scrollData, unsigned bColor0,
-	     unsigned fColor0, unsigned bColor1, unsigned fColor1,
-	     unsigned displayLimit) {
+         unsigned whereX, unsigned whereY,
+         SCROLLDATA * scrollData, unsigned bColor0,
+         unsigned fColor0, unsigned bColor1, unsigned fColor1,
+         unsigned displayLimit) {
 
   unsigned list_length = 0;
   //unsigned currentIndex = 0;
@@ -535,10 +535,10 @@ char listBox(LISTBOX * head,
 
   //Save calculations for SCROLL and store DATA
   scrollData->displayLimit = displayLimit;
-  scrollLimit = list_length - scrollData->displayLimit;	//Careful with negative integers
+  scrollLimit = list_length - scrollData->displayLimit; //Careful with negative integers
 
   if(scrollLimit < 0)
-    scrollData->displayLimit = list_length;	//Failsafe for overboard values
+    scrollData->displayLimit = list_length; //Failsafe for overboard values
 
   scrollData->scrollLimit = scrollLimit;
   scrollData->listLength = list_length;
@@ -550,17 +550,17 @@ char listBox(LISTBOX * head,
   scrollData->foreColor0 = fColor0;
   scrollData->foreColor1 = fColor1;
 
-  //Check whether we have to activate scroll or not 
+  //Check whether we have to activate scroll or not
   //and if we are within bounds. [1,list_length)
 
   if(list_length > scrollData->displayLimit && scrollLimit > 0
      && displayLimit > 0) {
-    //Scroll is possible  
+    //Scroll is possible
 
     scrollData->scrollActive = SCROLL_ACTIVE;
     aux = head;
 
-    currentListIndex = 0;	//We listBox1 the scroll at the top index.
+    currentListIndex = 0;   //We listBox1 the scroll at the top index.
     scrollData->currentListIndex = currentListIndex;
 
     //Scroll loop animation. Finish with ENTER.
@@ -577,7 +577,7 @@ char listBox(LISTBOX * head,
     //Display all the elements and create selector.
     scrollData->scrollActive = SCROLL_INACTIVE;
     scrollData->currentListIndex = 0;
-    scrollData->displayLimit = list_length;	//Default to list_length
+    scrollData->displayLimit = list_length; //Default to list_length
     loadlist(head, scrollData, 0);
     ch = selectorMenu(head, scrollData);
   }
@@ -607,7 +607,7 @@ int listFiles(LISTBOX ** listBox1, char *directory) {
   struct dirent *dir;
   int     i;
   char    temp[MAX_ITEM_LENGTH];
-  int     lenDir;		//length of directory
+  int     lenDir;       //length of directory
 
   //Add elements to switch directory at the beginning for convenience.
   strcpy(temp, "[CLOSE WINDOW]");
@@ -623,7 +623,7 @@ int listFiles(LISTBOX ** listBox1, char *directory) {
   strcpy(temp, CHANGEDIR);
   //Add spaces
   addSpaces(temp);
-  *listBox1 = addend(*listBox1, newelement(temp, CHANGEDIR, DIRECTORY));	// ".."
+  *listBox1 = addend(*listBox1, newelement(temp, CHANGEDIR, DIRECTORY));    // ".."
 
   //Start at current directory
   d = opendir(directory);
@@ -632,34 +632,34 @@ int listFiles(LISTBOX ** listBox1, char *directory) {
     while((dir = readdir(d)) != NULL) {
       if(dir->d_type == DT_DIR) {
 
-	lenDir = strlen(dir->d_name);
+    lenDir = strlen(dir->d_name);
 
-	//Check length of directory
-	//Directories are displayed between brackets [directory]
-	if(lenDir > MAX_ITEM_LENGTH - 2) {
-	  //Directory name is long. CROP
-	  cleanString(temp, MAX_ITEM_LENGTH);
-	  strcpy(temp, "[");
-	  for(i = 1; i < MAX_ITEM_LENGTH - 1; i++) {
-	    temp[i] = dir->d_name[i - 1];
-	  }
-	  temp[MAX_ITEM_LENGTH - 1] = ']';
-	} else {
-	  //Directory's name is shorter than display
-	  //Add spaces to item string.
-	  cleanString(temp, MAX_ITEM_LENGTH);
-	  strcpy(temp, "[");
-	  for(i = 1; i < lenDir + 1; i++) {
-	    temp[i] = dir->d_name[i - 1];
-	  }
-	  temp[lenDir + 1] = ']';
-	  addSpaces(temp);
-	}
-	//Add all directories except CURRENTDIR and CHANGEDIR
-	if(strcmp(dir->d_name, CURRENTDIR) != 0
-	   && strcmp(dir->d_name, CHANGEDIR) != 0)
-	  *listBox1 =
-	      addend(*listBox1, newelement(temp, dir->d_name, DIRECTORY));
+    //Check length of directory
+    //Directories are displayed between brackets [directory]
+    if(lenDir > MAX_ITEM_LENGTH - 2) {
+      //Directory name is long. CROP
+      cleanString(temp, MAX_ITEM_LENGTH);
+      strcpy(temp, "[");
+      for(i = 1; i < MAX_ITEM_LENGTH - 1; i++) {
+        temp[i] = dir->d_name[i - 1];
+      }
+      temp[MAX_ITEM_LENGTH - 1] = ']';
+    } else {
+      //Directory's name is shorter than display
+      //Add spaces to item string.
+      cleanString(temp, MAX_ITEM_LENGTH);
+      strcpy(temp, "[");
+      for(i = 1; i < lenDir + 1; i++) {
+        temp[i] = dir->d_name[i - 1];
+      }
+      temp[lenDir + 1] = ']';
+      addSpaces(temp);
+    }
+    //Add all directories except CURRENTDIR and CHANGEDIR
+    if(strcmp(dir->d_name, CURRENTDIR) != 0
+       && strcmp(dir->d_name, CHANGEDIR) != 0)
+      *listBox1 =
+          addend(*listBox1, newelement(temp, dir->d_name, DIRECTORY));
       }
     }
   }
@@ -670,19 +670,19 @@ int listFiles(LISTBOX ** listBox1, char *directory) {
   if(d) {
     while((dir = readdir(d)) != NULL) {
       if(dir->d_type == DT_REG) {
-	//only list valid fiels
-	if(strlen(dir->d_name) > MAX_ITEM_LENGTH) {
-	  for(i = 0; i < MAX_ITEM_LENGTH; i++) {
-	    temp[i] = dir->d_name[i];
-	  }
-	} else {
-	  cleanString(temp, MAX_ITEM_LENGTH);
-	  strcpy(temp, dir->d_name);
-	  //Add spaces
-	  addSpaces(temp);
-	}
-	*listBox1 =
-	    addend(*listBox1, newelement(temp, dir->d_name, FILEITEM));
+    //only list valid fiels
+    if(strlen(dir->d_name) > MAX_ITEM_LENGTH) {
+      for(i = 0; i < MAX_ITEM_LENGTH; i++) {
+        temp[i] = dir->d_name[i];
+      }
+    } else {
+      cleanString(temp, MAX_ITEM_LENGTH);
+      strcpy(temp, dir->d_name);
+      //Add spaces
+      addSpaces(temp);
+    }
+    *listBox1 =
+        addend(*listBox1, newelement(temp, dir->d_name, FILEITEM));
       }
     }
     closedir(d);
@@ -691,7 +691,7 @@ int listFiles(LISTBOX ** listBox1, char *directory) {
 }
 
 void changeDir(SCROLLDATA * scrollData, char fullPath[MAX],
-	       char newDir[MAX]) {
+           char newDir[MAX]) {
 //Change dir
   char    oldPath[MAX];
   if(scrollData->isDirectory == DIRECTORY) {
@@ -740,12 +740,12 @@ int setFileName(char fileName[MAX]) {
 /* ---------------- */
 
 /*========================================================================*/
-/*  
-  ListBox with Scroll: 
+/*
+  ListBox with Scroll:
   ____________________
-  
+
   Usage:
-   
+
   listBox(headpointer, whereX, whereY, scrollData, backColor0, foreColor0,
 backcolor1, forecolor1, displayLimit); */
 
@@ -755,27 +755,27 @@ void openFileDialog(SCROLLDATA * openFileData) {
   SCROLLDATA scrollData;
   char    ch;
   char    fullPath[MAX];
-  char	  fileName[MAX];
+  char    fileName[MAX];
   char    newDir[MAX];
   int     exitFlag = 0;
   int     i,ok;
   int     rows, columns;
 
 //init values
-  scrollData.scrollActive=0;	//To know whether scroll is active or not.
-  scrollData.scrollLimit=0;		//Last index for scroll.
-  scrollData.listLength=0;		//Total no. of items in the list
-  scrollData.currentListIndex=0;	//Pointer to new sublist of items when scrolling.
-  scrollData.displayLimit=0;	//No. of elements to be displayed.
-  scrollData.scrollDirection=0;	//To keep track of scrolling Direction.
-  scrollData.selector=0;		//Y++
-  scrollData.wherex=0;		
-  scrollData.wherey=0;		
-  scrollData.backColor0=0;		//0 unselected; 1 selected
+  scrollData.scrollActive=0;    //To know whether scroll is active or not.
+  scrollData.scrollLimit=0;     //Last index for scroll.
+  scrollData.listLength=0;      //Total no. of items in the list
+  scrollData.currentListIndex=0;    //Pointer to new sublist of items when scrolling.
+  scrollData.displayLimit=0;    //No. of elements to be displayed.
+  scrollData.scrollDirection=0; //To keep track of scrolling Direction.
+  scrollData.selector=0;        //Y++
+  scrollData.wherex=0;
+  scrollData.wherey=0;
+  scrollData.backColor0=0;      //0 unselected; 1 selected
   scrollData.foreColor0=0;
   scrollData.backColor1=0;
   scrollData.foreColor1=0;
-  scrollData.isDirectory=0;		// Kind of item
+  scrollData.isDirectory=0;     // Kind of item
   scrollData.item =NULL;
   scrollData.path =NULL;
   scrollData.itemIndex=0;
@@ -789,14 +789,14 @@ void openFileDialog(SCROLLDATA * openFileData) {
 
   //Change background color
 
-  strcpy(newDir, ".");		//We start at current dir
-  getcwd(fullPath, sizeof(fullPath));	//Get path
+  strcpy(newDir, ".");      //We start at current dir
+  getcwd(fullPath, sizeof(fullPath));   //Get path
 
   //Directories loop
   draw_window(window_x1, window_y1, window_x2, window_y2, MENU_PANEL, MENU_FOREGROUND0, WINDOW_TITLEB,1,1);
-  write_str((window_x2-window_x1) /2 + window_x1 - (strlen(OPENWTITLE)/2) , window_y1-1, OPENWTITLE, WINDOW_TITLEB, WINDOW_TITLEF);	
+  write_str((window_x2-window_x1) /2 + window_x1 - (strlen(OPENWTITLE)/2) , window_y1-1, OPENWTITLE, WINDOW_TITLEB, WINDOW_TITLEF);
   update_screen();
- 
+
   for (i=window_y1+1; i<window_y2-1;i++){
     gotoxy(window_x1 + 1, i);
     outputcolor(MENU_FOREGROUND0, MENU_PANEL);
@@ -810,32 +810,32 @@ void openFileDialog(SCROLLDATA * openFileData) {
     //Add items to list
     listFiles(&listBox1, newDir);
     ch = listBox(listBox1, window_x1 + 3, window_y1 + 1, &scrollData,
-		 MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1, 12);
-        
+         MENU_PANEL, MENU_FOREGROUND0, MENU_SELECTOR, MENU_FOREGROUND1, 12);
+
 
     //Scroll Loop exit conditions
     if(scrollData.itemIndex == 0)
-      exitFlag = 1;		//First item is selected
+      exitFlag = 1;     //First item is selected
 
     //Second item is selected - set file
     if(scrollData.itemIndex == 1)
     {
        ok = setFileName(fileName);
-	if (ok==1) {
-	   //Let's send data to main module
-	    strcpy(scrollData.item, "\0");
-	    strcpy(scrollData.item, fileName);
-	    strcpy(scrollData.path, "\0");
-	    strcpy(scrollData.path, fileName);
-   	    exitFlag = 1;
-	}     
-	
+    if (ok==1) {
+       //Let's send data to main module
+        strcpy(scrollData.item, "\0");
+        strcpy(scrollData.item, fileName);
+        strcpy(scrollData.path, "\0");
+        strcpy(scrollData.path, fileName);
+        exitFlag = 1;
+    }
+
     } else
     {
       //Change Dir. New directory is copied in newDir
       changeDir(&scrollData, fullPath, newDir);
     }
-    
+
     //Clean all lines on the window
     for(i = window_y1 + 3; i < window_y2; i++) {
       cleanLine(i, MENU_PANEL, MENU_FOREGROUND0, window_x1 + 1, window_x2);
@@ -843,9 +843,9 @@ void openFileDialog(SCROLLDATA * openFileData) {
     outputcolor(MENU2_FOREGROUND0, B_CYAN);
     gotoxy(window_x1 + 1, window_y2-1);
     printf("                   ");
- 
+
     if(ch == K_ENTER && scrollData.isDirectory == FILEITEM)
-      exitFlag = 1;		//File selected
+      exitFlag = 1;     //File selected
     //if (ch == K_TAB) break;
     openFileData->item = scrollData.item;
     openFileData->itemIndex = scrollData.itemIndex;
@@ -857,9 +857,9 @@ void openFileDialog(SCROLLDATA * openFileData) {
     openFileData->isDirectory = scrollData.isDirectory;
 
     if(listBox1 != NULL && exitFlag != 1) {
-		deleteList(&listBox1);
-		listBox1 = NULL;
-    } 
+        deleteList(&listBox1);
+        listBox1 = NULL;
+    }
   } while(exitFlag != 1);
 
   //Return file selected by copying into fileToOpen -> currentFile

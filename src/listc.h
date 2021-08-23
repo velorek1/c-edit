@@ -1,8 +1,8 @@
-/* 
+/*
 ======================================================================
 HEADER:
 Module to create vertical and horizontal selection menus with
-double linked list. 
+double linked list.
 @author : Velorek
 @version : 1.0
 -LAST MODIFIED : 14/04/2019 Rename headers
@@ -27,16 +27,16 @@ double linked list.
 /*====================================================================*/
 
 typedef struct _listchoice {
-  int     index;		// Item number
-  int     backcolor0;		// Back and Fore colors when not selected
+  int     index;        // Item number
+  int     backcolor0;       // Back and Fore colors when not selected
   int     forecolor0;
-  int     backcolor1;		// Back and Fore colors when selected
+  int     backcolor1;       // Back and Fore colors when selected
   int     forecolor1;
-  int     wherex;		// Position of the item
+  int     wherex;       // Position of the item
   int     wherey;
-  char   *item;			// Item string
-  struct _listchoice *next;	// Pointer to next item
-  struct _listchoice *back;	// Pointer to previous item.
+  char   *item;         // Item string
+  struct _listchoice *next; // Pointer to next item
+  struct _listchoice *back; // Pointer to previous item.
 } LISTCHOICE;
 
 /*====================================================================*/
@@ -44,7 +44,7 @@ typedef struct _listchoice {
 /*====================================================================*/
 
 void    add_item(LISTCHOICE * list_identifier, char *str, int x, int y,
-		 int bcolor0, int fcolor0, int bcolor1, int fcolor1);
+         int bcolor0, int fcolor0, int bcolor1, int fcolor1);
 void    free_list();
 void    display_list();
 char    start_vmenu(LISTCHOICE * list_data);

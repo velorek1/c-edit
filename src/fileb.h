@@ -1,10 +1,10 @@
 /*
 ========================================================================
-- HEADER - 
+- HEADER -
 Module to handle basic file operations
 @author : Velorek
-@version : 1.0  
-Last modified: 14/04/2019 Rename headers                                                              
+@version : 1.0
+Last modified: 14/04/2019 Rename headers
 ========================================================================
 */
 

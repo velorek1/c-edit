@@ -4,9 +4,9 @@ PROGRAM C Editor - An editor with top-down menus.
 @author : Velorek
 @version : 1.0
 Last modified : 17/04/2021 - Added real MilliSecond timer (tm.c)
-			     Added home/end keys
-			     Clean -wExtra warnings
-			     Added signedchar to makefile
+                 Added home/end keys
+                 Clean -wExtra warnings
+                 Added signedchar to makefile
 ======================================================================*/
 
 /*====================================================================*/
@@ -66,13 +66,13 @@ Last modified : 17/04/2021 - Added real MilliSecond timer (tm.c)
 
 //MISC. CONSTANTS
 #define EXIT_FLAG -1
-#define TAB_DISTANCE 8		//How many spaces TAB key will send.
+#define TAB_DISTANCE 8      //How many spaces TAB key will send.
 #define START_CURSOR_X 2
 #define START_CURSOR_Y 3
 #define ROWS_FAILSAFE 25
 #define COLUMNS_FAILSAFE 80
-#define K_LEFTMENU -1		//Left arrow key pressed while in menu
-#define K_RIGHTMENU -2		//Right arrow key pressed while in menu
+#define K_LEFTMENU -1       //Left arrow key pressed while in menu
+#define K_RIGHTMENU -2      //Right arrow key pressed while in menu
 #define MAX_TEXT 150
 #define MAX_PATH 1024
 
@@ -91,21 +91,21 @@ Last modified : 17/04/2021 - Added real MilliSecond timer (tm.c)
 #define OPTION_3 2
 #define OPTION_4 3
 #define OPTION_5 4
-#define OPTION_NIL -1		//Reset option
+#define OPTION_NIL -1       //Reset option
 #define CONFIRMATION 1
 
 // DISPLAY CONSTANTS
 #define FILL_CHAR 32
 
 //Temporary implementation- Static Buffer
-//EDIT AREA CONSTANTS 
+//EDIT AREA CONSTANTS
 //Edit buffer is currently 3000 lines x 500 chars
 
-#define MAX_CHARS 500		// 500 chars per line
-#define MAX_LINES 3000		// 3000 lines per page (max mem 32750)
+#define MAX_CHARS 500       // 500 chars per line
+#define MAX_LINES 3000      // 3000 lines per page (max mem 32750)
 
 #define CHAR_NIL '\0'
-#define END_LINE_CHAR 0x0A	// $0A
+#define END_LINE_CHAR 0x0A  // $0A
 #define VSCROLL_ON 1
 #define VSCROLL_OFF 0
 #define DIRECTION_DOWN 1
@@ -154,21 +154,21 @@ EDITSCROLL editScroll; //scroll Values
 
 FILE   *filePtr;
 
-int     rows = 0, columns = 0, old_rows = 0, old_columns = 0;	// Terminal dimensions
+int     rows = 0, columns = 0, old_rows = 0, old_columns = 0;   // Terminal dimensions
 long    cursorX = START_CURSOR_X, cursorY = START_CURSOR_Y; //Cursor position
 long    oldX = START_CURSOR_X, oldY = START_CURSOR_Y; //Cursor position blink
-int     timerCursor = 0;	// Timer
-char    kglobal = 0;		// Global variable for menu animation
+int     timerCursor = 0;    // Timer
+char    kglobal = 0;        // Global variable for menu animation
 char    currentFile[MAX_TEXT];
-long    limitRow = 0, limitCol = 0;	// These variables account for the current limits of the buffer.
-int     c_animation = 0;	//Counter for animation 
+long    limitRow = 0, limitCol = 0; // These variables account for the current limits of the buffer.
+int     c_animation = 0;    //Counter for animation
 long    maxLineFile = 1;        //Last line of file
 char    currentPath[MAX_PATH];
 //FLAGS
-int     exitp = 0;		// Exit flag for main loop
-int     fileModified = FILE_UNMODIFIED;	//Have we modified the buffer?
+int     exitp = 0;      // Exit flag for main loop
+int     fileModified = FILE_UNMODIFIED; //Have we modified the buffer?
 char    timerOnOFF = 1;
-int	forceBufferUpdate = 0; //To allow a smoother scroll animation.
+int forceBufferUpdate = 0; //To allow a smoother scroll animation.
 NTIMER  _timer1; //Timer for animations and screen update
 /*====================================================================*/
 /* PROTOTYPES OF FUNCTIONS                                            */
@@ -204,13 +204,13 @@ int     fileInfoDialog();
 
 //Keyhandling and input prototypes
 int     process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
-		      long *whereY, char ch);
+              long *whereY, char ch);
 int     special_keys(long *whereX, long *whereY, char ch);
 
 //Edit prototypes
 void    cleanBuffer(EDITBUFFER editBuffer[MAX_LINES]);
 int     writetoBuffer(EDITBUFFER editBuffer[MAX_LINES], long whereX,
-		      long whereY, char ch);
+              long whereY, char ch);
 int     findEndline(EDITBUFFER editBuffer[MAX_LINES], long line);
 
 //Scroll prototypes
@@ -218,7 +218,7 @@ short   checkScrollValues(long lines);
 
 //File-handling prototypes
 int     writeBuffertoFile(FILE * filePtr,
-			  EDITBUFFER editBuffer[MAX_LINES]);
+              EDITBUFFER editBuffer[MAX_LINES]);
 int     writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES]);
 int     writeBuffertoDisplayRaw(EDITBUFFER editBuffer[MAX_LINES]);
 int     filetoBuffer(FILE * filePtr, EDITBUFFER editBuffer[MAX_LINES]);
@@ -232,18 +232,18 @@ int     createnewFile(FILE ** filePtr, char *fileName, int checkFile);
 int main(int argc, char *argv[]) {
   char    ch = 0, oldchar = 0;
   char *ok1 = NULL;
-  int     esc_key = 0;		//To control key input and scan for keycodes.
+  int     esc_key = 0;      //To control key input and scan for keycodes.
   int     keypressed = 0;
 
   /*------------------------INITIAL VALUES----------------------------*/
   hidecursor();
-  pushTerm();			//Save current terminal settings in failsafe
-  create_screen();		//Create screen buffer to control display
+  pushTerm();           //Save current terminal settings in failsafe
+  create_screen();      //Create screen buffer to control display
   cleanBuffer(editBuffer);
   clearString(currentFile, MAX_TEXT);
   strcpy(currentFile, UNKNOWN);
-  checkConfigFile(-1);		//Check config file for colorScheme. -1 -> first time
-  ok1=getcwd(currentPath, sizeof(currentPath));	//Save current path
+  checkConfigFile(-1);      //Check config file for colorScheme. -1 -> first time
+  ok1=getcwd(currentPath, sizeof(currentPath)); //Save current path
   ok1++; //to avoid warning
   editScroll.scrollActiveV = VSCROLL_OFF; //Scroll is inactive.
   editScroll.totalLines = 1; //There is just one line active in buffer
@@ -252,14 +252,14 @@ int main(int argc, char *argv[]) {
   openFileData.itemIndex = 0; //No file has been opened yet. Memory isn't freed.
   //editBuffer1 = addRear(editBuffer1, newEditCell(20,-67));
   _timer1.ms = 30;  // Timer 1 - Clock & animation
-  _timer1.ticks = 0; 
-  main_screen();		//Draw screen
+  _timer1.ticks = 0;
+  main_screen();        //Draw screen
   update_screen();
   save_buffer();
-  resetch();			//Clear keyboard and sets ENTER = 13
+  resetch();            //Clear keyboard and sets ENTER = 13
   /*------------------------------------------------------------------*/
-  
-  
+
+
   /*------------------------CHECK ARGUMENTS----------------------------*/
   if(argc > 1) {
     //Does the file exist? Open or create?
@@ -276,7 +276,7 @@ int main(int argc, char *argv[]) {
     }
   }
   /*------------------------------------------------------------------*/
-  
+
   /*------------------------MAIN PROGRAM LOOP-------------------------*/
   do {
     /* CURSOR is drawn in RAW MODE, i.e, directly to screen */
@@ -284,12 +284,12 @@ int main(int argc, char *argv[]) {
     /* Query if screen dimensions have changed and if so, resize screen */
     refresh_screen(0);
     /* Timer for animation to show system time and update screen */
-    if (timerC(&_timer1) == 1) { 
+    if (timerC(&_timer1) == 1) {
         _tick();
-        if (screenChanged()){ 
-		update_smart();
-        	save_buffer();
-	}
+        if (screenChanged()){
+        update_smart();
+            save_buffer();
+    }
     }
    /* Wait for key_pressed to read key */
    keypressed = kbhit();
@@ -298,9 +298,9 @@ int main(int argc, char *argv[]) {
       /* Process SPECIAL KEYS and other ESC-related issues */
       esc_key = special_keys(&cursorX, &cursorY, ch);
 
-      //If arrow keys are used repeatedly. This avoids printing unwanted chars.   
+      //If arrow keys are used repeatedly. This avoids printing unwanted chars.
       if(oldchar == K_ESCAPE)
-	esc_key = 1;
+    esc_key = 1;
 
       oldchar = ch;
 
@@ -308,9 +308,9 @@ int main(int argc, char *argv[]) {
 
       /* EDIT */
       if(esc_key == 0) {
-	//Process input and get rid of extra characters
-	process_input(editBuffer, &cursorX, &cursorY, ch);	//Edit
-	keypressed = 0;
+    //Process input and get rid of extra characters
+    process_input(editBuffer, &cursorX, &cursorY, ch);  //Edit
+    keypressed = 0;
       }
     } else {
       //Keypressed = 0 - Reset values
@@ -320,9 +320,9 @@ int main(int argc, char *argv[]) {
       ch = 0;
       oldchar = 0;
     }
-  } while(exitp != EXIT_FLAG);	//exit flag for the whole program
+  } while(exitp != EXIT_FLAG);  //exit flag for the whole program
   /*------------------------------------------------------------------*/
-  
+
   //CREDITS
   if(filePtr != NULL) {
     closeFile(filePtr);
@@ -350,7 +350,7 @@ void draw_cursor(long whereX, long whereY, long oldX, long oldY) {
   limitCol = findEndline(editBuffer, editScroll.bufferY-1);
   positionX = editScroll.bufferX-1;
   positionY = editScroll.bufferY-1;
- //clean previous cursor  
+ //clean previous cursor
   if (oldX != whereX || oldY!=whereY){
      if(positionX < limitCol || oldY!=whereY) {
       oldPositionX = positionX+(oldX - whereX);
@@ -365,14 +365,14 @@ void draw_cursor(long whereX, long whereY, long oldX, long oldY) {
     if(currentChar < 0) {
       specialChar = editBuffer[oldPositionY].charBuf[oldPositionX].specialChar;
       printf("%c%c", specialChar,
-	     currentChar);
+         currentChar);
     } else {
      //Careful with null char or enter or tab chars
      if(currentChar == 0 || currentChar == 10 || currentChar == 9) currentChar=FILL_CHAR;
       printf("%c", currentChar);
     }
   }
-    
+
    //draw new cursor
     gotoxy(whereX, whereY);
     outputcolor(EDIT_FORECOLOR, EDITAREACOL);
@@ -390,7 +390,7 @@ void draw_cursor(long whereX, long whereY, long oldX, long oldY) {
     if(currentChar < 0) {
       specialChar = editBuffer[positionY].charBuf[positionX].specialChar;
       printf("%c%c", specialChar,
-	     editBuffer[positionY].charBuf[positionX].ch);
+         editBuffer[positionY].charBuf[positionX].ch);
     } else {
      //Careful with null char or enter
      if(currentChar == 0 || currentChar == 10) currentChar=FILL_CHAR;
@@ -417,11 +417,11 @@ int _tick() {
     time_str[strlen(time_str) - 1] = '\0';
     //display system time
     write_str(columns - strlen(time_str), 1, time_str, MENU_PANEL,
-	      MENU_FOREGROUND0);
+          MENU_FOREGROUND0);
     write_str(columns - strlen(time_str) - 5, 1, temp, MENU_PANEL,
-	      MENU_FOREGROUND0);
-    update_indicators();	//update position, indicators display
-    //update only the screen bits that change 
+          MENU_FOREGROUND0);
+    update_indicators();    //update position, indicators display
+    //update only the screen bits that change
     c_animation++;  //star animation
     if(c_animation > 6)
       c_animation = 0;
@@ -434,7 +434,7 @@ int _tick() {
 /*----------------------------------------- */
 
 void update_indicators() {
-/* 
+/*
    Update cursor position display on screen.
    Values are float to save decimal points.
 - Formulas:
@@ -474,12 +474,12 @@ void update_indicators() {
 /*-----------------*/
 
 int refresh_screen(int force) {
-/* Query terminal dimensions again and check if resize 
+/* Query terminal dimensions again and check if resize
    has been produced */
   get_terminal_dimensions(&rows, &columns);
-  editScroll.displayLength = rows - 4; //update Scroll 
+  editScroll.displayLength = rows - 4; //update Scroll
   if (columns <55 && rows <17){
-     //free_buffer();		//delete structure from memory 
+     //free_buffer();       //delete structure from memory
      resetAnsi(0);
      gotoxy(1,1);
      printf("%s", WINDOWMSG);
@@ -489,9 +489,9 @@ int refresh_screen(int force) {
   if(rows != old_rows || columns != old_columns || force == 1 || force == -1) {
       if(force != -1) {
         timerOnOFF=1;
-        free_buffer();		//delete structure from memory for resize
-        create_screen();		//create new structure 
-        main_screen();		//Refresh screen in case of resize
+        free_buffer();      //delete structure from memory for resize
+        create_screen();        //create new structure
+        main_screen();      //Refresh screen in case of resize
         checkScrollValues(editScroll.totalLines);      //Update scroll values
         writeBuffertoDisplay(editBuffer);
         update_screen();
@@ -531,7 +531,7 @@ int findEndline(EDITBUFFER editBuffer[MAX_LINES], long line) {
 }
 
 int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
-		  long *whereY, char ch) {
+          long *whereY, char ch) {
 /* EDIT FUNCTIONS */
   char     accentchar[2];
   long     counter = 0;
@@ -543,25 +543,25 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
 
   if(ch != K_ESCAPE) {
 
-    //Calculate position values 
+    //Calculate position values
     limitCol = findEndline(editBuffer, editScroll.bufferY-1);
-    
+
     positionX = editScroll.bufferX-1;
-    positionY = editScroll.bufferY-1; 
+    positionY = editScroll.bufferY-1;
     accentchar[0] = 0;
     accentchar[1] = 0;
-   
+
     /* ---------------------------------------- */
-    /* 
+    /*
        READ CHARS WITH AND WITHOUT ACCENTS.
        Accent value is stored in the
-       specialChar field of every item in the 
+       specialChar field of every item in the
        buffer.
        Example:
-       á : specialChar  = -61
+       รก : specialChar  = -61
        Char = -95
        a : specialChar = 0
-       Char = 97                
+       Char = 97
      */
 
     /* ---------------------------------------- */
@@ -573,79 +573,79 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
 
       //ADD SPACES IF CURSOR IS NOT AT THE END OF THE LINE
       if(positionX > limitCol) {
-	for(i = limitCol - 1; i <= positionX; i++) {
-	  writetoBuffer(editBuffer, i, positionY, ' ');
-	  write_ch(i + START_CURSOR_X, *whereY, ' ', EDITAREACOL,
-		   EDIT_FORECOLOR);
-	}
+    for(i = limitCol - 1; i <= positionX; i++) {
+      writetoBuffer(editBuffer, i, positionY, ' ');
+      write_ch(i + START_CURSOR_X, *whereY, ' ', EDITAREACOL,
+           EDIT_FORECOLOR);
+    }
       }
       //INSERT CHARS AT THE END OF LINE
       if(*whereX < MAX_CHARS && positionX >= limitCol - 1) {
-	if(accentchar[0] != 0) {
-	  //Special char ? print the two values to screen buffer.
-	  write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL,
-		   EDIT_FORECOLOR);
-	  write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL,
-		   EDIT_FORECOLOR);
-	} else {
+    if(accentchar[0] != 0) {
+      //Special char ? print the two values to screen buffer.
+      write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL,
+           EDIT_FORECOLOR);
+      write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL,
+           EDIT_FORECOLOR);
+    } else {
           write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL,
-		   EDIT_FORECOLOR);
-	}
-	writetoBuffer(editBuffer, positionX, positionY, accentchar[0]);
-	writetoBuffer(editBuffer, positionX, positionY, accentchar[1]);
-	*whereX = *whereX + 1;
+           EDIT_FORECOLOR);
+    }
+    writetoBuffer(editBuffer, positionX, positionY, accentchar[0]);
+    writetoBuffer(editBuffer, positionX, positionY, accentchar[1]);
+    *whereX = *whereX + 1;
         editScroll.bufferX++;
 
       }
       //INSERT CHAR IN THE MIDDLE OF THE LINE
       if(*whereX < MAX_CHARS && positionX < limitCol - 1) {
-	//move all chars one space to the side
-	counter = 0;
-	//move characters to the side
-	while(counter <= (limitCol - positionX)) {
-	  newPosition = limitCol - counter + 1;
-	  oldPosition = limitCol - counter;
-	  editBuffer[positionY].charBuf[newPosition].ch =
-	      editBuffer[positionY].charBuf[oldPosition].ch;
-	  editBuffer[positionY].charBuf[newPosition].specialChar =
-	      editBuffer[positionY].charBuf[oldPosition].specialChar;
-	  //Don't print null characters to string or 0x0A
-	  if(editBuffer[positionY].charBuf[oldPosition].ch != CHAR_NIL &&
-	     editBuffer[positionY].charBuf[oldPosition].ch !=
-	     END_LINE_CHAR) {
-	    if(accentchar[0] != 0
-	       || editBuffer[positionY].charBuf[oldPosition].specialChar !=
-	       0) {
-	      //Special char ? print the two values to screen buffer.
-	      write_ch(newPosition + START_CURSOR_X, *whereY,
-		       editBuffer[positionY].charBuf[newPosition].
-		       specialChar, EDITAREACOL, EDIT_FORECOLOR);
-	      write_ch(newPosition + START_CURSOR_X, *whereY,
-		       editBuffer[positionY].charBuf[newPosition].ch,
-		       EDITAREACOL, EDIT_FORECOLOR);
-	    } else {
-	      write_ch(newPosition + START_CURSOR_X, *whereY,
-		       editBuffer[positionY].charBuf[newPosition].ch,
-		       EDITAREACOL, EDIT_FORECOLOR);
-	    }
-	  }
-	  counter++;
-	}
-	//insert new SPECIAL char
-	if(accentchar[0] != 0) {
-	  //Special char ? print the two values to screen buffer.
-	  write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL,
-		   EDIT_FORECOLOR);
-	  write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL,
-		   EDIT_FORECOLOR);
-	} else {
-	  write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL,
-		   EDIT_FORECOLOR);
-	}
-	writetoBuffer(editBuffer, positionX, positionY, accentchar[0]);
-	writetoBuffer(editBuffer, positionX, positionY, accentchar[1]);
+    //move all chars one space to the side
+    counter = 0;
+    //move characters to the side
+    while(counter <= (limitCol - positionX)) {
+      newPosition = limitCol - counter + 1;
+      oldPosition = limitCol - counter;
+      editBuffer[positionY].charBuf[newPosition].ch =
+          editBuffer[positionY].charBuf[oldPosition].ch;
+      editBuffer[positionY].charBuf[newPosition].specialChar =
+          editBuffer[positionY].charBuf[oldPosition].specialChar;
+      //Don't print null characters to string or 0x0A
+      if(editBuffer[positionY].charBuf[oldPosition].ch != CHAR_NIL &&
+         editBuffer[positionY].charBuf[oldPosition].ch !=
+         END_LINE_CHAR) {
+        if(accentchar[0] != 0
+           || editBuffer[positionY].charBuf[oldPosition].specialChar !=
+           0) {
+          //Special char ? print the two values to screen buffer.
+          write_ch(newPosition + START_CURSOR_X, *whereY,
+               editBuffer[positionY].charBuf[newPosition].
+               specialChar, EDITAREACOL, EDIT_FORECOLOR);
+          write_ch(newPosition + START_CURSOR_X, *whereY,
+               editBuffer[positionY].charBuf[newPosition].ch,
+               EDITAREACOL, EDIT_FORECOLOR);
+        } else {
+          write_ch(newPosition + START_CURSOR_X, *whereY,
+               editBuffer[positionY].charBuf[newPosition].ch,
+               EDITAREACOL, EDIT_FORECOLOR);
+        }
+      }
+      counter++;
+    }
+    //insert new SPECIAL char
+    if(accentchar[0] != 0) {
+      //Special char ? print the two values to screen buffer.
+      write_ch(*whereX, *whereY, accentchar[0], EDITAREACOL,
+           EDIT_FORECOLOR);
+      write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL,
+           EDIT_FORECOLOR);
+    } else {
+      write_ch(*whereX, *whereY, accentchar[1], EDITAREACOL,
+           EDIT_FORECOLOR);
+    }
+    writetoBuffer(editBuffer, positionX, positionY, accentchar[0]);
+    writetoBuffer(editBuffer, positionX, positionY, accentchar[1]);
 
-	*whereX = *whereX + 1;
+    *whereX = *whereX + 1;
         editScroll.bufferX++;
       }
       //update_screen();
@@ -655,13 +655,13 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
     if(ch == K_ENTER) {
       //RETURN - ENTER
       if(*whereY < rows - 2) {
-	writetoBuffer(editBuffer, positionX, positionY, END_LINE_CHAR);
-	*whereY = *whereY + 1;
-	*whereX = START_CURSOR_X;
+    writetoBuffer(editBuffer, positionX, positionY, END_LINE_CHAR);
+    *whereY = *whereY + 1;
+    *whereX = START_CURSOR_X;
         editScroll.bufferX = 1;
         editScroll.bufferY++;
         editScroll.totalLines = editScroll.totalLines + 1;
-	fileModified = FILE_MODIFIED;
+    fileModified = FILE_MODIFIED;
       }
     }
 
@@ -672,10 +672,10 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
       editBuffer[positionY].charBuf[positionX - 1].specialChar = CHAR_NIL;
       //Remove line if we continue pressing backspace
       if(*whereX == START_CURSOR_X && *whereY > START_CURSOR_Y) {
-	*whereY = *whereY - 1;
-	*whereX =
-	    findEndline(editBuffer,
-			*whereY - START_CURSOR_Y) + START_CURSOR_X;
+    *whereY = *whereY - 1;
+    *whereX =
+        findEndline(editBuffer,
+            *whereY - START_CURSOR_Y) + START_CURSOR_X;
         editScroll.bufferY--;
         editScroll.bufferX = findEndline(editBuffer,editScroll.bufferY);
       }
@@ -692,20 +692,20 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
       writetoBuffer(editBuffer, positionX, positionY, K_TAB);
     }
     //*ch=0;
-  } 
+  }
     if(ch == K_CTRL_L) {
       //Akin to F2
       if(horizontal_menu() == K_ESCAPE) {
-	//Exit horizontal menu with ESC 3x
-	kglobal = K_ESCAPE;
-	//main_screen();
+    //Exit horizontal menu with ESC 3x
+    kglobal = K_ESCAPE;
+    //main_screen();
       }
       /*  Drop-down menu loop */
-      drop_down(&kglobal);	//animation
+      drop_down(&kglobal);  //animation
     }
     if(ch == K_CTRL_C) {
       //Ask for confirmations CTRL-C -> Exit
-      exitp = confirmation();	//Shall we exit? Global variable! 
+      exitp = confirmation();   //Shall we exit? Global variable!
     }
     if(ch == K_CTRL_H) {
       //Change color Scheme
@@ -722,19 +722,19 @@ int process_input(EDITBUFFER editBuffer[MAX_LINES], long *whereX,
 
 int special_keys(long *whereX, long *whereY, char ch) {
 /* MANAGE SPECIAL KEYS */
-/* 
+/*
    New implementation: Trail of chars found in keyboard.c
    If K_ESCAPE is captured read a trail up to 5 characters from the console.
    This is to control the fact that some keys may change
    according to the terminal and expand the editor's possibilities.
-   Eg: F2 can be either 27 79 81 or 27 91 91 82.  
+   Eg: F2 can be either 27 79 81 or 27 91 91 82.
 */
 
   int     esc_key = 0;
   char    chartrail[5];
   long    oldX;
   if(ch == K_ESCAPE) {
-    read_keytrail(chartrail);	//Read trail after ESC key
+    read_keytrail(chartrail);   //Read trail after ESC key
 
     //Check key trails for special keys.
 
@@ -743,39 +743,39 @@ int special_keys(long *whereX, long *whereY, char ch) {
        strcmp(chartrail, K_F2_TRAIL2) == 0) {
       //update screen
       if(horizontal_menu() == K_ESCAPE) {
-	//Exit horizontal menu with ESC 3x
-	kglobal = K_ESCAPE;
-	//main_screen();
+    //Exit horizontal menu with ESC 3x
+    kglobal = K_ESCAPE;
+    //main_screen();
       }
-      //  Drop-down menu loop */       
-      drop_down(&kglobal);	//animation  
+      //  Drop-down menu loop */
+      drop_down(&kglobal);  //animation
     } else if(strcmp(chartrail, K_F3_TRAIL) == 0 ||
-	      strcmp(chartrail, K_F3_TRAIL2) == 0) {
+          strcmp(chartrail, K_F3_TRAIL2) == 0) {
       refresh_screen(1);
       writeBuffertoDisplay(editBuffer);
     } else if(strcmp(chartrail, K_F1_TRAIL) == 0 ||
-	      strcmp(chartrail, K_F1_TRAIL2) == 0) {
+          strcmp(chartrail, K_F1_TRAIL2) == 0) {
       help_info();
     } else if(strcmp(chartrail, K_F4_TRAIL) == 0 ||
-	      strcmp(chartrail, K_F4_TRAIL2) == 0) {
+          strcmp(chartrail, K_F4_TRAIL2) == 0) {
       about_info();
-      // ARROW KEYS  
+      // ARROW KEYS
     } else if(strcmp(chartrail, K_LEFT_TRAIL) == 0) {
-      //Left-arrow key  
+      //Left-arrow key
       if(*whereX > 2){
-	*whereX = *whereX - 1;
+    *whereX = *whereX - 1;
         editScroll.bufferX--;
       }
     } else if(strcmp(chartrail, K_RIGHT_TRAIL) == 0) {
-      //Right-arrow key  
+      //Right-arrow key
       if(*whereX < columns - 1){
-	*whereX = *whereX + 1;
+    *whereX = *whereX + 1;
         editScroll.bufferX++;
       }
     } else if(strcmp(chartrail, K_UP_TRAIL) == 0) {
-      //Up-arrow key  
+      //Up-arrow key
       if(*whereY > 3) {
-	*whereY = *whereY - 1;
+    *whereY = *whereY - 1;
         editScroll.bufferY--;
       }
       if (editScroll.scrollActiveV == VSCROLL_ON && *whereY == START_CURSOR_Y ) {
@@ -783,17 +783,17 @@ int special_keys(long *whereX, long *whereY, char ch) {
             editScroll.scrollPointer = editScroll.scrollPointer - 1;
             editScroll.bufferY--;
             oldX = *whereX;
-  	    writeBuffertoDisplayRaw(editBuffer);
-	    forceBufferUpdate = 1; 
+        writeBuffertoDisplayRaw(editBuffer);
+        forceBufferUpdate = 1;
             *whereY = START_CURSOR_Y;
             *whereX = oldX;
           }
       }
-     
+
     } else if(strcmp(chartrail, K_DOWN_TRAIL) == 0) {
-      //Down-arrow key  
+      //Down-arrow key
       if(*whereY < rows - 2 && editScroll.totalLines > *whereY - START_CURSOR_Y+1) {
-	*whereY = *whereY + 1;
+    *whereY = *whereY + 1;
         editScroll.bufferY++;
       }
       if (editScroll.scrollActiveV == VSCROLL_ON && *whereY == rows-2 ) {
@@ -801,14 +801,14 @@ int special_keys(long *whereX, long *whereY, char ch) {
             editScroll.scrollPointer = editScroll.scrollPointer + 1;
             editScroll.bufferY++;
             oldX = *whereX;
-	    writeBuffertoDisplayRaw(editBuffer); 
-	    forceBufferUpdate = 1; 
+        writeBuffertoDisplayRaw(editBuffer);
+        forceBufferUpdate = 1;
             *whereY = rows-2;
             *whereX = oldX;
           }
       }
      } else if(strcmp(chartrail, K_PAGEDOWN_TRAIL) == 0) {
-      //Page Down key 
+      //Page Down key
       oldX = *whereX;
       if (editScroll.scrollActiveV == VSCROLL_ON) {
          if (editScroll.scrollPointer+editScroll.displayLength <= editScroll.scrollLimit) {
@@ -818,12 +818,12 @@ int special_keys(long *whereX, long *whereY, char ch) {
             editScroll.scrollPointer = editScroll.scrollLimit;
             editScroll.bufferY = editScroll.scrollLimit+1;
           }
-  	  writeBuffertoDisplay(editBuffer);
+      writeBuffertoDisplay(editBuffer);
           *whereY = START_CURSOR_Y;
           *whereX = oldX;
       }
      } else if(strcmp(chartrail, K_PAGEUP_TRAIL) == 0) {
-      //Page Down key 
+      //Page Down key
       oldX = *whereX;
       if (editScroll.scrollActiveV == VSCROLL_ON) {
          if (editScroll.scrollPointer > editScroll.displayLength) {
@@ -834,55 +834,55 @@ int special_keys(long *whereX, long *whereY, char ch) {
             editScroll.bufferY = 1;
           }
           //*whereY = rows-2;
-  	  writeBuffertoDisplay(editBuffer);
-          *whereX = oldX; 
+      writeBuffertoDisplay(editBuffer);
+          *whereX = oldX;
           *whereY = START_CURSOR_Y;
       }
      }else if(strcmp(chartrail, K_HOME_TRAIL) == 0 || strcmp(chartrail, K_HOME_TRAIL2) == 0 ) {
            editScroll.scrollPointer = 0;
-           editScroll.bufferY = 1; 
-  	   writeBuffertoDisplay(editBuffer);
-           //*whereX = oldX; 
+           editScroll.bufferY = 1;
+       writeBuffertoDisplay(editBuffer);
+           //*whereX = oldX;
            *whereY = START_CURSOR_Y;
      }else if(strcmp(chartrail, K_END_TRAIL) == 0 || strcmp(chartrail, K_END_TRAIL2) == 0 ) {
            editScroll.scrollPointer = editScroll.scrollLimit;
            editScroll.bufferY = editScroll.scrollLimit+(rows-4);
-  	   writeBuffertoDisplay(editBuffer);
-           //*whereX = oldX; 
+       writeBuffertoDisplay(editBuffer);
+           //*whereX = oldX;
            *whereY = rows-2;
     } else if(strcmp(chartrail, K_DELETE) == 0) {
       //delete button;
     } else if(strcmp(chartrail, K_ALT_F) == 0) {
       data.index=FILE_MENU;
-      drop_down(&kglobal);	//animation  
+      drop_down(&kglobal);  //animation
     } else if(strcmp(chartrail, K_ALT_P) == 0) {
       data.index=OPT_MENU;
-      drop_down(&kglobal);	//animation  
+      drop_down(&kglobal);  //animation
     } else if(strcmp(chartrail, K_ALT_H) == 0) {
       data.index=HELP_MENU;
-      drop_down(&kglobal);	//animation  
+      drop_down(&kglobal);  //animation
     } else if(strcmp(chartrail, K_ALT_O) == 0) {
-      openFileHandler();	//Open file Dialog
+      openFileHandler();    //Open file Dialog
     } else if(strcmp(chartrail, K_ALT_N) == 0) {
-      newDialog(currentFile);	// New file
+      newDialog(currentFile);   // New file
       refresh_screen(-1);
     } else if(strcmp(chartrail, K_ALT_A) == 0) {
-      saveasDialog(currentFile);	//Save as.. file
+      saveasDialog(currentFile);    //Save as.. file
       refresh_screen(-1);
     } else if(strcmp(chartrail, K_ALT_D) == 0) {
-      fileInfoDialog();		//Info file
+      fileInfoDialog();     //Info file
     } else if(strcmp(chartrail, K_ALT_W) == 0) {
       if(strcmp(currentFile, UNKNOWN) == 0)
-	saveasDialog(currentFile);	//Write to file
+    saveasDialog(currentFile);  //Write to file
       else {
-	saveDialog(currentFile);
+    saveDialog(currentFile);
       }
       refresh_screen(-1);
     } else if(strcmp(chartrail, K_ALT_X) == 0) {
       if(fileModified == 1)
-	exitp = confirmation();	//Shall we exit? Global variable!
+    exitp = confirmation(); //Shall we exit? Global variable!
       else
-	exitp = EXIT_FLAG;
+    exitp = EXIT_FLAG;
     }
     esc_key = 1;
   } else {
@@ -898,7 +898,7 @@ int special_keys(long *whereX, long *whereY, char ch) {
 int main_screen() {
   int     i;
 
-  //Save previous values  
+  //Save previous values
   get_terminal_dimensions(&rows, &columns);
   old_rows = rows;
   old_columns = columns;
@@ -926,28 +926,28 @@ int main_screen() {
   /* Frames */
   //window appearance and scroll bar
   for(i = 2; i < rows; i++) {
-    write_ch(columns, i, ' ', SCROLLBAR_BACK, SCROLLBAR_FORE);	//Scroll bar
-    write_ch(1, i, NVER_LINE, EDITWINDOW_BACK, EDITWINDOW_FORE);	//upper vertical line box-like char 
+    write_ch(columns, i, ' ', SCROLLBAR_BACK, SCROLLBAR_FORE);  //Scroll bar
+    write_ch(1, i, NVER_LINE, EDITWINDOW_BACK, EDITWINDOW_FORE);    //upper vertical line box-like char
   }
   for(i = 2; i < columns; i++) {
-    write_ch(i, 2, NHOR_LINE, EDITWINDOW_BACK, EDITWINDOW_FORE);	//horizontal line box-like char
+    write_ch(i, 2, NHOR_LINE, EDITWINDOW_BACK, EDITWINDOW_FORE);    //horizontal line box-like char
     write_ch(i, rows - 1, ' ', EDITWINDOW_BACK, EDITWINDOW_FORE);
   }
-  write_ch(1, 2, NUPPER_LEFT_CORNER, EDITWINDOW_BACK, EDITWINDOW_FORE);	//upper-left box-like char
+  write_ch(1, 2, NUPPER_LEFT_CORNER, EDITWINDOW_BACK, EDITWINDOW_FORE); //upper-left box-like char
   //horizontal scroll bar
   for(i = 2; i < columns; i++) {
     write_ch(i, rows - 1, FILL_CHAR, SCROLLBAR_BACK, SCROLLBAR_FORE);
   }
   //Window-appearance
-  write_ch(columns, 2, NUPPER_RIGHT_CORNER, EDITWINDOW_BACK, EDITWINDOW_FORE);	//right window corner
+  write_ch(columns, 2, NUPPER_RIGHT_CORNER, EDITWINDOW_BACK, EDITWINDOW_FORE);  //right window corner
   write_ch(columns, rows - 1, NLOWER_RIGHT_CORNER, EDITWINDOW_BACK,
-	   EDITWINDOW_FORE);
+       EDITWINDOW_FORE);
   write_ch(1, rows - 1, NLOWER_LEFT_CORNER, EDITWINDOW_BACK,
-	   EDITWINDOW_FORE);
+       EDITWINDOW_FORE);
 
   //Center and diplay file name
   write_str((columns / 2) - (strlen(currentFile) / 2), 2, currentFile,
-	    MENU_PANEL, MENU_FOREGROUND0);
+        MENU_PANEL, MENU_FOREGROUND0);
   //Scroll symbols
   write_ch(columns, 3, '^', SCROLLBAR_ARR, SCROLLBAR_FORE);
   write_ch(columns, rows - 2, 'v', SCROLLBAR_ARR, SCROLLBAR_FORE);
@@ -978,21 +978,21 @@ int i,j;
       write_ch(i,j,FILL_CHAR,EDITAREACOL,EDITWINDOW_FORE);
      }
   for(i = 2; i < columns; i++) {
-    write_ch(i, 2, NHOR_LINE, EDITWINDOW_BACK, EDITWINDOW_FORE);	//horizontal line box-like char
+    write_ch(i, 2, NHOR_LINE, EDITWINDOW_BACK, EDITWINDOW_FORE);    //horizontal line box-like char
   }
   //Center and diplay file name
   write_str((columns / 2) - (strlen(currentFile) / 2), 2, currentFile,
-	    MENU_PANEL, MENU_FOREGROUND0);
+        MENU_PANEL, MENU_FOREGROUND0);
   //writeBuffertoDisplay(editBuffer);
   update_screen();
   update_smart();
 }
- 
+
 /*-------------------*/
 /* Clean Status Bar  */
 /*-------------------*/
 
- 
+
 //Clean Status bar
 void cleanStatusBar(){
   int i;
@@ -1000,7 +1000,7 @@ void cleanStatusBar(){
     write_ch(i, rows, FILL_CHAR, STATUSBAR, STATUSMSG);
   }
 }
- 
+
 /*--------------------------*/
 /* Display horizontal menu  */
 /*--------------------------*/
@@ -1030,7 +1030,7 @@ char horizontal_menu() {
 /* Display File menu       */
 /*-------------------------*/
 
-void filemenu() {  
+void filemenu() {
   cleanStatusBar();
   data.index = OPTION_NIL;
   write_str(1, rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG);
@@ -1059,7 +1059,7 @@ void filemenu() {
   }
   if(data.index == OPTION_3) {
     //Save option
-    if (fileModified != FILE_READMODE){ 
+    if (fileModified != FILE_READMODE){
       if(strcmp(currentFile, UNKNOWN) == 0)
         saveasDialog(currentFile);
       else {
@@ -1074,7 +1074,7 @@ void filemenu() {
     refresh_screen(-1);
   }
   if(data.index == OPTION_4) {
-    //Save as option  
+    //Save as option
       saveasDialog(currentFile);
       refresh_screen(-1);
   }
@@ -1082,7 +1082,7 @@ void filemenu() {
   if(data.index == OPTION_5) {
     //Exit option
     if(fileModified == 1)
-      exitp = confirmation();	//Shall we exit? Global variable!
+      exitp = confirmation();   //Shall we exit? Global variable!
     else
       exitp = EXIT_FLAG;
   }
@@ -1121,7 +1121,7 @@ void optionsmenu() {
     //Set Colors
     setColor = colorsWindow(mylist,COLORSWTITLE);
     setColorScheme(setColor);
-    checkConfigFile(setColor);	//save new configuration in config file
+    checkConfigFile(setColor);  //save new configuration in config file
     refresh_screen(1);
   }
   data.index = OPTION_NIL;
@@ -1135,7 +1135,7 @@ void optionsmenu() {
 /* Display Help menu        */
 /*--------------------------*/
 
-void helpmenu() { 
+void helpmenu() {
   cleanStatusBar();
   data.index = OPTION_NIL;
   write_str(1, rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG);
@@ -1181,16 +1181,16 @@ int confirmation() {
     //save file if modified?
     if(ok == 1) {
       if(strcmp(currentFile, UNKNOWN) == 0)
-	saveasDialog(currentFile);
+    saveasDialog(currentFile);
       else {
-	saveDialog(currentFile);
+    saveDialog(currentFile);
       }
       ok = EXIT_FLAG;
     } else {
       if (ok != 2) ok = EXIT_FLAG;
     }
   } else {
-    ok = -1;			//Exit without asking.
+    ok = -1;            //Exit without asking.
   }
   return ok;
 }
@@ -1228,16 +1228,16 @@ int help_info() {
   }
  //writeBuffertoDisplay(editBuffer);
   msg[0] = '\0';
-  strcat(msg, HELP1);		//located in user_inter.h
-  strcat(msg, HELP2);		//located in user_inter.h
-  strcat(msg, HELP3);		//located in user_inter.h
-  strcat(msg, HELP4);		//located in user_inter.h
-  strcat(msg, HELP5);		//located in user_inter.h
-  strcat(msg, HELP6);		//located in user_inter.h
-  strcat(msg, HELP7);		//located in user_inter.h
-  strcat(msg, HELP8);		//located in user_inter.h
-  strcat(msg, HELP9);		//located in user_inter.h
-  strcat(msg, HELP10);		//located in user_inter.h
+  strcat(msg, HELP1);       //located in user_inter.h
+  strcat(msg, HELP2);       //located in user_inter.h
+  strcat(msg, HELP3);       //located in user_inter.h
+  strcat(msg, HELP4);       //located in user_inter.h
+  strcat(msg, HELP5);       //located in user_inter.h
+  strcat(msg, HELP6);       //located in user_inter.h
+  strcat(msg, HELP7);       //located in user_inter.h
+  strcat(msg, HELP8);       //located in user_inter.h
+  strcat(msg, HELP9);       //located in user_inter.h
+  strcat(msg, HELP10);      //located in user_inter.h
   strcat(msg, "\0");
   helpWindow(mylist, msg, HELPWTITLE);
   refresh_screen(0);
@@ -1249,8 +1249,8 @@ int help_info() {
 /*----------------------*/
 
 void drop_down(char *kglobal) {
-/* 
-   Drop_down loop animation. 
+/*
+   Drop_down loop animation.
    K_LEFTMENU/K_RIGHTMENU -1 is used when right/left arrow keys are used
    so as to break vertical menu and start the adjacent menu
    kglobal is changed by the menu functions.
@@ -1262,35 +1262,35 @@ void drop_down(char *kglobal) {
  //  writeBuffertoDisplay(editBuffer);
   do {
     if(*kglobal == K_ESCAPE) {
-      //Exit drop-down menu with ESC           
+      //Exit drop-down menu with ESC
       *kglobal = 0;
       break;
     }
     if(data.index == FILE_MENU) {
       filemenu();
       if(*kglobal == K_LEFTMENU) {
-	data.index = OPT_MENU;
+    data.index = OPT_MENU;
       }
       if(*kglobal == K_RIGHTMENU) {
-	data.index = HELP_MENU;
+    data.index = HELP_MENU;
       }
     }
     if(data.index == OPT_MENU) {
       optionsmenu();
       if(*kglobal == K_LEFTMENU) {
-	data.index = HELP_MENU;
+    data.index = HELP_MENU;
       }
       if(*kglobal == K_RIGHTMENU) {
-	data.index = FILE_MENU;
+    data.index = FILE_MENU;
       }
     }
     if(data.index == HELP_MENU) {
       helpmenu();
       if(*kglobal == K_LEFTMENU) {
-	data.index = FILE_MENU;
+    data.index = FILE_MENU;
       }
       if(*kglobal == K_RIGHTMENU) {
-	data.index = OPT_MENU;
+    data.index = OPT_MENU;
       }
     }
   } while(*kglobal != K_ENTER);
@@ -1301,15 +1301,15 @@ void drop_down(char *kglobal) {
 /*---------*/
 void credits() {
 /* Frees memory and displays goodbye message */
-  //Free selected path item/path from opfiledialog 
+  //Free selected path item/path from opfiledialog
   size_t i; //to be compatible with strlen
-  char auth[27] ="Coded by v3l0r3k 2019-2021";  
+  char auth[27] ="Coded by v3l0r3k 2019-2021";
 if (openFileData.itemIndex != 0) {
     free(openFileData.item);
     free(openFileData.path);
   }
   free_buffer();
-  resetTerm();			//restore terminal settings from failsafe
+  resetTerm();          //restore terminal settings from failsafe
   showcursor();
   resetAnsi(0);
   screencol(0);
@@ -1330,11 +1330,11 @@ if (openFileData.itemIndex != 0) {
 
   outputcolor(0, 97);
   do{
-    if (timerC(&_timer1) == 1) { 
+    if (timerC(&_timer1) == 1) {
        gotoxy(i,8);
        if (i==strlen(auth)) outputcolor(0,93);
-       if (i<10 || i>16) 
-	if (i<=strlen(auth)) printf("%c", auth[i-1]);
+       if (i<10 || i>16)
+    if (i<=strlen(auth)) printf("%c", auth[i-1]);
        printf("\n");
        i++;
      }
@@ -1364,7 +1364,7 @@ void cleanBuffer(EDITBUFFER editBuffer[MAX_LINES]) {
 }
 
 int writetoBuffer(EDITBUFFER editBuffer[MAX_LINES], long whereX, long whereY,
-		  char ch) {
+          char ch) {
   int     oldValue;
   oldValue = editBuffer[whereY].charBuf[whereX].specialChar;
   if(ch == SPECIAL_CHARS_SET1) {
@@ -1374,7 +1374,7 @@ int writetoBuffer(EDITBUFFER editBuffer[MAX_LINES], long whereX, long whereY,
     editBuffer[whereY].charBuf[whereX].specialChar = SPECIAL_CHARS_SET2;
     editBuffer[whereY].charBuf[whereX].ch = ch;
   } else {
-    //Special char example -61 -95 : á
+    //Special char example -61 -95 : รก
     if(oldValue == SPECIAL_CHARS_SET1 || oldValue == SPECIAL_CHARS_SET2)
       editBuffer[whereY].charBuf[whereX].specialChar = oldValue;
     else
@@ -1401,24 +1401,24 @@ int writeBuffertoFile(FILE * filePtr, EDITBUFFER editBuffer[MAX_LINES]) {
 
   //Check if pointer is valid
   if(filePtr != NULL) {
-    rewind(filePtr);		//Make sure we are at the beginning
+    rewind(filePtr);        //Make sure we are at the beginning
     lineCounter = 0;
     inlineChar = 0;
     do {
       oldChar = tempChar;
       tempChar = editBuffer[lineCounter].charBuf[inlineChar].ch;
       specialChar =
-	  editBuffer[lineCounter].charBuf[inlineChar].specialChar;
+      editBuffer[lineCounter].charBuf[inlineChar].specialChar;
       inlineChar++;
       if(tempChar == END_LINE_CHAR) {
-	inlineChar = 0;
-	lineCounter++;
+    inlineChar = 0;
+    lineCounter++;
       }
       if(tempChar > 0) {
-	fprintf(filePtr, "%c", tempChar);
+    fprintf(filePtr, "%c", tempChar);
       } else {
-	//Special accents
-	fprintf(filePtr, "%c%c", specialChar, tempChar);
+    //Special accents
+    fprintf(filePtr, "%c%c", specialChar, tempChar);
       }
     } while(tempChar != CHAR_NIL);
     //Check if last line finishes in 0x0A - oldChar = 0x0A
@@ -1441,7 +1441,7 @@ int saveDialog(char fileName[MAX_TEXT]) {
   strcpy(tempMsg, fileName);
   strcat(tempMsg, WSAVE_MSG);
   ok = infoWindow(mylist, tempMsg, FILESAVEDWTITLE);
-  fileModified = 0;		//reset modified flag
+  fileModified = 0;     //reset modified flag
 
   return ok;
 }
@@ -1465,16 +1465,16 @@ int saveasDialog(char fileName[MAX_TEXT]) {
     if(file_exists(fileName)) {
       ok = yesnoWindow(mylist, WFILEEXISTS_MSG, EXISTSWTITLE);
       if(ok == CONFIRMATION) {
-	//Save anyway.
-	closeFile(filePtr);
-	openFile(&filePtr, fileName, "w");
-	writeBuffertoFile(filePtr, editBuffer);
-	strcpy(tempMsg, fileName);
-	strcat(tempMsg, WSAVE_MSG);
-	ok = infoWindow(mylist, tempMsg, FILESAVEDWTITLE);
-	fileModified = 0;
+    //Save anyway.
+    closeFile(filePtr);
+    openFile(&filePtr, fileName, "w");
+    writeBuffertoFile(filePtr, editBuffer);
+    strcpy(tempMsg, fileName);
+    strcat(tempMsg, WSAVE_MSG);
+    ok = infoWindow(mylist, tempMsg, FILESAVEDWTITLE);
+    fileModified = 0;
       } else {
-	//Do nothing.
+    //Do nothing.
       }
     } else {
       closeFile(filePtr);
@@ -1508,12 +1508,12 @@ int newDialog(char fileName[MAX_TEXT]) {
     if(ok == 1) {
       cleanBuffer(editBuffer);
       strcpy(fileName, tempFile);
-  	editScroll.scrollActiveV = VSCROLL_OFF; //Scroll is inactive.
-  	editScroll.totalLines = 1; //There is just one line active in buffer
-  	editScroll.bufferX = 1;
-  	editScroll.bufferY = 1;
-   	cursorX=START_CURSOR_X;
-    	cursorY=START_CURSOR_Y;
+    editScroll.scrollActiveV = VSCROLL_OFF; //Scroll is inactive.
+    editScroll.totalLines = 1; //There is just one line active in buffer
+    editScroll.bufferX = 1;
+    editScroll.bufferY = 1;
+    cursorX=START_CURSOR_X;
+        cursorY=START_CURSOR_Y;
     }
     ok = 1;
   }
@@ -1526,14 +1526,14 @@ int newDialog(char fileName[MAX_TEXT]) {
 
 int openFileHandler() {
   char    oldFile[MAX_TEXT];
-  
-  int ok=chdir(currentPath);		//Go back to original path
+
+  int ok=chdir(currentPath);        //Go back to original path
   ok++; //to avoid warning
   //Update screen if not scrolling
   if (forceBufferUpdate == 1) {
     writeBuffertoDisplay(editBuffer);
     forceBufferUpdate = 0;
-  } 
+  }
   //free current item if it exists
   if (openFileData.itemIndex != 0){
         free(openFileData.item);
@@ -1546,12 +1546,12 @@ int openFileHandler() {
   if(openFileData.itemIndex != 0) {
     //check if file exists
     if (!file_exists(openFileData.path)) {
-	alertWindow(mylist, WCHECKFILE2_MSG, INFOWTITLE);
+    alertWindow(mylist, WCHECKFILE2_MSG, INFOWTITLE);
     }
-    //Change current File Name 
+    //Change current File Name
     //if the index is different than CLOSE_WINDOW
     clearString(oldFile, MAX_TEXT);
-    strcpy(oldFile, currentFile);	//save previous file to go back
+    strcpy(oldFile, currentFile);   //save previous file to go back
     clearString(currentFile, MAX_TEXT);
     strcpy(currentFile, openFileData.path);
     cleanBuffer(editBuffer);
@@ -1559,9 +1559,9 @@ int openFileHandler() {
     if(filePtr != NULL)
       closeFile(filePtr);
     handleopenFile(&filePtr, currentFile, oldFile);
-  } 
-  
-  //Write current buffer	
+  }
+
+  //Write current buffer
   writeBuffertoDisplay(editBuffer);
   return 1;
 }
@@ -1635,7 +1635,7 @@ short checkScrollValues(long lines){
 /*-----------------------------*/
 
 int writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES]) {
-  long     i = 0, j = 0, z=0,clean=0; 
+  long     i = 0, j = 0, z=0,clean=0;
   char    tempChar, specialChar;
   //Dump edit buffer to screen
   if (editScroll.scrollActiveV == 1)
@@ -1647,25 +1647,25 @@ int writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES]) {
     specialChar = editBuffer[z+j].charBuf[i].specialChar;
     if(tempChar != CHAR_NIL) {
        if(tempChar != END_LINE_CHAR) {
-	if(i == columns - 4) {
-	  //temporary restriction until vertical scroll is implemented
-	  i = 0;
-	  if (j<editScroll.displayLength-1) j++;
+    if(i == columns - 4) {
+      //temporary restriction until vertical scroll is implemented
+      i = 0;
+      if (j<editScroll.displayLength-1) j++;
           else
             tempChar = END_LINE_CHAR;
-	}
+    }
         write_ch(i + START_CURSOR_X, j + START_CURSOR_Y, specialChar,
-		 EDITAREACOL, EDIT_FORECOLOR);
-	write_ch(i + START_CURSOR_X, j + START_CURSOR_Y, tempChar,
-		 EDITAREACOL, EDIT_FORECOLOR);
-	i++;
+         EDITAREACOL, EDIT_FORECOLOR);
+    write_ch(i + START_CURSOR_X, j + START_CURSOR_Y, tempChar,
+         EDITAREACOL, EDIT_FORECOLOR);
+    i++;
       }
       if(tempChar == END_LINE_CHAR) {
-	//clean remaining screen cells
+    //clean remaining screen cells
         for (clean=i+START_CURSOR_X; clean<columns; clean++)
-		write_ch(clean,j+START_CURSOR_Y,FILL_CHAR, EDITAREACOL, EDIT_FORECOLOR);
- 	i = 0;
-	j++;
+        write_ch(clean,j+START_CURSOR_Y,FILL_CHAR, EDITAREACOL, EDIT_FORECOLOR);
+    i = 0;
+    j++;
         if (j>editScroll.displayLength-1) break;
       }
     }
@@ -1678,7 +1678,7 @@ int writeBuffertoDisplay(EDITBUFFER editBuffer[MAX_LINES]) {
 /*----------------------------------------*/
 
 int writeBuffertoDisplayRaw(EDITBUFFER editBuffer[MAX_LINES]) {
-  long     i = 0, j = 0, z=0,clean=0; 
+  long     i = 0, j = 0, z=0,clean=0;
   char    tempChar, specialChar;
   //Dump edit buffer to screen
   if (editScroll.scrollActiveV == 1)
@@ -1690,28 +1690,28 @@ int writeBuffertoDisplayRaw(EDITBUFFER editBuffer[MAX_LINES]) {
     specialChar = editBuffer[z+j].charBuf[i].specialChar;
     if(tempChar != CHAR_NIL) {
        if(tempChar != END_LINE_CHAR) {
-	if(i == columns - 4) {
-	  //temporary restriction until vertical scroll is implemented
-	  i = 0;
-	  if (j<editScroll.displayLength-1) j++;
+    if(i == columns - 4) {
+      //temporary restriction until vertical scroll is implemented
+      i = 0;
+      if (j<editScroll.displayLength-1) j++;
           else
             tempChar = END_LINE_CHAR;
-	}
-	gotoxy(i + START_CURSOR_X, j + START_CURSOR_Y);
-	outputcolor(EDITAREACOL, EDIT_FORECOLOR);
-	printf("%c%c",specialChar,tempChar);
-	i++;
+    }
+    gotoxy(i + START_CURSOR_X, j + START_CURSOR_Y);
+    outputcolor(EDITAREACOL, EDIT_FORECOLOR);
+    printf("%c%c",specialChar,tempChar);
+    i++;
       }
       if(tempChar == END_LINE_CHAR) {
-	//clean remaining screen cells
+    //clean remaining screen cells
         for (clean=i+START_CURSOR_X; clean<columns; clean++){
-	  gotoxy(clean, j + START_CURSOR_Y);
-	  outputcolor(EDITAREACOL, EDIT_FORECOLOR);
-	  printf("%c",FILL_CHAR);
+      gotoxy(clean, j + START_CURSOR_Y);
+      outputcolor(EDITAREACOL, EDIT_FORECOLOR);
+      printf("%c",FILL_CHAR);
         }
-		//write_ch(clean,j+START_CURSOR_Y,FILL_CHAR, EDITAREACOL, EDIT_FORECOLOR);
- 	i = 0;
-	j++;
+        //write_ch(clean,j+START_CURSOR_Y,FILL_CHAR, EDITAREACOL, EDIT_FORECOLOR);
+    i = 0;
+    j++;
         if (j>editScroll.displayLength-1) break;
       }
     }
@@ -1732,39 +1732,39 @@ int filetoBuffer(FILE * filePtr, EDITBUFFER editBuffer[MAX_LINES]) {
   fileModified = FILE_UNMODIFIED;
   //Check if pointer is valid
   if(filePtr != NULL) {
-    rewind(filePtr);		//Make sure we are at the beginning
-    ch = getc(filePtr);		//Peek ahead in the file
+    rewind(filePtr);        //Make sure we are at the beginning
+    ch = getc(filePtr);     //Peek ahead in the file
     while(!feof(filePtr)) {
       if(ch != CHAR_NIL) {
-	//Temporary restrictions until scroll is implemented.
-	//if(lineCounter == rows - 4)
-	//  break;
-        
-	if(ch == SPECIAL_CHARS_SET1 || ch == SPECIAL_CHARS_SET2) {
-	  writetoBuffer(editBuffer, inlineChar, lineCounter, ch);
-	  //Read accents
-	  ch = getc(filePtr);
-	  writetoBuffer(editBuffer, inlineChar, lineCounter, ch);
-	} else {
-	  if(ch > 0)
-	    writetoBuffer(editBuffer, inlineChar, lineCounter, ch);
-	}
+    //Temporary restrictions until scroll is implemented.
+    //if(lineCounter == rows - 4)
+    //  break;
+
+    if(ch == SPECIAL_CHARS_SET1 || ch == SPECIAL_CHARS_SET2) {
+      writetoBuffer(editBuffer, inlineChar, lineCounter, ch);
+      //Read accents
+      ch = getc(filePtr);
+      writetoBuffer(editBuffer, inlineChar, lineCounter, ch);
+    } else {
+      if(ch > 0)
+        writetoBuffer(editBuffer, inlineChar, lineCounter, ch);
+    }
         //TABs are converted into spaces
         if(ch == K_TAB) {
-	    for (tabcount=0;tabcount<TAB_DISTANCE;tabcount++){
-	      ch = FILL_CHAR;
-	      writetoBuffer(editBuffer, inlineChar, lineCounter, ch);
-	      inlineChar++;
-	    }
-	} else
+        for (tabcount=0;tabcount<TAB_DISTANCE;tabcount++){
+          ch = FILL_CHAR;
+          writetoBuffer(editBuffer, inlineChar, lineCounter, ch);
+          inlineChar++;
+        }
+    } else
 
-	inlineChar++; //NEXT CHARACTER
+    inlineChar++; //NEXT CHARACTER
 
-	if(ch == END_LINE_CHAR) {
-	  inlineChar = 0;
-	  ch = 0;
-	  lineCounter++;
-	}
+    if(ch == END_LINE_CHAR) {
+      inlineChar = 0;
+      ch = 0;
+      lineCounter++;
+    }
        if (lineCounter == MAX_LINES) {
            //open as readMode
            fileModified = FILE_READMODE;
@@ -1792,7 +1792,7 @@ int handleopenFile(FILE ** filePtr, char *fileName, char *oldFileName) {
   //Check for binary characters to determine filetype
   checkF = checkFile(*filePtr);
   if(checkF > 5) {
-    //File doesn't seem to be a text file. Open anyway?  
+    //File doesn't seem to be a text file. Open anyway?
     ok = yesnoWindow(mylist, WCHECKFILE_MSG, OPENANYWAYWTITLE);
     if(ok == 1) {
      filetoBuffer(*filePtr, editBuffer);
@@ -1811,7 +1811,7 @@ int handleopenFile(FILE ** filePtr, char *fileName, char *oldFileName) {
   } else {
     //Check wheter file is bigger than buffer. 32700 lines
     linesinFile = countLinesFile(*filePtr);
-    if (linesinFile > MAX_LINES) 
+    if (linesinFile > MAX_LINES)
     ok=infoWindow(mylist, WCHECKLINES_MSG, FILETOBIGWTITLE);
     //Reset values
     editScroll.scrollPointer = 0; //Set pointer to 0
@@ -1840,12 +1840,12 @@ int createnewFile(FILE ** filePtr, char *fileName, int checkFile) {
     if(file_exists(fileName)) {
       ok = yesnoWindow(mylist, WFILEEXISTS_MSG, CREATEWTITLE);
       if(ok == CONFIRMATION) {
-	//Overwrite anyway.
-	openFile(filePtr, fileName, "w");
-	ok = 1;
+    //Overwrite anyway.
+    openFile(filePtr, fileName, "w");
+    ok = 1;
       } else {
-	//Do nothing. Don't overwrite.
-	ok = 0;
+    //Do nothing. Don't overwrite.
+    ok = 0;
       }
     } else {
       //File does not exist.

@@ -1,20 +1,20 @@
-/* 
+/*
 ======================================================================
 SCREEN MODULE - CODE
 Description:
-Module to create a double screen buffer to control how things are 
-displayed on the terminal. Simple linked list with a "cell" that 
-stores the character to be shown along with its background and 
-foreground colors. The size of our buffer will be determined by 
-sc_rows x sc_columns. 
-Everything you want to show on screen will be printed to the 
-buffer first. Then the update routine will finally show the final 
+Module to create a double screen buffer to control how things are
+displayed on the terminal. Simple linked list with a "cell" that
+stores the character to be shown along with its background and
+foreground colors. The size of our buffer will be determined by
+sc_rows x sc_columns.
+Everything you want to show on screen will be printed to the
+buffer first. Then the update routine will finally show the final
 composition to the user.
 
 @author : Velorek
 @version : 1.0
-Last modified : 15/04/2019 ScreeChanged added + update_ch. 
-			   Update_smart corrected
+Last modified : 15/04/2019 ScreeChanged added + update_ch.
+               Update_smart corrected
 =====================================================================
 */
 
@@ -25,7 +25,7 @@ Last modified : 15/04/2019 ScreeChanged added + update_ch.
 #include <stdio.h>
 #include <string.h>
 #include <locale.h>
-#include <wchar.h>		/* wint_t */
+#include <wchar.h>      /* wint_t */
 #include "rterm.h"
 //#include "keyb.h"
 #include "scbuf.h"
@@ -86,13 +86,13 @@ Last modified : 15/04/2019 ScreeChanged added + update_ch.
 
 SCREENCELL *primary_start = NULL;
 SCREENCELL *primary_end = NULL;
-SCREENCELL *secondary_start = NULL;	//backup secondary buffer
-SCREENCELL *secondary_end = NULL;	//backup secondary buffer
+SCREENCELL *secondary_start = NULL; //backup secondary buffer
+SCREENCELL *secondary_end = NULL;   //backup secondary buffer
 SCREENCELL *screen, *old_screen;
 
 int     sc_rows, sc_columns;
 int     buffersize;
-int     bufferON = 0;		//It keeps track of whether the 2nd buffer is full (active).
+int     bufferON = 0;       //It keeps track of whether the 2nd buffer is full (active).
 
 /*====================================================================*/
 /* FUNCTIONS - CODE                                                   */
@@ -103,7 +103,7 @@ int     bufferON = 0;		//It keeps track of whether the 2nd buffer is full (activ
 /*-------------------------*/
 
 void create_screen() {
-  /* 
+  /*
      Get terminal dimensions and create 2 dynamic lists with the size of the screen.
      if it is not possible to determine screen dimensions default is set to 80x25.
      Insertion happens at the end of the list. There are three pointers to keep track
@@ -133,9 +133,9 @@ void create_screen() {
     screen->index = 0;
     screen->sc_rows = sc_rows;
     screen->sc_columns = sc_columns;
-    primary_start = screen;	// Pointer to first cell
-    primary_end = screen;	// Pointer to last/previous cell
-    primary_end->next = NULL;	//Last item of the list next points to NULL
+    primary_start = screen; // Pointer to first cell
+    primary_end = screen;   // Pointer to last/previous cell
+    primary_end->next = NULL;   //Last item of the list next points to NULL
   }
   for(i = 1; i <= buffersize - 1; i++) {
     //Additional items
@@ -144,11 +144,11 @@ void create_screen() {
     new_cell->forecolor0 = F_WHITE;
     new_cell->item = FILL_CHAR;
     new_cell->index = i;
-    new_cell->sc_rows = sc_rows;	//Each cell stores screen dimensions
+    new_cell->sc_rows = sc_rows;    //Each cell stores screen dimensions
     new_cell->sc_columns = sc_columns;
     primary_end->next = new_cell;
     primary_end = new_cell;
-    primary_end->next = NULL;	//Last item of the list next points to NULL
+    primary_end->next = NULL;   //Last item of the list next points to NULL
   }
 
   // Create secondary buffer to be used as an 'undo' buffer
@@ -162,9 +162,9 @@ void create_screen() {
     old_screen->sc_rows = sc_rows;
     old_screen->sc_columns = sc_columns;
     old_screen->index = 0;
-    secondary_start = old_screen;	// Pointer to first cell
-    secondary_end = old_screen;	// Pointer to last/previous cell
-    secondary_end->next = NULL;	//Last item of the list next points to NULL
+    secondary_start = old_screen;   // Pointer to first cell
+    secondary_end = old_screen; // Pointer to last/previous cell
+    secondary_end->next = NULL; //Last item of the list next points to NULL
   }
   for(i = 1; i <= buffersize - 1; i++) {
     //Additional items
@@ -173,11 +173,11 @@ void create_screen() {
     newo_cell->forecolor0 = F_WHITE;
     newo_cell->item = FILL_CHAR;
     newo_cell->index = i;
-    newo_cell->sc_rows = sc_rows;	//Each cell stores screen dimensions
+    newo_cell->sc_rows = sc_rows;   //Each cell stores screen dimensions
     newo_cell->sc_columns = sc_columns;
     secondary_end->next = newo_cell;
     secondary_end = newo_cell;
-    secondary_end->next = NULL;	//Last item of the list next points to NULL
+    secondary_end->next = NULL; //Last item of the list next points to NULL
   }
 
 }
@@ -191,9 +191,9 @@ void save_buffer() {
   //Thereby saving current screen to be retrieved later.
   int     i;
   SCREENCELL *aux, *aux2;
-  bufferON = SECONDARYBUFFER_ON;	// =1
-  aux = primary_start;		// Points to the first item of the first buffer
-  aux2 = secondary_start;	//Points to the first item of the second buffer 
+  bufferON = SECONDARYBUFFER_ON;    // =1
+  aux = primary_start;      // Points to the first item of the first buffer
+  aux2 = secondary_start;   //Points to the first item of the second buffer
   for(i = 0; i < buffersize; i++) {
     //Copy buffer 1 into buffer 2.
     aux2->forecolor0 = aux->forecolor0;
@@ -212,7 +212,7 @@ void flush_buffer() {
   //Thereby saving current screen to be retrieved later.
   int     i;
   SCREENCELL *aux;
-  aux = primary_start;		// Points to the first item of the first buffer
+  aux = primary_start;      // Points to the first item of the first buffer
   for(i = 0; i < buffersize; i++) {
     //Copy buffer 1 into buffer 2.
     aux->item = FILL_CHAR;
@@ -230,9 +230,9 @@ void restore_buffer() {
   //Retrieve previous screen from memory.
   int     i;
   SCREENCELL *aux, *aux2;
-  aux = primary_start;		// Points to the first item of the first buffer
-  aux2 = secondary_start;	//Points to the first item of the second buffer 
-  bufferON = SECONDARYBUFFER_OFF;	//=0
+  aux = primary_start;      // Points to the first item of the first buffer
+  aux2 = secondary_start;   //Points to the first item of the second buffer
+  bufferON = SECONDARYBUFFER_OFF;   //=0
   for(i = 0; i < buffersize; i++) {
     //Copy buffer 2 into buffer 1.
     aux->forecolor0 = aux2->forecolor0;
@@ -294,14 +294,14 @@ int screenChanged() {
   int     changed=0;
   SCREENCELL *aux, *aux2;
   aux = primary_start;
-  aux2 = secondary_start; 
+  aux2 = secondary_start;
   for(i = 0; i <= buffersize; i++) {
-    if(aux->item != aux2->item || 
-	aux->forecolor0 != aux2->forecolor0 || 
-	aux->backcolor0 != aux2->backcolor0 ) {
+    if(aux->item != aux2->item ||
+    aux->forecolor0 != aux2->forecolor0 ||
+    aux->backcolor0 != aux2->backcolor0 ) {
          changed=1;
      }
-   
+
    if(aux->next != NULL)
       aux = aux->next;
    if(aux2->next != NULL)
@@ -321,15 +321,15 @@ char read_char(int x, int y) {
   char ch = FILL_CHAR;
   SCREENCELL *aux;
   if (bufferON==1)  //check whether savebuffer to use in the dynamic shadow
-    aux = secondary_start;		// we set our auxiliary pointer at the beginning of the list.
+    aux = secondary_start;      // we set our auxiliary pointer at the beginning of the list.
   else
     aux = primary_start;
-  pos = (y - 1) * sc_columns + x;	//this is the formula to calculate the position index in the screen buffer
+  pos = (y - 1) * sc_columns + x;   //this is the formula to calculate the position index in the screen buffer
  if(pos <= buffersize) {
   for(i = 0; i <= pos; i++) {
       //run through the buffer until reaching desired position
       if(aux->index == pos)
-	break;
+    break;
       aux = aux->next;
     }
   ch = aux->item;
@@ -347,15 +347,15 @@ void flush_cell(int x, int y) {
   int     i, pos;
   SCREENCELL *aux;
   if (bufferON==1)  //check whether savebuffer to use in the dynamic shadow
-    aux = secondary_start;		// we set our auxiliary pointer at the beginning of the list.
+    aux = secondary_start;      // we set our auxiliary pointer at the beginning of the list.
   else
     aux = primary_start;
-  pos = (y - 1) * sc_columns + x;	//this is the formula to calculate the position index in the screen buffer
+  pos = (y - 1) * sc_columns + x;   //this is the formula to calculate the position index in the screen buffer
  if(pos <= buffersize) {
   for(i = 0; i <= pos; i++) {
       //run through the buffer until reaching desired position
       if(aux->index == pos)
-	break;
+    break;
       aux = aux->next;
     }
   aux->item = FILL_CHAR;
@@ -371,15 +371,15 @@ void write_ch(int x, int y, char ch, int backcolor, int forecolor) {
 /* It will be shown on screen when it is updated by calling update_screen */
   int     i, pos;
   SCREENCELL *aux;
-  aux = primary_start;		// we set our auxiliary pointer at the beginning of the list.
-  pos = (y - 1) * sc_columns + x;	//This is the formula to calculate the position index in the screen buffer
+  aux = primary_start;      // we set our auxiliary pointer at the beginning of the list.
+  pos = (y - 1) * sc_columns + x;   //This is the formula to calculate the position index in the screen buffer
 
   if(pos <= buffersize) {
-    // If it is within buffer limits, otherwise do nothing.  
+    // If it is within buffer limits, otherwise do nothing.
     for(i = 0; i <= pos; i++) {
       //Run through the buffer until reaching desired position
       if(aux->index == pos)
-	break;
+    break;
       aux = aux->next;
     }
     //Update cell info at position selected.
@@ -408,7 +408,7 @@ void write_str(int x, int y, char *str, int backcolor, int forecolor) {
   for(i = 0; i <= strlen(str) - 1; i++) {
     write_ch(wherex, y, astr[i], backcolor, forecolor);
     wherex = wherex + 1;
-  
+
   }
   //astr = NULL;
   //free(astr);
@@ -419,7 +419,7 @@ void write_str(int x, int y, char *str, int backcolor, int forecolor) {
 /*-----------------------------------------------*/
 
 int write_num(int x, int y, int num, int length, int backcolor,
-	       int forecolor) {
+           int forecolor) {
   //the length of the string must be passed on the function
   char   *astr;
   char len;
@@ -437,28 +437,28 @@ int write_num(int x, int y, int num, int length, int backcolor,
 void update_ch(int x, int y, char ch, char specialChar, int backcolor, int forecolor) {
 //It could be interepreted as write_ch - forced update to screen
 //to be used to simplify code in update_smart.
-signed char tempchar=0;     
+signed char tempchar=0;
    gotoxy(x, y);
    outputcolor(forecolor, backcolor);
    if(ch > 0)
       // Check whether chars are negative
       printf("%c", ch);
    else {
-      /* 
-         For convention, if we have negative chars that means that we 
+      /*
+         For convention, if we have negative chars that means that we
          are printing box-like characters or accents to screen.
          Box characters are mapped to Unicode. */
   //printf("%c(0",27); //Deprecated - Activate box-like characters in vt-100
   // printf("%c(B",27); //Deactivate box-like characters
     if(ch >= -55 && ch <= -50) {
-	//Box chars.
-	setlocale(LC_ALL, "");
-	tempchar = ch * -1;	//Change negative values to positive.
-	printf("%lc", (wint_t) mapChartoU8(tempchar));	//unicode
+    //Box chars.
+    setlocale(LC_ALL, "");
+    tempchar = ch * -1; //Change negative values to positive.
+    printf("%lc", (wint_t) mapChartoU8(tempchar));  //unicode
     }
     if(ch <= -65)
-	//Accents -61/-62 + char
-	printf("%c%c", specialChar, ch);
+    //Accents -61/-62 + char
+    printf("%c%c", specialChar, ch);
     }
 }
 /*------------------------------------*/
@@ -478,7 +478,7 @@ void update_screen() {
 
    if(aux->next != NULL)
       aux = aux->next;
-   wherex = wherex + 1;	//line counter
+   wherex = wherex + 1; //line counter
     if(wherex == sc_columns+1) {
       //new line
       wherex = 1;
@@ -557,56 +557,56 @@ void screen_color(int color) {
 /* Destroy both screen buffers */
 /*-----------------------------*/
 /* Function to delete the entire linked list */
-void free_buffer() 
-{ 
+void free_buffer()
+{
    /* deref head_ref to get the real head */
-   SCREENCELL *current; 
-   SCREENCELL *next; 
+   SCREENCELL *current;
+   SCREENCELL *next;
    current=primary_start;
-  
-   while (current != NULL)  
-   { 
-       next = current->next; 
+
+   while (current != NULL)
+   {
+       next = current->next;
        //if (current != NULL){
          free(current);
        //}
-       current = next; 
-   } 
+       current = next;
+   }
     current=secondary_start;
-  
-   while (current != NULL)  
-   { 
-       next = current->next; 
+
+   while (current != NULL)
+   {
+       next = current->next;
        //if (current != NULL){
          free(current);
        //}
-       current = next; 
-   } 
-   free(current); 
-   /* deref head_ref to affect the real head back 
+       current = next;
+   }
+   free(current);
+   /* deref head_ref to affect the real head back
       in the caller. */
    primary_start = NULL;
   primary_end = NULL;
   secondary_start = NULL;
   secondary_end = NULL;
-} 
+}
 
 /*------------------------------------------*/
 /* Draw window area with or without border. */
 /*------------------------------------------*/
 
 void draw_window(int x1, int y1, int x2, int y2, int backcolor,
-		 int bordercolor, int titlecolor, int border, int title) {
-/* 
+         int bordercolor, int titlecolor, int border, int title) {
+/*
    Chars for drawing box-like characters will be passed as negative values.
    When the update_screen routine is called, it will check for negative
-   values and map these chars to Unicode characters. 
+   values and map these chars to Unicode characters.
  */
   int     i, j;
   char ch=FILL_CHAR;
   i = x1;
   j = y1;
-  save_buffer();		//saves screen to be restored later in close_window
+  save_buffer();        //saves screen to be restored later in close_window
   //shadow
   for(j = y1 + 1; j <= y2 + 1; j++)
     for(i = x1 + 1; i <= x2 + 1; i++)
@@ -624,18 +624,18 @@ void draw_window(int x1, int y1, int x2, int y2, int backcolor,
     //with borders. ANSI-ASCII 106-121
     for(i = x1; i <= x2; i++) {
       //upper and lower borders
-      write_ch(i, y1, NHOR_LINE, backcolor, bordercolor);	//horizontal line box-like char
+      write_ch(i, y1, NHOR_LINE, backcolor, bordercolor);   //horizontal line box-like char
       write_ch(i, y2, NHOR_LINE, backcolor, bordercolor);
     }
     for(j = y1; j <= y2; j++) {
       //left and right borders
-      write_ch(x1, j, NVER_LINE, backcolor, bordercolor);	//vertical line box-like char
+      write_ch(x1, j, NVER_LINE, backcolor, bordercolor);   //vertical line box-like char
       write_ch(x2, j, NVER_LINE, backcolor, bordercolor);
     }
-    write_ch(x1, y1, NUPPER_LEFT_CORNER, backcolor, bordercolor);	//upper-left corner box-like char
-    write_ch(x1, y2, NLOWER_LEFT_CORNER, backcolor, bordercolor);	//lower-left corner box-like char
-    write_ch(x2, y1, NUPPER_RIGHT_CORNER, backcolor, bordercolor);	//upper-right corner box-like char
-    write_ch(x2, y2, NLOWER_RIGHT_CORNER, backcolor, bordercolor);	//lower-right corner box-like char
+    write_ch(x1, y1, NUPPER_LEFT_CORNER, backcolor, bordercolor);   //upper-left corner box-like char
+    write_ch(x1, y2, NLOWER_LEFT_CORNER, backcolor, bordercolor);   //lower-left corner box-like char
+    write_ch(x2, y1, NUPPER_RIGHT_CORNER, backcolor, bordercolor);  //upper-right corner box-like char
+    write_ch(x2, y2, NLOWER_RIGHT_CORNER, backcolor, bordercolor);  //lower-right corner box-like char
   }
   if (title == 1) {
     for(i = x1; i <= x2; i++)

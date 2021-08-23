@@ -1,11 +1,11 @@
-/* 
+/*
 ======================================================================
 Module to describe basic file operations.
 
 @author : Velorek
 @version : 1.0
- 
-LAST MODIFIED : 14/04/2019 - Rename headers 
+
+LAST MODIFIED : 14/04/2019 - Rename headers
 ======================================================================
 */
 
@@ -27,7 +27,7 @@ LAST MODIFIED : 14/04/2019 - Rename headers
 int file_exists(char *fileName) {
   int     ok;
   if(access(fileName, F_OK) != -1) {
-    ok = 1;			//File exists
+    ok = 1;         //File exists
   } else {
     ok = 0;
   }
@@ -57,12 +57,12 @@ long countLinesFile(FILE * filePtr) {
   char    ch;
   long    counterA = 0;
   if(filePtr != NULL) {
-    rewind(filePtr);		//Make sure we are at the beginning
+    rewind(filePtr);        //Make sure we are at the beginning
 
-    ch = getc(filePtr);		//Peek ahead in the file
+    ch = getc(filePtr);     //Peek ahead in the file
     while(!feof(filePtr)) {
       if(ch == END_LINE_CHAR) {
-	counterA++;
+    counterA++;
       }
       ch = getc(filePtr);
     }
@@ -79,14 +79,14 @@ long checkFile(FILE * filePtr) {
   char    ch;
   long    counterA = 0;
   if(filePtr != NULL) {
-    rewind(filePtr);		//Make sure we are at the beginning
+    rewind(filePtr);        //Make sure we are at the beginning
 
-    ch = getc(filePtr);		//Peek ahead in the file
+    ch = getc(filePtr);     //Peek ahead in the file
     while(!feof(filePtr)) {
       if(ch < 9) {
-	//discard accents
-	if(ch > -60)
-	  counterA++;
+    //discard accents
+    if(ch > -60)
+      counterA++;
       }
       ch = getc(filePtr);
     }
@@ -109,23 +109,23 @@ void checkConfigFile(int setValue) {
       //Read config file
       ok = openFile(&fp, CONFIGFILE, "r");
       if(ok == 1) {
-	ch = getc(fp);
-	ch = ch - '0';
-	setColorScheme(ch);
+    ch = getc(fp);
+    ch = ch - '0';
+    setColorScheme(ch);
       } else {
-	printf("Error opening configfile. Setting to defaults.\n");
-	setColorScheme(0);
+    printf("Error opening configfile. Setting to defaults.\n");
+    setColorScheme(0);
       }
       closeFile(fp);
     } else {
       //Create config file
       ok = openFile(&fp, CONFIGFILE, "w");
       if(ok == 1) {
-	fprintf(fp, "%d", 0);
-	setColorScheme(0);	//Create config file and set default color Scheme        
+    fprintf(fp, "%d", 0);
+    setColorScheme(0);  //Create config file and set default color Scheme
       } else {
-	printf("Error creating config file. Setting to defaults.\n");
-	setColorScheme(0);
+    printf("Error creating config file. Setting to defaults.\n");
+    setColorScheme(0);
       }
       closeFile(fp);
     }
@@ -135,7 +135,7 @@ void checkConfigFile(int setValue) {
     ok = openFile(&fp, CONFIGFILE, "w");
     if(ok == 1) {
       fprintf(fp, "%d", setValue);
-      //setColorScheme(setValue); //Create config file and set default color Scheme        
+      //setColorScheme(setValue); //Create config file and set default color Scheme
     } else {
       printf("Error creating config file. Setting to defaults.\n");
       setColorScheme(0);
@@ -150,9 +150,9 @@ void checkConfigFile(int setValue) {
 /*-----------*/
 
 int openFile(FILE ** filePtr, char fileName[], char *mode)
-/* 
+/*
 Open file.
-@return ok = 1 ? 0 Success! 
+@return ok = 1 ? 0 Success!
 */
 {
   int     ok = 0;
@@ -173,9 +173,9 @@ Open file.
 /*------------*/
 
 int closeFile(FILE * filePtr) {
-/* 
+/*
    Close file
-@return ok: 
+@return ok:
 */
   int     ok;
 

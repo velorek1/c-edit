@@ -1,10 +1,10 @@
-/* 
+/*
 ======================================================================
 Module to control some display routines that implement ANSI functions.
 
 @author : Velorek
 @version : 1.0
- 
+
 LAST MODIFIED : 14/04/2019 Rename Headers
 ======================================================================
 */
@@ -88,7 +88,7 @@ int readch() {
 }
 
 void resetch() {
-//Clear ch  
+//Clear ch
   term.c_cc[VMIN] = 0;
   tcsetattr(0, TCSANOW, &term);
   peek_character = 0;
@@ -137,16 +137,16 @@ void screencol(int x) {
 /*-----------------------*/
 void resetAnsi(int x) {
   switch (x) {
-    case 0:			//reset all colors and attributes
+    case 0:         //reset all colors and attributes
       printf("%c[0m", 0x1b);
       break;
-    case 1:			//reset only attributes
+    case 1:         //reset only attributes
       printf("%c[20m", 0x1b);
       break;
-    case 2:			//reset foreg. colors and not attrib.
+    case 2:         //reset foreg. colors and not attrib.
       printf("%c[39m", 0x1b);
       break;
-    case 3:			//reset back. colors and not attrib.
+    case 3:         //reset back. colors and not attrib.
       printf("%c[49m", 0x1b);
       break;
     default:

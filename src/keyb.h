@@ -1,11 +1,11 @@
 /*
 ========================================================================
-- HEADER - 
+- HEADER -
 Module to handle keyboard input in Linux and create
 a further layer of abstraction.
 @author : Velorek
-@version : 1.0  
-Last modified: 11/03/2021 +Added home/end keys                                                                
+@version : 1.0
+Last modified: 11/03/2021 +Added home/end keys
 ========================================================================
 */
 

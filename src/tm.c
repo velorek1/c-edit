@@ -28,7 +28,7 @@ long res, res2;
     }
     //Calculate tick by divided time elapsed with ms requested
     res2 = mytimer1->elapsed / mytimer1->ms;
-    if (res2 == mytimer1->oldticks) {  
+    if (res2 == mytimer1->oldticks) {
       mytimer1->ticks = mytimer1->ticks + 1;
       mytimer1->oldticks = mytimer1->oldticks+1;
       return 1;

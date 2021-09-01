@@ -1,8 +1,10 @@
 * Top Priority:
-- Change editBuffer from static array to dynamic structure.
-- Expand behaviour of ENTER and BACKSPACE and REAL TAB SUPPORT!
-- Add horizontal scroll.
-- Clean code, reduce global variables and redundancies.
+- Change editBuffer from static array to dynamic structure (in progress)
+- Expand behaviour of ENTER and BACKSPACE and REAL TAB SUPPORT! (in progress)
+- Add horizontal scroll (in progress)
+- Clean code, reduce global variables and redundancies:
+    - Redo scbuf.c and listc.c and make them leaner and more efficient.
+- Code a more backward compatible timer : tm.c 
 
 * Less Priority:
 - Highlight text and copy/paste function

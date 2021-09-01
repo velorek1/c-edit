@@ -31,7 +31,7 @@ Files in /src/:
 * opfile.c -> module that list files with scroll capabilities to select the file to open.
 * uintf.c -> module with user interface widgets: alert windows, confirmation windows, textbox, etc.
 * fileb.c -> module for single file operations.
-* tm.c -> module for a millisecond timer for animations
+* tm.c -> module for a millisecond timer for animations (C11)
 * main.c -> Editor in C in the style of MSDOS EDIT (In progress).
 
 

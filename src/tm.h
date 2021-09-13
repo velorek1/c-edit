@@ -25,9 +25,7 @@ Last modified: 27/12/2020 + New module
 typedef struct nTimer{
         int  ms; //milliseconds
     long oldtime; //to calculate increment in time
-    long oldticks; //to calculate increment in no. of ticks
     long ticks; //how many ticks have been made
-    long elapsed; //total time elapsed in ms
 } NTIMER;
 
 /* Miliseconds timer */

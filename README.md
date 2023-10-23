@@ -11,8 +11,6 @@ C-EDIT for linux - IN PROGRESS - A linux text editor in the style of the MSDOS E
 Ideally, a keyboard library abstraction would be nice to expand the editor's possibilities.**
 
 
-If you want to support this project:
-https://tippin.me/@Velorek
 
 TO INSTALL:  
 

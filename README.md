@@ -6,7 +6,7 @@ C-EDIT for linux - IN PROGRESS - A linux text editor in the style of the MSDOS E
 
 
 **Check TODO list to keep updated on the progress: 
-2023 -> Currently adding the Dynamic buffer (vector of lines) -> tests in https://github.com/velorek1/ceditbuf
+2024 -> Currently adding the Dynamic buffer (vector of lines) -> tests in https://github.com/velorek1/ceditbuf
 2022 -> I have rewritten the screenbuffer and fixed polling issues (lynx: https://github.com/velorek1/lynx). 
 Ideally, a keyboard library abstraction would be nice to expand the editor's possibilities.**
 

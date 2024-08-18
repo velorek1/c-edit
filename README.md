@@ -3,11 +3,11 @@ C-EDIT Project in C language (NO NCURSES)
 C-EDIT for linux - IN PROGRESS - A linux text editor in the style of the MSDOS EDIT - WITHOUT USING NCURSES
 * WARNING: DO NOT EDIT YOUR PRECIOUS FILES WITH THIS EDITOR!!
 
+This repository is kept frozen as a DEMO. Up-to-date development of the project can be found at:
+- 2024 -> Currently adding the Dynamic buffer (vector of lines) -> tests in https://github.com/velorek1/ceditbuf
 
-
-**Check TODO list to keep updated on the progress: 
-2024 -> Currently adding the Dynamic buffer (vector of lines) -> tests in https://github.com/velorek1/ceditbuf
-2022 -> I have rewritten the screenbuffer and fixed polling issues (lynx: https://github.com/velorek1/lynx). 
+History:
+- 2022 -> I have rewritten the screenbuffer and fixed polling issues (lynx: https://github.com/velorek1/lynx). 
 Ideally, a keyboard library abstraction would be nice to expand the editor's possibilities.**
 
 

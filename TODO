@@ -1,4 +1,6 @@
 * Top Priority:
+Check https://github.com/velorek1/ceditbuf/ for latest development implementations (2024(
+
 - Code a more backward compatible timer : tm.c (done!)
 - Create Keyboard abstraction to make it more portable (bottom-up fashion!)
 - Rewrite screen buffer (in progress).

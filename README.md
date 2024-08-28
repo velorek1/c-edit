@@ -4,10 +4,10 @@ C-EDIT for linux - ALPHA - A linux text editor in the style of the MSDOS EDIT - 
 Works well with Termux! :)
 * WARNING: DO NOT EDIT YOUR PRECIOUS FILES WITH THIS EDITOR!!
 
-If you want to support this project: https://tippin.me/@Velorek
-Contact me at: velorek1@gmail.com
+**If you want to support this project: https://tippin.me/@Velorek
+Contact me at: velorek1@gmail.com**
 
-NEW: AUGUST 2024 (merging with ceditbuf)
+**NEW: AUGUST 2024 (merging with ceditbuf)**
 - Dynamic buffer added (vector of lines) 
 
 History:

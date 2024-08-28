@@ -4,7 +4,7 @@ C-EDIT for linux - ALPHA - A linux text editor in the style of the MSDOS EDIT - 
 * WARNING: DO NOT EDIT YOUR PRECIOUS FILES WITH THIS EDITOR!!
 
 NEW: AUGUST 2024 (merging with ceditbuf)
-- Dynamic buffer added (vector of lines) -> more tests in https://github.com/velorek1/ceditbuf
+- Dynamic buffer added (vector of lines) 
 
 History:
 - 2023 -> Previous demo version kept in https://github.com/velorek1/C-editold

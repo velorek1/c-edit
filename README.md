@@ -1,7 +1,11 @@
 C-EDIT Project in C language (NO NCURSES)
 =========================================
 C-EDIT for linux - ALPHA - A linux text editor in the style of the MSDOS EDIT - WITHOUT USING NCURSES
+Works well with Termux! :)
 * WARNING: DO NOT EDIT YOUR PRECIOUS FILES WITH THIS EDITOR!!
+
+If you want to support this project: https://tippin.me/@Velorek
+Contact me at: velorek1@gmail.com
 
 NEW: AUGUST 2024 (merging with ceditbuf)
 - Dynamic buffer added (vector of lines) 

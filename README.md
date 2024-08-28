@@ -14,7 +14,7 @@ History:
 - 2023 -> Previous demo version kept in https://github.com/velorek1/C-editold
 - 2022 -> I have rewritten the screenbuffer and fixed polling issues (lynx: https://github.com/velorek1/lynx). 
 Ideally, a keyboard library abstraction would be nice to expand the editor's possibilities.**
-
+- 2018 -> Start of the project; basic demo concepts developed (https://oldstuff286.blogspot.com/2018/03/c-edit-in-progress.html)
 
 TO INSTALL:  
 

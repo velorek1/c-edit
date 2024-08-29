@@ -1,7 +1,8 @@
 /* C-edit project
-* Last updated - 5/4/2024
+* Last updated - 29/8/2024
 * New drop-down menu implementation
 * Added more modularisation: editor.c menu.c
+* Scrollbars added
 */
 
 #include <stdlib.h>
@@ -28,7 +29,9 @@ void _resizeScreen();
 wchar_t currentChar = 0;
 char tempMessage[150];
 int displayMessage(char *temporaryMessage, int x, int y, int fColor, int bColor, int timeDuration);
-
+void update_indicators();
+int oldPositionY = 4; 
+int oldPositionX = 2; 
 void draw_screen(){
 //BASE SCREEN IS STORED IN SCREEN 2
      int i=0;
@@ -166,6 +169,62 @@ wchar_t code_point;
     write_num(screen1, new_columns - 31, new_rows, _length(&edBuf1), STATUSBAR, STATUSMSG,1);
 }
 
+void update_indicators() {
+/*
+   Update cursor position display on screen.
+   Values are float to save decimal points.
+- Formulas:
+   scrollRatio = totalFileLines / displayLength;
+   currentPosition = bufferY / scrollRatio;
+   percentage = (currentPosition * 100) / displayLength;
+   To adjust to the bar dimensions:
+   scrollBar = ((displayLength-3) * percentage) / 100;
+*/
+  int i=0;
+  float scrollIndicator=1.0, positionY=0.0;
+  float hscrollIndicator=1.0, positionX=0.0;
+  float percentage=0.0, scrollBar=0.0, scrollRatio =0.0;
+  float hpercentage=0.0, hscrollBar=0.0, hscrollRatio =0.0;
+  update_str(new_columns - 24, new_rows, "| L:        C:     ", STATUSBAR, STATUSMSG);
+  write_num(screen1, new_columns - 10, new_rows, posBufX, STATUSBAR, STATUSMSG,1);
+  write_num(screen1, new_columns - 20, new_rows, posBufY+1, STATUSBAR, STATUSMSG,1);
+  update_str(new_columns - 39, new_rows, "| LINES:      ", STATUSBAR, STATUSMSG);
+  write_num(screen1, new_columns - 31, new_rows, _length(&edBuf1), STATUSBAR, STATUSMSG,1);
+
+ //Scroll indicator and percentage display
+ if (_length(&edBuf1) > vdisplayArea ) {
+     //Clean scroll bar
+     write_ch(screen1,new_columns, oldPositionY, ' ', SCROLLBAR_BACK, SCROLLBAR_FORE,1);
+//     for(i = 4; i < new_rows-2; i++) {
+ //     if (i != 4+scrollBar) write_ch(screen1,new_columns, i, ' ', SCROLLBAR_BACK, SCROLLBAR_FORE,1);
+  //   }
+     positionY = posBufY;
+     scrollRatio = _length(&edBuf1) / vdisplayArea;
+     scrollIndicator = positionY / scrollRatio;
+     percentage = (scrollIndicator * 100) / vdisplayArea;
+     scrollBar = ((vdisplayArea-3) * percentage)/100;
+     if (positionY == 1) percentage = 0;
+     if (percentage > 100) percentage = 100;
+     write_ch(screen1,new_columns, 4+scrollBar, '*', SCROLLBAR_SEL, SCROLLBAR_FORE,1);
+     write_str(screen1,new_columns-5,new_rows, "    ", STATUSBAR,F_BLACK,1);
+     i=write_num(screen1,new_columns-5,new_rows, percentage, STATUSBAR,F_YELLOW,1);
+     write_ch(screen1,new_columns-5+i,new_rows, '%', STATUSBAR,F_YELLOW,1);
+     oldPositionY = 4+scrollBar;
+  }
+ if (posBufX>0){
+     positionX = posBufX;
+     write_ch(screen1, oldPositionX,new_rows-1, ' ', SCROLLBAR_BACK, SCROLLBAR_FORE,1);
+     oldPositionX = 2+hscrollBar;
+     hscrollRatio = MAX_LINE_SIZE / hdisplayArea;
+     hscrollIndicator = positionX / hscrollRatio;
+     hpercentage = (hscrollIndicator * 100) / hdisplayArea;
+     hscrollBar = (((hdisplayArea) * hpercentage)/100);
+     if (hscrollBar+2>=new_columns-3) hscrollBar = new_columns-5;
+     write_ch(screen1, 2+hscrollBar,new_rows-1, '*', SCROLLBAR_SEL, SCROLLBAR_FORE,1);
+     oldPositionX = 2+hscrollBar;
+ }
+}
+
 
 int main(int argc, char *argv[]) {
 
@@ -239,6 +298,7 @@ int keypressed = 0;
 		  if (ch != 0 && esc_key==0 && unwantedChars == 0&& posBufX <MAX_LINE_SIZE) editor_section(ch);
 	        }
 	   }
+	   update_indicators();
         }else{
 	//if not keypressed reset values for unwanted characters
              esc_key=0; unwantedChars = 0;
@@ -559,6 +619,7 @@ void _resizeScreen(){
 	create_screen(&screen1);
 	draw_screen();
 	flush_editarea(0);
+	hdisplayArea = new_columns - 2;	
 	vdisplayArea = new_rows - 4;
 	//if screen resizes file pointers are rewound to the beginning
         currentLine = 0;

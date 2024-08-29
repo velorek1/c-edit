@@ -49,6 +49,7 @@ int  currentColumn=0; //horizontal scroll, pointer to current char position in l
 long linesinFile=0; //vertical scroll
 long vdisplayLimit=0; //vertical scroll, last line that allows scroll
 int vdisplayArea = 0; //size in lines of the allowed displayed area // calculated when screen resizes 
+int hdisplayArea = 0; //size in lines of the allowed displayed area // calculated when screen resizes 
 long currentLine=0; //verticall scroll, pointer to current top line in scroll
 int vscrollActive=0; //vertical scroll, vertical scroll is posible
 //extern int hscrollActive; //horizontal scroll, horizontal scroll is posible
@@ -95,6 +96,7 @@ int initCEDIT(){
    create_screen(&screen2);
    //how many lines are vertical display area consists of
    vdisplayArea = new_rows - 4;
+   hdisplayArea = new_columns - 2;	
    shiftH=0; 
    return 0;
 }	

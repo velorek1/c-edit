@@ -183,6 +183,7 @@ extern VLINES tempLine;
 
 extern FILE *filePointer;
 extern int vdisplayArea; //size in lines of the allowed displayed area // calculated when screen resizes 
+extern int hdisplayArea; //size in lines of the allowed displayed area // calculated when screen resizes 
 extern int  hdisplayLimit; //horizontal scroll, last char position in line that allows scroll
 extern int  currentColumn; //horizontal scroll, pointer to current char position in line
 extern long linesinFile; //vertical scroll

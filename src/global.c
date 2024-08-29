@@ -60,7 +60,15 @@ FILE *filePointer;
 int fileModified=FILE_UNMODIFIED;
 
 char aboutMSG[7][MAXLINE] = {ABOUT_ASC_0,ABOUT_ASC_1,ABOUT_ASC_2,ABOUT_ASC_3,ABOUT_ASC_4,ABOUT_ASC_5};
-
+char help[HELPLINES][MAXLINE] = { HELP0,
+	HELP1, HELP2, HELP3,
+	HELP4, HELP5, HELP6,
+	HELP7, HELP8, HELP9,
+	HELP10, HELP11, HELP12,
+	HELP13, HELP14, HELP15,
+	HELP16, HELP17, HELP18,
+	HELP19, HELP20
+};
 int initCEDIT(){
    get_terminal_dimensions(&new_rows,&new_columns);
    //Init timer
@@ -122,3 +130,5 @@ int _animation(){
     
 
 }
+
+

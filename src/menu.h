@@ -22,6 +22,7 @@ char helpmenu();
 void credits();
 void handlemenus(char *returnMenuChar, int *menuCounter, BOOL horizontalMenu);
 int displayAbout();
+int displayHelp(void);
 
 #endif
 

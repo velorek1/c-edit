@@ -332,6 +332,9 @@ int special_keys() {
           strcmp(chartrail, K_F3_TRAIL2) == 0) {
     } else if(strcmp(chartrail, K_F1_TRAIL) == 0 ||
           strcmp(chartrail, K_F1_TRAIL2) == 0) {
+	  flush_editarea(0);
+          buffertoScreen(0); 
+	    displayHelp();
     } else if(strcmp(chartrail, K_F4_TRAIL) == 0 ||
           strcmp(chartrail, K_F4_TRAIL2) == 0) {
 

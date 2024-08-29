@@ -148,7 +148,7 @@ char filemenu() {
   if(scrollData.itemIndex == OPTION_1) {
     flush_editarea(0);
       buffertoScreen(0);
-      countCh=inputWindow("File:", tempfileName,  "[+] New file",27,2,46);
+      countCh=inputWindow("File:", tempfileName,  "[+] New file",26,2,44);
       if (countCh>0) {
 	 strcpy(fileName, tempfileName);
 	 filetoBuffer(fileName);
@@ -179,7 +179,7 @@ char filemenu() {
       
       flush_editarea(0);
       buffertoScreen(0);
-      countCh=inputWindow("File:", tempfileName,  "Quick load...",27,2,46);
+      countCh=inputWindow("File:", tempfileName,  "Quick load...",26,2,44);
       if (countCh>0) {
 	 strcpy(fileName, tempfileName);
 	 filetoBuffer(fileName);
@@ -196,7 +196,7 @@ char filemenu() {
       buffertoScreen(0);
     	
 	if (strcmp(fileName, "UNTITLED") == 0) {
-        countCh=inputWindow("File:", tempfileName,  "Save file as...",27,2,46);
+        countCh=inputWindow("File:", tempfileName,  "Save file as...",26,2,44);
         if (countCh>0) {
 	  strcpy(fileName, tempfileName);
 	   buffertoFile(fileName);
@@ -219,7 +219,7 @@ char filemenu() {
        flush_editarea(0);
       buffertoScreen(0);
   
-    countCh=inputWindow("File:", fileName,  "Save file as...",27,2,46);
+    countCh=inputWindow("File:", fileName,  "Save file as...",26,2,44);
     if (countCh>0) {
       buffertoFile(fileName);
       flush_editarea(0);
@@ -282,11 +282,14 @@ char helpmenu() {
   loadmenus(HELP_MENU);
   draw_window(screen1,15, 2, 25, 5, MENU_PANEL, MENU_FOREGROUND0, 0,1,0,1,1);
   ch = listBox(listBox1, 18, 3 , &scrollData, MENU_PANEL, MENU_FOREGROUND0,  MENU_SELECTOR, MENU_FOREGROUND1,  -1, VERTICALWITHBREAK,0,1); 
-  if(scrollData.itemIndex == OPTION_1) {
-    //About info
+  if(scrollData.itemIndex == OPTION_1 && ch>0) {
+    //Help dialog
     //help_info();
+    flush_editarea(0);
+    buffertoScreen(0); 
+     displayHelp();
   }
-  if(scrollData.itemIndex == OPTION_2) {
+  if(scrollData.itemIndex == OPTION_2 && ch>0) {
     //About info
     flush_editarea(0);
     buffertoScreen(0);
@@ -405,5 +408,48 @@ int displayAbout(void)
 	dump_screen(screen1);
 	return ch;
 }
-
+void addItemsHelp(LISTCHOICE **listBox1, char textarray[][MAXLINE], int rows)
+{
+//Load items into the list.  
+	//if (*listBox1 != NULL) removeList(listBox1);
+	for (int h = 0; h < rows-1; h++) {
+		//*ch = textarray[h];
+		*listBox1 = addatend(*listBox1, newitem(textarray[h],-1,-1,-1,-1));
+	}
+		*listBox1 = addatend(*listBox1, newitem(textarray[rows-1],-1,-1,B_WHITE,FH_BLUE));
+}
+int displayHelp(void)
+{
+	char ch = 0;
+	resetScrollData(&scrollData);
+	if (listBox1 != NULL)
+		removeList(&listBox1);
+	
+	setselectorLimit(26*2-1);
+	//scrollData.selectorLimit = (26 * 2) - 1;	//No. of chars per item display
+	//scrollData.selectorLimit = 100;	//No. of chars per item display
+ //create_screen(&screen2);
+	copy_screen(screen2, screen1);
+	window(screen1, (new_columns / 2) - 26, (new_rows / 2) - 8,
+		    (new_columns / 2) + 26, (new_rows) / 2 + 8, B_WHITE, F_BLACK,
+		    B_BLACK, 1, 1, 1);
+	write_str(screen1, (new_columns / 2) - 12, (new_rows / 2) - 9,
+		 "[+] MAIN HELP INFORMATION", B_BLACK, FH_WHITE, 1);
+	
+	write_str(screen1, (new_columns / 2) - 1, (new_rows / 2) + 7, "[OK]",
+		  B_RED, F_WHITE, 1);
+	dump_screen(screen1);
+	addItemsHelp(&listBox1, help, HELPLINES);
+	if (listBox1 != NULL)
+		ch = listBox(listBox1, (new_columns / 2) - 24,
+			     (new_rows / 2) - 7, &scrollData, B_WHITE, F_BLACK,
+			     B_WHITE, FH_WHITE, 14, VERTICAL,1,LOCKED);
+	copy_screen(screen1, screen2);
+//	if (screen2 != NULL)
+//		deleteList(&screen2);
+	if (listBox1 != NULL)
+		removeList(&listBox1);
+	dump_screen(screen1);
+	return ch;
+}
 

@@ -78,6 +78,29 @@ extern int WINDOW_TITLEF;
 #define ABOUT_ASC_5 "      Coded   by  V3l0rek     "
 #define ANIMATION "||//--\\\\"
 
+#define HELP0 "C-EDIT                                             \0"
+#define HELP1 "=======                                            \0"
+#define HELP2 "C-EDIT is a terminal TUI curses text editor.       \0"
+#define HELP3 "It offers both vertical and horizontal scroll      \0"
+#define HELP4 "for file buffer navigation. It also features a     \0"
+#define HELP5 "variety of animations and has a built-in open file \0"
+#define HELP6 "dialog to easily locate the files in directories.  \0"
+#define HELP7 "___________________________________________________\0"
+#define HELP8 "[F1] or [ALT + H] -> Display help                  \0"
+#define HELP9 "[F2] or [CTRL + L] -> Activate menu                \0"
+#define HELP10 "[Arrow Keys] -> Navigate file buffer              \0"
+#define HELP11 "[CTRL + A] -> Quick Load  | CTRL + N -> New file  \0"
+#define HELP12 "[ALT + O] -> Open file    |                       \0"
+#define HELP13 "[ALT + S] -> Save file                             \0"
+#define HELP14 "[ESC] or [CTRL + C] or [ALT+X] -> Exit program     \0"
+#define HELP15 "[S] Hide/Show table | CTRL or ALT may be used.     \0"
+#define HELP16 "___________________________________________________\0"
+#define HELP17 "This program was coded in C & Vim from 2018-2024.  \0"
+#define HELP18 "Some of the techniques used can be found in my     \0"
+#define HELP19 "personal blog : oldstuff286.blogspot.com           \0"
+#define HELP20 "Peace!  - by v3l0r3k                               \0"
+#define HELPLINES 21
+
 //USER-DEFINED MESSAGES
 #define UNKNOWN "UNTITLED"
 #define WINDOWMSG "DISPLAY IS TOO SMALL. PLEASE, RESIZE WINDOW"
@@ -141,6 +164,7 @@ extern int WINDOW_TITLEF;
 #define FILE_UNMODIFIED 0
 #define FILE_READMODE 2
 extern char aboutMSG[7][MAXLINE];
+extern char help[HELPLINES][MAXLINE];
 
 extern int new_rows, new_columns, old_rows, old_columns;	// Terminal dimensions
 extern int cursorX, cursorY; //position on screen X:[0, columns -2] Y:[0, rows-3]

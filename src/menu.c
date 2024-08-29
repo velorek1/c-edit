@@ -148,7 +148,7 @@ char filemenu() {
   if(scrollData.itemIndex == OPTION_1) {
     flush_editarea(0);
       buffertoScreen(0);
-      countCh=inputWindow("File:", tempfileName,  "[+] New file",34,2,60);
+      countCh=inputWindow("File:", tempfileName,  "[+] New file",27,2,46);
       if (countCh>0) {
 	 strcpy(fileName, tempfileName);
 	 filetoBuffer(fileName);
@@ -179,7 +179,7 @@ char filemenu() {
       
       flush_editarea(0);
       buffertoScreen(0);
-      countCh=inputWindow("File:", tempfileName,  "Quick load...",28,2,48);
+      countCh=inputWindow("File:", tempfileName,  "Quick load...",27,2,46);
       if (countCh>0) {
 	 strcpy(fileName, tempfileName);
 	 filetoBuffer(fileName);
@@ -196,7 +196,7 @@ char filemenu() {
       buffertoScreen(0);
     	
 	if (strcmp(fileName, "UNTITLED") == 0) {
-        countCh=inputWindow("File:", tempfileName,  "Save file as...",28,2,48);
+        countCh=inputWindow("File:", tempfileName,  "Save file as...",27,2,46);
         if (countCh>0) {
 	  strcpy(fileName, tempfileName);
 	   buffertoFile(fileName);
@@ -219,7 +219,7 @@ char filemenu() {
        flush_editarea(0);
       buffertoScreen(0);
   
-    countCh=inputWindow("File:", fileName,  "Save file as...",28,2,48);
+    countCh=inputWindow("File:", fileName,  "Save file as...",27,2,46);
     if (countCh>0) {
       buffertoFile(fileName);
       flush_editarea(0);
@@ -288,9 +288,122 @@ char helpmenu() {
   }
   if(scrollData.itemIndex == OPTION_2) {
     //About info
-    //about_info();
+    flush_editarea(0);
+    buffertoScreen(0);
+  
+   displayAbout();
   }
   return ch;
+}
+
+//ABOUT
+
+int displayAbout(void)
+{
+	char ch = 0;
+	int i = 0;
+	int colAnimation = F_BLACK;
+	int keypressed = 0;
+        int colCounter = 0;
+	copy_screen(screen2, screen1);
+
+	window(screen1, (new_columns / 2) - 18, (new_rows / 2) - 6,
+	       (new_columns / 2) + 17, (new_rows) / 2 + 3, B_WHITE, F_BLACK,
+	       B_BLACK, 1, 1, 1);
+	
+	for (i = 0; i < 6; i++) {
+		write_str(screen1, (new_columns / 2) - 15,
+			  (new_rows / 2) - 5 + i, aboutMSG[i], B_WHITE,
+			  F_BLACK, 0);
+	}
+	
+	write_str(screen1, (new_columns / 2) - 11, (new_rows / 2) - 7,
+		 "[+] ABOUT INFORMATION", B_BLACK, FH_WHITE, 1);
+		 
+//	write_str(screen1, (new_columns / 2) - 25, (new_rows / 2) + 2,
+		  //aboutMSG[3], B_YELLOW, F_BLACK, 0);
+	write_str(screen1, (new_columns / 2) - 1, (new_rows / 2) + 2, "[OK]",
+		  B_RED, FH_WHITE, 1);
+	
+	dump_screen(screen1);
+	
+	if (kbhit(100) == 1)
+		ch = readch();
+	ch = 0;
+	i = 0;
+	colCounter = 0;
+	//pulsating animation
+	do {
+		keypressed = kbhit(30);
+		if (timerC(&timer2) == TRUE) {
+			//About animation            
+			write_str(screen1, (new_columns / 2) - 15,
+				  (new_rows / 2) - 5 + i, aboutMSG[i], B_WHITE,
+				  colAnimation, 1);
+			i++;
+			if (i == 6) {
+				i = 0;
+				switch (colCounter){
+				case 1:
+					colAnimation = FH_BLACK;
+					break;
+				case 2: 
+					colAnimation = FH_BLACK;
+					break;
+				case 3: 
+					colAnimation = FH_BLACK;
+					break;
+				case 4: 
+					colAnimation = FH_BLACK;
+					break;
+				case 5: 
+					colAnimation = FH_BLACK;
+					break;
+				case 6: 
+					colAnimation = FH_WHITE;
+					break;
+				case 7: 
+					colAnimation = FH_WHITE;
+					break;
+				case 8: 
+					colAnimation = FH_WHITE;
+					break;
+				case 9: 
+					colAnimation = F_BLACK;
+					break;
+				case 10: 
+					colAnimation = F_BLACK;
+					break;
+					
+
+				}
+				colCounter++;
+				if (colCounter ==11) colCounter = 0;
+			}
+			//if terminal resizes
+			if (_animation() == -1)
+				break;
+		}
+		//Process keys
+		if (keypressed == 1) {
+			ch = readch();
+			keypressed = 0;
+
+			//Read special keys
+			if (ch == K_ESCAPE) {
+				ch = readch();
+				if (ch == ESC_KEY)
+				  break;
+			}
+
+		}
+	} while (ch != K_ENTER);
+        resetch();
+	copy_screen(screen1, screen2);
+	if (listBox1 != NULL)
+		removeList(&listBox1);
+	dump_screen(screen1);
+	return ch;
 }
 
 

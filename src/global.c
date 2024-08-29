@@ -10,7 +10,7 @@ SCREENCELL *screen3=NULL;
 NTIMER cursor_timer1;
 NTIMER timer2;
 NTIMER timer3;
-//NTIMER timer3;
+//NTIMER timer4;
 SCROLLDATA scrollData;
 VLINES *edBuf1=NULL; //Buffer vector of lines(1022 chars)
 VLINES tempLine;
@@ -59,14 +59,18 @@ char fullPath[MAXFILENAME];
 FILE *filePointer;
 int fileModified=FILE_UNMODIFIED;
 
+char aboutMSG[7][MAXLINE] = {ABOUT_ASC_0,ABOUT_ASC_1,ABOUT_ASC_2,ABOUT_ASC_3,ABOUT_ASC_4,ABOUT_ASC_5};
+
 int initCEDIT(){
    get_terminal_dimensions(&new_rows,&new_columns);
    //Init timer
    init_timer(&cursor_timer1,TIMER_SPEED);
    init_timer(&timer2,TIMER_SPEED2);
    init_timer(&timer3,TIMER_SPEED3);
+   //init_timer(&timer4,ABOUT_SPEED);
    timer2.ticks=0;
    timer3.ticks=-1;
+   //timer4.ticks=0;
    cursor_timer1.ticks=0;
    //Init Text buffer
    VLINES tempLine = {0};

@@ -582,3 +582,5 @@ int displayMessage(char *temporaryMessage, int x, int y, int fColor, int bColor,
    write_str(screen1, x,y, temporaryMessage, bColor, fColor,1);
    return 1;
 }
+
+

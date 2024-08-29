@@ -14,6 +14,7 @@
 #define TIMER_SPEED 100 //animation
 #define TIMER_SPEED2 30 //cursor
 #define TIMER_SPEED3 100 //temporary messages
+//#define ABOUT_SPEED 300 //about animation
 #define END_LINE_CHAR 0x0A
 #define FILL_CHAR 0x20
 #define ENDSIGNAL -1
@@ -31,11 +32,12 @@ extern SCREENCELL *screen2;
 extern NTIMER cursor_timer1;
 extern NTIMER timer2;
 extern NTIMER timer3;
+//extern NTIMER timer4;
 extern size_t animation;
 extern int centerX;
 //extern LISTCHOICE listBox1;
 extern SCROLLDATA scrollData;
-extern VLINES *edBuf1; //Buffer vector of lines(1022 chars)
+extern VLINES *edBuf1; //Buffer vector of lines(512 chars)
 extern VLINES tempLine;
 
 //COLOR SCHEME
@@ -68,9 +70,12 @@ extern int WINDOW_TITLEF;
 #define TAB_SPACES 8
 
 //ABOUT - ASCII ART
-#define ABOUT_ASC_1 "        _   __       \n"
-#define ABOUT_ASC_2 "       /  _|__ _|.___\n"
-#define ABOUT_ASC_3 "       \\_  |__(_]| |  v0.1 \n       Coded   by  V3l0rek\n "
+#define ABOUT_ASC_0 "______________________________"       
+#define ABOUT_ASC_1 "        _   __                "
+#define ABOUT_ASC_2 "       /  _|__ _|.___         "
+#define ABOUT_ASC_3 "       \\_  |__(_]| |  v0.1   "       
+#define ABOUT_ASC_4 "______________________________"       
+#define ABOUT_ASC_5 "      Coded   by  V3l0rek     "
 #define ANIMATION "||//--\\\\"
 
 //USER-DEFINED MESSAGES
@@ -106,6 +111,7 @@ extern int WINDOW_TITLEF;
 #define OK_MENU 4
 #define MAX_FILENAME 255
 #define MAX_LINES 100000
+#define MAXLINE 255
 
 //DROP-DOWN MENUS
 #define OPTION_1 0
@@ -134,7 +140,7 @@ extern int WINDOW_TITLEF;
 #define FILE_MODIFIED 1
 #define FILE_UNMODIFIED 0
 #define FILE_READMODE 2
-//extern char aboutMSG[7][MAXLINE];
+extern char aboutMSG[7][MAXLINE];
 
 extern int new_rows, new_columns, old_rows, old_columns;	// Terminal dimensions
 extern int cursorX, cursorY; //position on screen X:[0, columns -2] Y:[0, rows-3]

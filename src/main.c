@@ -205,6 +205,7 @@ void update_indicators() {
      scrollBar = ((vdisplayArea-3) * percentage)/100;
      if (positionY == 1) percentage = 0;
      if (percentage > 100) percentage = 100;
+     if (scrollBar+2>=new_rows-5) scrollBar = new_rows - 7;
      write_ch(screen1,new_columns, 4+scrollBar, '*', SCROLLBAR_SEL, SCROLLBAR_FORE,1);
      write_str(screen1,new_columns-5,new_rows, "    ", STATUSBAR,F_BLACK,1);
      i=write_num(screen1,new_columns-5,new_rows, percentage, STATUSBAR,F_YELLOW,1);

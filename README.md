@@ -31,6 +31,7 @@ So far I have implemented:
 * A millisecond timer for animations.
 * Timers and kbhit with no polling for optimate CPU usage.
 * Greater modularity than Demo version
+* Rudimentary syntax highlighting
 
 Files in /src/:
 ===============

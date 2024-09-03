@@ -59,6 +59,7 @@ char fullPath[MAXFILENAME];
 
 FILE *filePointer;
 int fileModified=FILE_UNMODIFIED;
+int deleteKeyPressed = 0;         	    
 
 char aboutMSG[7][MAXLINE] = {ABOUT_ASC_0,ABOUT_ASC_1,ABOUT_ASC_2,ABOUT_ASC_3,ABOUT_ASC_4,ABOUT_ASC_5};
 char help[HELPLINES][MAXLINE] = { HELP0,

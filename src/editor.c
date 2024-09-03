@@ -297,188 +297,235 @@ int endLine=0;
     oldposBufY = posBufY;
     oldEndLine = endLine;
    //HANDLE ENTER KEY 
-    if (ch == K_ENTER){
-      //Add line to buffer
-      //Display limit rows
-      update_ch(cursorX, cursorY, ' ', EDITAREACOL, EDITAREACOL);
-      if (cursorY<new_rows - 3) cursorY++;
-      cursorX = START_CURSOR_X;
-      //If buffer position pointer is at the end create a new empty line
-      if (_length(&edBuf1) <= posBufY){
-        //New line without chars in current line in edit buffer
-        memset(&tempLine, '\0',sizeof(tempLine));
- 	if (_length(&edBuf1)>0) tempLine.index = _length(&edBuf1);
-	else tempLine.index = posBufY;
-        tempLine.linea[posBufX].ch = END_LINE_CHAR;
-        tempLine.linea[posBufX].specialChar = 0;
-        tempLine.linea[posBufX].attrib = 0;
-	edBuf1 = _addatend(edBuf1, _newline(tempLine));
-      //  update_ch(cursorX, cursorY, ' ', EDITAREACOL, EDITAREACOL);
-     } else{ 
-        //SPLIT LINE IN TWO 
-	//Locate the end of the line
-  	endLine = findEndline(tempLine);
-       // update_ch(cursorX, cursorY, ' ', EDITAREACOL, EDITAREACOL);
-          //if (posBufX < endLine) {
-           //Check if there are lines below and if so, move them.
-	   //Move lines algorithm
-	   //Create a new line to make room for the move
-	   //Add current index to new line
-           memset(&splitLine, '\0',sizeof(splitLine));
-           memset(&tempLine, '\0',sizeof(tempLine));
-	   tempLine.index = _length(&edBuf1);
-	   edBuf1 = _addatend(edBuf1, _newline(tempLine));
-	   //Move lines [j -> j+1] from bottom up until 1 line before active line
-	   for (j=_length(&edBuf1); j>posBufY; j--)
-		{
-		     _dumpLine(edBuf1, j, &tempLine);
-    	             _updateLine(edBuf1, j+1, &tempLine);
-		     if (j+START_CURSOR_Y<new_rows-3) cleanSection(j+START_CURSOR_Y,0,findEndline(tempLine));
-	   	}
-	     _dumpLine(edBuf1, posBufY, &tempLine);
-	     //Where are we on current line? -> Shall we move part of it?
-              
-             memset(&splitLine, '\0',sizeof(splitLine));
- 	     //Split (1) and move(2) chars after posBufx to next line
-	     //(1) Split and Update current line with chars that remain
-	     for (i=0; i<posBufX; i++){
-		  splitLine.linea[i].ch = tempLine.linea[i].ch;
-		  splitLine.linea[i].specialChar = tempLine.linea[i].specialChar;
-		  splitLine.linea[i].attrib = tempLine.linea[i].attrib;
-	     } 
-              if (isLineTerminated(splitLine)==FALSE) splitLine.linea[i].ch = END_LINE_CHAR;
-	     _updateLine(edBuf1, posBufY, &splitLine);
-	     j=0;
-	     //(2) Move chars after posBufX to next line
-             memset(&splitLine, '\0',sizeof(splitLine));
- 	     for (i=posBufX; i<endLine; i++){
-		   //j+1 line
-		  splitLine.linea[j].ch = tempLine.linea[i].ch;
-		  splitLine.linea[j].specialChar = tempLine.linea[i].specialChar;
-		  splitLine.linea[j].attrib = tempLine.linea[i].attrib;
-	   	  j++;
-  	      }
-	     if (isLineTerminated(splitLine)==FALSE) splitLine.linea[j].ch = END_LINE_CHAR;
-	   //Update [J+1] line and write changes to screen
-	   _updateLine(edBuf1, posBufY+1, &splitLine);
-	   //cleanScreenLine(cursorY-1);
-           cleanSection(cursorY-1,0,findEndline(tempLine));
-           buffertoScreen(TRUE);
-	          
-      } 
-      //}
-     //scroll if needed, when cursor is at the end and there are lines left
-	        if (_length(&edBuf1) > vdisplayArea && cursorY == new_rows-3 ) {
-	          buffertoScreen(1);
-		  currentLine++;
-		} 
 
-      //Move buffer pointer positions
-      posBufY = posBufY + 1;
-      posBufX = 0;
- 
+   if (ch == K_ENTER) {
+    // ENTER key
+    update_ch(cursorX, cursorY, ' ', EDITAREACOL, EDITAREACOL);
+
+    // Move cursor down if not at the bottom of the screen
+    if (cursorY < new_rows - 3) {
+        cursorY++;
     }
-      //fileModified = FILE_MODIFIED;
- if(ch == K_BACKSPACE) {
-      //BACKSPACE key
-      update_ch(cursorX, cursorY, ' ', EDITAREACOL, EDITAREACOL);
-      if (posBufX == findEndline(tempLine)){
+    cursorX = START_CURSOR_X;
+
+    // If the buffer pointer is at the end, create a new empty line
+    if (_length(&edBuf1) <= posBufY) {
+        // Create a new line without characters in the current line in the edit buffer
+        memset(&tempLine, '\0', sizeof(tempLine));
+        tempLine.index = _length(&edBuf1);
+        tempLine.linea[0].ch = END_LINE_CHAR;
+        tempLine.linea[0].specialChar = 0;
+        tempLine.linea[0].attrib = 0;
+        edBuf1 = _addatend(edBuf1, _newline(tempLine));
+    } else {
+        // SPLIT LINE INTO TWO
+        _dumpLine(edBuf1, posBufY, &tempLine);
+        endLine = findEndline(tempLine);
+
+        // Create a new line to insert the split content
+        memset(&splitLine, '\0', sizeof(splitLine));
+        memset(&tempLine, '\0', sizeof(tempLine));
+        tempLine.index = _length(&edBuf1);
+        edBuf1 = _addatend(edBuf1, _newline(tempLine));
+
+        // Move lines below the current line down by one
+        for (j = _length(&edBuf1) - 1; j > posBufY; j--) {
+            _dumpLine(edBuf1, j, &tempLine);
+            _updateLine(edBuf1, j + 1, &tempLine);
+            if (j + START_CURSOR_Y < new_rows - 3) {
+                cleanSection(j + START_CURSOR_Y, 0, findEndline(tempLine));
+            }
+        }
+
+        // Split the current line at the cursor position
+        _dumpLine(edBuf1, posBufY, &tempLine);
+        memset(&splitLine, '\0', sizeof(splitLine));
+
+        // Copy characters before the cursor to the current line
+        for (i = 0; i < posBufX; i++) {
+            splitLine.linea[i].ch = tempLine.linea[i].ch;
+            splitLine.linea[i].specialChar = tempLine.linea[i].specialChar;
+            splitLine.linea[i].attrib = tempLine.linea[i].attrib;
+        }
+        if (isLineTerminated(splitLine) == FALSE) {
+            splitLine.linea[i].ch = END_LINE_CHAR;
+        }
+        _updateLine(edBuf1, posBufY, &splitLine);
+
+        // Move characters after the cursor to the next line
+        memset(&splitLine, '\0', sizeof(splitLine));
+        j = 0;
+        for (i = posBufX; i < endLine; i++) {
+            splitLine.linea[j].ch = tempLine.linea[i].ch;
+            splitLine.linea[j].specialChar = tempLine.linea[i].specialChar;
+            splitLine.linea[j].attrib = tempLine.linea[i].attrib;
+            j++;
+        }
+        if (isLineTerminated(splitLine) == FALSE) {
+            splitLine.linea[j].ch = END_LINE_CHAR;
+        }
+
+        // Update the new line with the split content
+        _updateLine(edBuf1, posBufY + 1, &splitLine);
+
+        // Clean the screen for the current line and refresh the buffer
+        cleanSection(cursorY - 1, 0, findEndline(tempLine));
+        buffertoScreen(TRUE);
+    }
+
+    // Scroll if needed when cursor is at the bottom of the screen
+    if (_length(&edBuf1) > vdisplayArea && cursorY == new_rows - 3) {
+        buffertoScreen(1);
+        currentLine++;
+    }
+
+    // Move buffer pointer positions
+    posBufY++;
+    posBufX = 0;
+}
+
+if(ch == K_BACKSPACE) {
+    // BACKSPACE key
+    update_ch(cursorX, cursorY, ' ', EDITAREACOL, EDITAREACOL);
+
+    if (posBufX == findEndline(tempLine)) {
+        // Cursor is at the end of the line
         tempLine.linea[posBufX-1].ch = 0;
         tempLine.linea[posBufX-1].specialChar = 0;
         tempLine.linea[posBufX-1].attrib = 0;
-      } 
-      else{
-	//shift characters to the left if we are not at the end of the line 
-       if (posBufX != 0){
-          for(i=posBufX-1;i<findEndline(tempLine);i++){
-            tempLine.linea[i].ch = tempLine.linea[i+1].ch;
-            tempLine.linea[i].specialChar = tempLine.linea[i+1].specialChar;
-            tempLine.linea[i].attrib = tempLine.linea[i+1].attrib;
-          }
-          tempLine.linea[i].ch = 0;
-       }
-      }
-     //Remove line if we continue pressing backspace
-     if(cursorX == START_CURSOR_X && cursorY > START_CURSOR_Y) {
- 	//if (posBufY >= _length(&edBuf1)-1) _deleteObject(&edBuf1, posBufY, FALSE); //remove line from buffer
-        //else { 
-              memset(&tempLine, '\0',sizeof(tempLine));
-              memset(&splitLine, '\0',sizeof(splitLine));
-              _dumpLine(edBuf1, posBufY-1, &tempLine);
-	      if (findEndline(tempLine) < 1){
+    } else {
+        // Shift characters to the left if we are not at the end of the line
+        if (posBufX != 0) {
+            for(i = posBufX - 1; i < findEndline(tempLine) - 1; i++) {
+                tempLine.linea[i].ch = tempLine.linea[i + 1].ch;
+                tempLine.linea[i].specialChar = tempLine.linea[i + 1].specialChar;
+                tempLine.linea[i].attrib = tempLine.linea[i + 1].attrib;
+            }
+            // Clear the last character in the line
+            tempLine.linea[i].ch = 0;
+            tempLine.linea[i].specialChar = 0;
+            tempLine.linea[i].attrib = 0;
+        }
+    }
 
-	       for (j=posBufY-1; j<=_length(&edBuf1); j++)
-		{
-                     _dumpLine(edBuf1, j+1, &tempLine);
-		     _hardupdateLINE(&edBuf1, j, tempLine);
-	             //if (j+START_CURSOR_Y<new_rows-3) linetoScreenRAW(j+START_CURSOR_Y,tempLine);
-		     //if (j+START_CURSOR_Y<new_rows-3)  cleanScreenLine(j+START_CURSOR_Y+1);   
-                     //cleanSection(cursorY, findEndline(tempLine), 2);
-	      }
-	      } else {
-		      //merge two lines
-		     endLine = findEndline(tempLine);
-                      _dumpLine(edBuf1, posBufY, &splitLine);
-		      for (i=0;i<findEndline(splitLine);i++) {
-			     tempLine.linea[endLine+i].ch = splitLine.linea[i].ch; 
-			     tempLine.linea[endLine+i].attrib = splitLine.linea[i].attrib; 
-			     tempLine.linea[endLine+i].specialChar = splitLine.linea[i].specialChar; 		      
-		      }
-		      tempLine.linea[endLine+i].ch = END_LINE_CHAR;
-		     _hardupdateLINE(&edBuf1, posBufY-1, tempLine);
-               cleanScreenLine(posBufY+2);   
-	       for (j=posBufY; j<=_length(&edBuf1); j++)
-		{
-                     _dumpLine(edBuf1, j+1, &tempLine);
-		     _hardupdateLINE(&edBuf1, j, tempLine);
-	             //if (j+START_CURSOR_Y<new_rows-3) linetoScreenRAW(j+START_CURSOR_Y,tempLine);
-		     //if (j+START_CURSOR_Y<new_rows-3) cleanScreenLine(j+START_CURSOR_Y+1);   
-                     //cleanSection(cursorY, findEndline(tempLine), 2);
-	       }
-               //cleanScreenLine(posBufY+1);   
+    // Remove line if we continue pressing backspace at the beginning of a line
+    if(cursorX == START_CURSOR_X && cursorY > START_CURSOR_Y) {
+        if (posBufY > 0) {
+            memset(&tempLine, '\0', sizeof(tempLine));
+            memset(&splitLine, '\0', sizeof(splitLine));
+            _dumpLine(edBuf1, posBufY - 1, &tempLine);
 
-	       }
+            if (findEndline(tempLine) < 1) {
+                // Previous line is empty, remove it
+                for (j = posBufY - 1; j < _length(&edBuf1) - 1; j++) {
+                    _dumpLine(edBuf1, j + 1, &tempLine);
+                    _hardupdateLINE(&edBuf1, j, tempLine);
+                }
+                _deleteObject(&edBuf1, _length(&edBuf1) - 1, FALSE);
+            } else {
+                // Merge two lines
+                endLine = findEndline(tempLine);
+                _dumpLine(edBuf1, posBufY, &splitLine);
+                
+                for (i = 0; i < findEndline(splitLine); i++) {
+                    tempLine.linea[endLine + i].ch = splitLine.linea[i].ch;
+                    tempLine.linea[endLine + i].attrib = splitLine.linea[i].attrib;
+                    tempLine.linea[endLine + i].specialChar = splitLine.linea[i].specialChar;
+                }
+                tempLine.linea[endLine + i].ch = END_LINE_CHAR;
 
-		if (posBufY != _length(&edBuf1)) _deleteObject(&edBuf1, _length(&edBuf1)-1, FALSE);
-	//}
-	if (posBufY>0) posBufY--;
-	if (cursorY == new_rows - 3 && currentLine > 0) currentLine--;
-	buffertoScreen(1);
-	_dumpLine(edBuf1, posBufY,&tempLine);
-	cursorY = cursorY - 1;
-	//write_num(screen1,1,1,endLine,B_RED,F_WHITE,1);
-	//write_num(screen1,15,1,findEndline(splitLine),B_RED,F_WHITE,1);
-	//write_num(screen1,30,1,findEndline(tempLine),B_RED,F_WHITE,1);
-	if (findEndline(splitLine) != 0 && findEndline(splitLine) != findEndline(tempLine)){
-        //Find out whether the previous line is empty and place cursor accordingly 
-	  posBufX = findEndline(tempLine)+1;
-	  cursorX = findEndline(tempLine)+1 + START_CURSOR_X;
-	 } else{
-             if (endLine != findEndline(tempLine)){
-	       cursorX = START_CURSOR_X;
-	       posBufX = cursorX - 1;
-	     }else{
-	       posBufX = findEndline(tempLine)+1;
-	       cursorX = findEndline(tempLine)+1 + START_CURSOR_X;
-	     }
-	 }
-     }
-      //cleanScreenLine(cursorY);
-      if(cursorX > START_CURSOR_X){     
-        cursorX = cursorX - 1;
+                _hardupdateLINE(&edBuf1, posBufY - 1, tempLine);
+
+                // Update subsequent lines
+                for (j = posBufY; j < _length(&edBuf1) - 1; j++) {
+                    _dumpLine(edBuf1, j + 1, &tempLine);
+                    _hardupdateLINE(&edBuf1, j, tempLine);
+                }
+                _deleteObject(&edBuf1, _length(&edBuf1) - 1, FALSE);
+            }
+
+            posBufY--;
+            cursorY--;
+            if (cursorY == new_rows - 3 && currentLine > 0) currentLine--;
+            buffertoScreen(1);
+            _dumpLine(edBuf1, posBufY, &tempLine);
+
+            // Adjust cursor position after merging lines
+            if (findEndline(splitLine) != 0 && findEndline(splitLine) != findEndline(tempLine)) {
+                posBufX = findEndline(tempLine) + 1;
+                cursorX = posBufX + START_CURSOR_X;
+            } else {
+                if (endLine != findEndline(tempLine)) {
+                    cursorX = START_CURSOR_X;
+                    posBufX = cursorX - 1;
+                } else {
+                    posBufX = findEndline(tempLine) + 1;
+                    cursorX = posBufX + START_CURSOR_X;
+                }
+            }
+        }
+    }
+
+    // Normal backspace within a line
+    if(cursorX > START_CURSOR_X) {     
+        cursorX--;
         posBufX--;
-        _updateLine(edBuf1, posBufY, &tempLine);    
-      } 
+        _updateLine(edBuf1, posBufY, &tempLine);
+    }
 
+    // Clean up and refresh the line on screen
+    cleanSection(cursorY, findEndline(tempLine), 2);
+    linetoScreenRAW(cursorY, tempLine);
+}
 
-      cleanSection(cursorY, findEndline(tempLine), 2);
-      linetoScreenRAW(cursorY,tempLine);
-     // cleanScreenLine(_length(&edBuf1)-1);   
-        //close_term();
-	//printf("%d:%d:%d", findEndline(splitLine), findEndline(tempLine), endLine);
-	//exit(0);
+if (deleteKeyPressed == 1) {
+    deleteKeyPressed = 0;         	    
+    // DEL key
+    if (posBufX == findEndline(tempLine)) {
+        // Cursor is at the end of the line
+        if (posBufY < _length(&edBuf1) - 1) {
+            // If there is a next line, merge it with the current line
+            _dumpLine(edBuf1, posBufY + 1, &splitLine);
+            endLine = findEndline(tempLine);
+            
+            // Copy the characters from the next line to the end of the current line
+            for (i = 0; i < findEndline(splitLine); i++) {
+                tempLine.linea[endLine + i].ch = splitLine.linea[i].ch;
+                tempLine.linea[endLine + i].attrib = splitLine.linea[i].attrib;
+                tempLine.linea[endLine + i].specialChar = splitLine.linea[i].specialChar;
+            }
+            tempLine.linea[endLine + i].ch = END_LINE_CHAR;
+            
+            // Update the buffer with the modified line
+            _hardupdateLINE(&edBuf1, posBufY, tempLine);
+            
+            // Remove the next line from the buffer
+            for (j = posBufY + 1; j < _length(&edBuf1); j++) {
+                _dumpLine(edBuf1, j + 1, &tempLine);
+                _hardupdateLINE(&edBuf1, j, tempLine);
+            }
+            _deleteObject(&edBuf1, _length(&edBuf1) - 1, FALSE);
+            
+            // Update the screen
+            buffertoScreen(1);
+        }
+    } else {
+        // Cursor is in the middle of the line, so delete the character at the cursor position
+        for (i = posBufX; i < findEndline(tempLine); i++) {
+            tempLine.linea[i].ch = tempLine.linea[i + 1].ch;
+            tempLine.linea[i].specialChar = tempLine.linea[i + 1].specialChar;
+            tempLine.linea[i].attrib = tempLine.linea[i + 1].attrib;
+        }
+        tempLine.linea[i].ch = 0; // Nullify the last character
 
-    } 
+        // Update the buffer with the modified line
+        _updateLine(edBuf1, posBufY, &tempLine);
+
+        // Update the screen
+        cleanSection(cursorY, findEndline(tempLine), 2);
+        linetoScreenRAW(cursorY, tempLine);
+    }
+}
 
     if(ch == K_TAB) {
       //TAB key sends spaces for convenience

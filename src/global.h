@@ -194,6 +194,7 @@ extern int programStatus; //signal for overall program status
 extern char fileName[MAXFILENAME]; 
 extern char fullPath[MAXFILENAME]; 
 extern int fileModified;
+extern int deleteKeyPressed;         	    
 //extern int hscrollActive; //horizontal scroll, horizontal scroll is posible
 
 

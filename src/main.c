@@ -462,6 +462,8 @@ int special_keys() {
       //Page Down key
      }else if(strcmp(chartrail, K_HOME_TRAIL) == 0 || strcmp(chartrail, K_HOME_TRAIL2) == 0 ) {
     } else if(strcmp(chartrail, K_DELETE) == 0) {
+       deleteKeyPressed = 1;         	    
+       editor_section(0);
       //delete button;
     } else if(strcmp(chartrail, K_ALT_F) == 0) {
       returnMenuChar=FILE_MENU;

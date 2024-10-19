@@ -410,9 +410,10 @@ int displayAbout(void)
 }
 void addItemsHelp(LISTCHOICE **listBox1, char textarray[][MAXLINE], int rows)
 {
+	int h=0;
 //Load items into the list.  
 	//if (*listBox1 != NULL) removeList(listBox1);
-	for (int h = 0; h < rows-1; h++) {
+	for (h = 0; h < rows-1; h++) {
 		//*ch = textarray[h];
 		*listBox1 = addatend(*listBox1, newitem(textarray[h],-1,-1,-1,-1));
 	}

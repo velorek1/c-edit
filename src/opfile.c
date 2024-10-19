@@ -124,9 +124,10 @@ int listFiles(LISTCHOICE ** listBox1, char *directory) {
 
 void addItems(LISTCHOICE **listBox1)
 {
+	int h=0;
 //Load items into the list.  
         //if (listBox1 != NULL) removeList(listBox1);
-	for (int h = 0; h <10; h++) {
+	for (h = 0; h <10; h++) {
 		//*ch = textarray[h];
 		*listBox1 = addatend(*listBox1, newitem("Test",-1,-1,-1,-1));
 	}
@@ -137,6 +138,7 @@ char ch=0;
 char path[MAXFILENAME];
 char bit[MAXFILENAME];
 char ndirstr[100];
+size_t i=0;
 int retvalue=0;
 char nfilestr[100];
 char currentPath[4] = "./\0";
@@ -171,7 +173,7 @@ char currentPath[4] = "./\0";
             memset(&bit, '\0',sizeof(bit)); //Clear memory for temporary line
     	    strcpy(bit,"\0");
             strcpy(path,"\0");
-            for (size_t i=1; i<strlen(scrollData.item)-1; i++) bit[i-1] = scrollData.item[i];
+            for (i=1; i<strlen(scrollData.item)-1; i++) bit[i-1] = scrollData.item[i];
 	    getcwd(path, sizeof(path));
 	    strcat(path, "/");
 	    strcat(path, bit);

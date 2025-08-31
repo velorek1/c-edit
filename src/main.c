@@ -162,12 +162,14 @@ wchar_t code_point;
     //for (int i=0; i<findEndline(tempLine);i++) write_ch(screen1, 10+i,16, code_point, B_RED, F_WHITE,1);
     //dump_screen(screen1);
    //Buffer pointer position
+   /*
      update_str(new_columns - 24, new_rows, "| L:        C:     ", STATUSBAR, STATUSMSG);
     write_num(screen1, new_columns - 10, new_rows, posBufX, STATUSBAR, STATUSMSG,1);
     write_num(screen1, new_columns - 20, new_rows, posBufY+1, STATUSBAR, STATUSMSG,1);
     update_str(new_columns - 39, new_rows, "| LINES:      ", STATUSBAR, STATUSMSG);
     write_num(screen1, new_columns - 31, new_rows, _length(&edBuf1), STATUSBAR, STATUSMSG,1);
-}
+*/
+    }
 
 void update_indicators() {
 /*
@@ -180,24 +182,17 @@ void update_indicators() {
    To adjust to the bar dimensions:
    scrollBar = ((displayLength-3) * percentage) / 100;
 */
-  int i=0;
+  char info[255];
+  int pep=0;
   float scrollIndicator=1.0, positionY=0.0;
   float hscrollIndicator=1.0, positionX=0.0;
   float percentage=0.0, scrollBar=0.0, scrollRatio =0.0;
   float hpercentage=0.0, hscrollBar=0.0, hscrollRatio =0.0;
-  update_str(new_columns - 24, new_rows, "| L:        C:     ", STATUSBAR, STATUSMSG);
-  write_num(screen1, new_columns - 10, new_rows, posBufX, STATUSBAR, STATUSMSG,1);
-  write_num(screen1, new_columns - 20, new_rows, posBufY+1, STATUSBAR, STATUSMSG,1);
-  update_str(new_columns - 39, new_rows, "| LINES:      ", STATUSBAR, STATUSMSG);
-  write_num(screen1, new_columns - 31, new_rows, _length(&edBuf1), STATUSBAR, STATUSMSG,1);
+  pep = 100;
 
- //Scroll indicator and percentage display
+  //Scroll indicator and percentage display
  if (_length(&edBuf1) > vdisplayArea ) {
-     //Clean scroll bar
-     write_ch(screen1,new_columns, oldPositionY, ' ', SCROLLBAR_BACK, SCROLLBAR_FORE,1);
-//     for(i = 4; i < new_rows-2; i++) {
- //     if (i != 4+scrollBar) write_ch(screen1,new_columns, i, ' ', SCROLLBAR_BACK, SCROLLBAR_FORE,1);
-  //   }
+     write_ch(screen1,new_columns, oldPositionY, ' ', SCROLLBAR_BACK, SCROLLBAR_FORE,1);	 
      positionY = posBufY;
      scrollRatio = _length(&edBuf1) / vdisplayArea;
      scrollIndicator = positionY / scrollRatio;
@@ -207,10 +202,8 @@ void update_indicators() {
      if (percentage > 100) percentage = 100;
      if (scrollBar+2>=new_rows-5) scrollBar = new_rows - 7;
      write_ch(screen1,new_columns, 4+scrollBar, '*', SCROLLBAR_SEL, SCROLLBAR_FORE,1);
-     write_str(screen1,new_columns-5,new_rows, "    ", STATUSBAR,F_BLACK,1);
-     i=write_num(screen1,new_columns-5,new_rows, percentage, STATUSBAR,F_YELLOW,1);
-     write_ch(screen1,new_columns-5+i,new_rows, '%', STATUSBAR,F_YELLOW,1);
      oldPositionY = 4+scrollBar;
+     pep = percentage;
   }
  if (posBufX>0){
      positionX = posBufX;
@@ -224,6 +217,9 @@ void update_indicators() {
      write_ch(screen1, 2+hscrollBar,new_rows-1, '*', SCROLLBAR_SEL, SCROLLBAR_FORE,1);
      oldPositionX = 2+hscrollBar;
  }
+  strcpy(info, "\0");
+  sprintf(info, "|LINES: %d| L: %ld C: %ld [%d%c]           ", _length(&edBuf1), posBufY, posBufX,pep,'%');
+  update_str(new_columns - 40, new_rows, info, STATUSBAR, STATUSMSG);
 }
 
 
@@ -458,9 +454,41 @@ int special_keys() {
       }
     } else if(strcmp(chartrail, K_PAGEDOWN_TRAIL) == 0) {
       //Page Down key
+          vdisplayLimit = _length(&edBuf1) - vdisplayArea;
+	  if (_length(&edBuf1) > vdisplayArea ) {
+		if (currentLine + vdisplayArea <= vdisplayLimit )
+                            currentLine =  currentLine + vdisplayArea;
+                else
+                            currentLine = vdisplayLimit;  // stop at the limit of our scroll
+               posBufY = currentLine;
+               cursorY = START_CURSOR_Y;
+	       buffertoScreen(1);
+	  }
      } else if(strcmp(chartrail, K_PAGEUP_TRAIL) == 0) {
       //Page Down key
+	  if (_length(&edBuf1) > vdisplayArea ) {
+                          if (currentLine  >= vdisplayArea)
+                              currentLine = currentLine - vdisplayArea;
+                          else
+                             currentLine = 0;  // stop at the top			  
+            posBufY = currentLine;
+            cursorY = START_CURSOR_Y;
+	    buffertoScreen(1);
+	  }
      }else if(strcmp(chartrail, K_HOME_TRAIL) == 0 || strcmp(chartrail, K_HOME_TRAIL2) == 0 ) {
+	  if (_length(&edBuf1) > vdisplayArea ) {
+	    currentLine=0;
+            cursorY = START_CURSOR_Y;
+	    posBufY=0;
+	    buffertoScreen(1);
+	  }  
+     }else if(strcmp(chartrail, K_END_TRAIL) == 0 || strcmp(chartrail, K_END_TRAIL2) == 0 ) {	      
+	  if (_length(&edBuf1) > vdisplayArea ) {
+	    currentLine=_length(&edBuf1)-vdisplayArea;
+            cursorY = new_rows-3;
+	    posBufY=_length(&edBuf1)-1;  
+	    buffertoScreen(1);  
+	  }
     } else if(strcmp(chartrail, K_DELETE) == 0) {
        deleteKeyPressed = 1;         	    
        editor_section(0);
@@ -568,25 +596,23 @@ void credits() {
   //Frees memory and displays goodbye message 
   //Free selected path item/path from opfiledialog 
   size_t i; //to be compatible with strlen
-  char auth[27] ="Coded by v3l0r3k 2018-2024";  
-  //free_buffer();
-  //free memory
-  if (screen1 != NULL) deleteList(&screen1);
-  if (screen2 != NULL) deleteList(&screen2);
-  if (listBox1 != NULL) removeList(&listBox1);
-  close_term();			//restore terminal settings from failsafe
-  showcursor();
-  resetAnsi(0);
-  screencol(0);
-  outputcolor(7, 0);
- 
-  printf(cedit_ascii_1);
-  printf(cedit_ascii_2);
-  printf(cedit_ascii_3);
-  printf(cedit_ascii_4);
-  printf(cedit_ascii_5);
-  printf(cedit_ascii_6);
+  char auth[27] ="Coded by v3l0r3k 2018-2025";
+  //int wherex=0,wherey=0;  
 
+  close_term();			//restore terminal settings from failsafe
+  gotoxy(1,1);
+  printf(cedit_ascii_1);
+  gotoxy(1,2);
+  printf(cedit_ascii_2);
+  gotoxy(1,3);
+  printf(cedit_ascii_3);
+  gotoxy(1,4);
+  printf(cedit_ascii_4);
+  gotoxy(1,5);
+  printf(cedit_ascii_5);
+  gotoxy(1,6);
+  printf(cedit_ascii_6);
+  gotoxy(1,7);
   outputcolor(0, 90);
   printf("\n%s",auth);
   outputcolor(0, 37);
@@ -609,10 +635,17 @@ void credits() {
 // _printlist(&edBuf1);
 //  printf("%ld:%ld\n", posBufX, posBufY);
 //  printf("\n%ld\n",sizeof(&edBuf1));
+ 
+  if (screen1 != NULL) deleteList(&screen1);
+  if (screen2 != NULL) deleteList(&screen2);
+  if (listBox1 != NULL) removeList(&listBox1);
+ 
   _deletetheList(&edBuf1); //free edit Buffer
   resetAnsi(0);
- // close_term();
+  showcursor();
+  resetAnsi(0); 
 }
+
 void _resizeScreen(){
 //redraw everything when screen size changes
 	get_terminal_dimensions(&new_rows, &new_columns);

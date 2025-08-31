@@ -94,6 +94,38 @@ long checkFile(FILE * filePtr) {
   return counterA;
 }
 
+//check whether the file is a text file
+int openandcheckFile(char *fileName) {
+  unsigned char    ch=0;
+  long    counterA = 0;
+  FILE *fp;
+
+  openFile(&fp, fileName, "r");
+  if(fp != NULL) {
+    rewind(fp);		//Make sure we are at the beginning
+
+    ch = getc(fp);		//Peek ahead in the file
+    while(!feof(fp)) {
+ 
+      if (ch == 0x00) {closeFile(fp); fp = NULL; return 1;}
+      if(ch < 9) {
+	//discard accents
+	if(ch > 196)
+	  counterA++;
+      }
+      ch = getc(fp);
+    }
+  }
+  //If there are more strange characters than half the size of the file probably a binary file
+  if (counterA > (getfileSize(fp)/2)) {
+     if (fp != NULL) closeFile(fp); 
+     fp = NULL;
+  return 1;
+  }
+   if (fp != NULL) closeFile(fp);
+    fp = NULL; 
+  return 0;
+}
 /*-----------*/
 /* Open file */
 /*-----------*/

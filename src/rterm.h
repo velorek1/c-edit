@@ -101,6 +101,7 @@ void    outputcolor(int foreground, int background);
 void    screencol(int x);
 void    resetAnsi(int x);
 int     get_terminal_dimensions(int *rows, int *columns);
+int get_pos(int *y, int *x);
 void    showcursor();
 void    hidecursor();
 void    init_term();

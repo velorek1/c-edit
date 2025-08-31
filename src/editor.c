@@ -1,7 +1,5 @@
 /* Main editor section C·edit 
  * for a Text User Interface
- * TextBox
- * Window
  * Last modified: 6/04/2024
  * @author:velorek
  */

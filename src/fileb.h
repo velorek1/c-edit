@@ -4,7 +4,7 @@
 Module to handle basic file operations
 @author : Velorek
 @version : 1.0  
-Last modified: 14/04/2019 Rename headers                                                              
+Last modified: 31/08/2025 Open and check file                                                           
 ========================================================================
 */
 
@@ -32,6 +32,7 @@ int     closeFile(FILE * filePtr);
 long    getfileSize(FILE * filePtr);
 long    countLinesFile(FILE * filePtr);
 long    checkFile(FILE * filePtr);
+int     openandcheckFile(char *fileName);
 int     file_exists(char *fileName);
 
 #endif

@@ -9,10 +9,12 @@ bitcoin:bc1qn8hzf7f07afcyasym434e9a7sflf8mpjflhg4w**
 
 Contact me at: velorek1@gmail.com
 
-**NEW: AUGUST 2024 (merging with ceditbuf)**
-- Dynamic buffer added (vector of lines) 
+**NEW: AUGUST 2025**
+- Fixed flickering issues in status bar
+- Added pageup/down home/end keys
 
 History:
+- 2024 -> Dynamyc buffer added (vector of lineS)
 - 2023 -> Previous demo version kept in https://github.com/velorek1/C-editold
 - 2022 -> I have rewritten the screenbuffer and fixed polling issues (lynx: https://github.com/velorek1/lynx). 
 Ideally, a keyboard library abstraction would be nice to expand the editor's possibilities.**
@@ -56,10 +58,12 @@ As a screen buffer I have implemented a dynamic structure in memory that allows 
 
 TO-DO:
 * Clean code
-* Add more functionality to the editor (home/end/ page up keys , del key etc)
-* Code scroll bars
-* Finish menus (help, about, file info, etc)
-
+* Complete menus / dialogs 
+* READ MODE
+* FULL UTF 8! - SUPPORT change from char to win_t/wchar in editor buffer
+* Copy/Paste/Cut routines / Highlight text
+* Create Keyboard abstraction to make it more portable (bottom-up fashion!)
+* Address glitches/bugs
 
 ![Alt text](cedit3.jpg?raw=true "Demo")
 ![Alt text](cedit4.jpg?raw=true "Demo")

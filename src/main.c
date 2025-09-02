@@ -387,7 +387,6 @@ int special_keys() {
 		    ok=yesnoWindow(WMODIFIED_MSG, "Alert Window");
 	            switch (ok){
 		       case 0: //save file and exit
-        		    printf("File Saved!\n");	
     			    strcpy(chartrail, K_ALT_S);
 			    break;
 		       case 1: //don't save and exit
@@ -569,7 +568,7 @@ int special_keys() {
            timer3.ticks=0; 
        }
 	   //a bit convoluted but it works / exit if user selcts yes after saving
-        if (ok==0){return ENDSIGNAL; }
+        if (ok==0){printf("File saved!. Exiting...\n"); return ENDSIGNAL; }
     } else if(strcmp(chartrail, K_ALT_W) == 0) {
       //if(strcmp(currentFile, UNKNOWN) == 0)
     //saveasDialog(currentFile);  //Write to file

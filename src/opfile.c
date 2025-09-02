@@ -30,8 +30,8 @@
 #include "keyb.h"
 #include "global.h"
 #include "opfile.h"
-
-
+#include "ui.h"
+#include "fileb.h"
 /*====================================================================*/
 /* GLOBAL VARIABLES */
 /*====================================================================*/
@@ -139,6 +139,7 @@ char path[MAXFILENAME];
 char bit[MAXFILENAME];
 char ndirstr[100];
 size_t i=0;
+int ok2 =0;
 int retvalue=0;
 char nfilestr[100];
 char currentPath[4] = "./\0";
@@ -209,6 +210,27 @@ char currentPath[4] = "./\0";
     }
     if (listBox1 != NULL) removeList(&listBox1);
    copy_screen(screen1,screen2); 
+   //Finally check if it is a binary file
+   if (openandcheckFile(fileName) == 1){
+           ok2 = yesnoWindow(WCHECKFILE_MSG, "Alert window");
+	 switch (ok2){
+	    case 0: // open binary file anyway
+		retvalue=1;
+	    	break;            
+	    case 1: //don't open binary file
+	 	strcpy (fileName,"\0");
+	 	strcpy (fullPath,"\0");
+		retvalue=0;
+	 	break;
+	    case 2: //cancel is the same as no here
+		strcpy (fileName,"\0");
+	 	strcpy (fullPath,"\0");
+		retvalue=0;
+		break;
+	   }
+	 } else{
+		 //file is a text file
+    }
    return retvalue;
 }
 

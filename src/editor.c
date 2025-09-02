@@ -144,6 +144,7 @@ void buffertoFile(char *fileName){
   long j=0,i=0; 
   wchar_t tempLongChar = 0;
   openFile(&filePointer, fileName, "w");
+  if (filePointer != NULL){
   for (j=0; j<_length(&edBuf1); j++){
        //tempLine = {0};
       _dumpLine(edBuf1, j, &tempLine);
@@ -160,6 +161,9 @@ void buffertoFile(char *fileName){
       fprintf(filePointer,"%c" , END_LINE_CHAR);
   }
   closeFile(filePointer);
+
+	   fileModified = FILE_UNMODIFIED;
+  }
 };
 
 int editor_section(char ch){
@@ -172,6 +176,7 @@ int attrib=EDIT_FORECOLOR;
 char newch=0;
 int endLine=0;
        
+       if (fileModified==FILE_UNMODIFIED) fileModified= FILE_MODIFIED;
        //Check whether we are on Readmode
        // if (fileModified != FILE_READMODE) {
        //if ((ch > 31 && ch < 127) || ch < 0) {

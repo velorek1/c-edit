@@ -19,7 +19,7 @@
 #include "menu.h"
 #include "editor.h"
 #include "opfile.h"
-
+#include "fileb.h"
 //Prototypes
 void draw_screen();
 void cursor_tick();
@@ -192,7 +192,7 @@ void update_indicators() {
 
   //Scroll indicator and percentage display
  if (_length(&edBuf1) > vdisplayArea ) {
-     write_ch(screen1,new_columns, oldPositionY, ' ', SCROLLBAR_BACK, SCROLLBAR_FORE,1);	 
+     write_ch(screen1,new_columns-1, oldPositionY, ' ', SCROLLBAR_BACK, SCROLLBAR_FORE,1);	 
      positionY = posBufY;
      scrollRatio = _length(&edBuf1) / vdisplayArea;
      scrollIndicator = positionY / scrollRatio;
@@ -201,7 +201,7 @@ void update_indicators() {
      if (positionY == 1) percentage = 0;
      if (percentage > 100) percentage = 100;
      if (scrollBar+2>=new_rows-5) scrollBar = new_rows - 7;
-     write_ch(screen1,new_columns, 4+scrollBar, '*', SCROLLBAR_SEL, SCROLLBAR_FORE,1);
+     write_ch(screen1,new_columns-1, 4+scrollBar, '*', SCROLLBAR_SEL, SCROLLBAR_FORE,1);
      oldPositionY = 4+scrollBar;
      pep = percentage;
   }
@@ -247,6 +247,7 @@ int keypressed = 0;
       flush_editarea(0);
       buffertoScreen(0);
       dump_screen(screen1);
+      fileModified= FILE_UNMODIFIED;
     } 
     do{    
 	 //end flag from any part of the program
@@ -368,6 +369,7 @@ int special_keys() {
   char    returnMenuChar=0;
   int menuCounter = 0;
   int countCh = 0;
+  int ok = -1;
   char tempfileName[MAXFILENAME];
     old_cursorX = cursorX;
     old_cursorY = cursorY;
@@ -378,7 +380,28 @@ int special_keys() {
     strcpy(chartrail, "\0");
     read_keytrail(chartrail);   //Read trail after ESC key
     //only ESC key detected, finish program
-    if (chartrail[0] == ESC_KEY && chartrail[1]==0) return ENDSIGNAL;
+    if (chartrail[0] == ESC_KEY && chartrail[1]==0) {
+
+            buffertoScreen(0);
+	    if (fileModified == FILE_MODIFIED) {
+		    ok=yesnoWindow(WMODIFIED_MSG, "Alert Window");
+	            switch (ok){
+		       case 0: //save file and exit
+        		    printf("File Saved!\n");	
+    			    strcpy(chartrail, K_ALT_S);
+			    break;
+		       case 1: //don't save and exit
+	                    return ENDSIGNAL;
+			    break;  
+
+		       case 2: //cancel keep running c-edit
+			   buffertoScreen(0);
+			   break;
+	             }
+	    } else
+            //regular escape with no modifications
+	    return ENDSIGNAL;
+    }
     
     //Check key trails for special keys starting with ESC.
     //FUNCTION KEYS : F1 - F4
@@ -507,13 +530,14 @@ int special_keys() {
       handlemenus(&returnMenuChar, &menuCounter,FALSE);
     } else if(strcmp(chartrail, K_ALT_O) == 0) {
       //openFileHandler();    //Open file Dialog
-         buffertoScreen(0);
-        dump_screen(screen1);
+       buffertoScreen(0);
+       dump_screen(screen1);
        if (openFileDialog(fileName,fullPath) == 1){
- 	 filetoBuffer(fileName);
-         flush_editarea(0);
-         buffertoScreen(0);
-     }
+	       //is it a binary file?
+	    filetoBuffer(fileName);
+            flush_editarea(0);
+            buffertoScreen(0);
+	 }
         dump_screen(screen1);
     } else if(strcmp(chartrail, K_ALT_N) == 0) {
       //newDialog(currentFile);   // New file
@@ -544,6 +568,8 @@ int special_keys() {
            dump_screen(screen1);
            timer3.ticks=0; 
        }
+	   //a bit convoluted but it works / exit if user selcts yes after saving
+        if (ok==0){return ENDSIGNAL; }
     } else if(strcmp(chartrail, K_ALT_W) == 0) {
       //if(strcmp(currentFile, UNKNOWN) == 0)
     //saveasDialog(currentFile);  //Write to file

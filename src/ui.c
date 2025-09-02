@@ -214,3 +214,50 @@ int inputWindow(char *label, char *tempFile, char *windowTitle,  int offsetX, in
   return count;
 }
 
+int yesnoWindow(char *message, char *windowTitle) {
+
+  int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
+  char ch = 0;
+  int ok = 0;
+  size_t i=0;
+  int j = 0;
+  int ix = 0;
+  char tempChar=0;
+  resetAnsi(0);
+  copy_screen(screen2,screen1);
+ 
+  window_y1 = (new_rows / 2) - 4;
+  window_y2 = (new_rows / 2) + 4;
+  window_x1 = (new_columns / 2) - 16;
+  window_x2 = (new_columns / 2) + 16;
+  window(screen1,window_x1, window_y1, window_x2, window_y2, MENU_PANEL, MENU_FOREGROUND0, WINDOW_TITLEB,1,0,1);
+  dump_screen(screen1);
+  write_str(screen1, (window_x2-window_x1) /2 + window_x1 - (strlen(windowTitle)/2) , window_y1, windowTitle, WINDOW_TITLEB, WINDOW_TITLEF,1);
+ //'|' is used as line separator
+ 
+  for(i = 0; i < strlen(message); i++) {
+    tempChar = message[i];
+    if (tempChar != '|'){
+      write_ch(screen1,window_x1 + 1 + ix, window_y1 + 1 + j, tempChar, MENU_PANEL,MENU_FOREGROUND0,1);
+    ix++;
+    }else {
+	    j++;
+	    ix = 0;
+    }
+    }
+  printf("\n");
+  if (listBox1 != NULL) removeList(&listBox1);
+  listBox1 = addatend(listBox1, newitem("[  YES ]",window_x1+3,window_y2-1,-1,-1));
+  listBox1 = addatend(listBox1, newitem("[  NO  ]",window_x1+13,window_y2-1,-1,-1));
+  listBox1 = addatend(listBox1, newitem("[CANCEL]",window_x1+23,window_y2-1,-1,-1));
+
+  setselectorLimit(8);
+  ch = listBox(listBox1, window_x1+2,window_y2, &scrollData, MENU_PANEL, MENU_FOREGROUND0,MENU_SELECTOR, MENU_FOREGROUND1, 3, HORIZONTAL,1,LOCKED);
+  ok = scrollData.itemIndex;
+  if (listBox1 != NULL) removeList(&listBox1);
+  ch++;
+  copy_screen(screen1,screen2);
+  dump_screen(screen1);
+  resetScrollData(&scrollData); 
+  return ok;
+}

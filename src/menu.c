@@ -15,6 +15,7 @@
 #include "global.h"
 #include "editor.h"
 #include "opfile.h"
+#include "fileb.h"
 /*--------------------------------------------*/
 /* Load current menu into circular linked list*/
 /*--------------------------------------------*/
@@ -82,6 +83,7 @@ It does some tricky modulo operation to cycle back
 void handlemenus(char *returnMenuChar, int *menuCounter, BOOL horizontalMenu)
 {      
 
+      setselectorLimit(15);
       copy_screen(screen2,screen1);
       if (horizontalMenu) *returnMenuChar= horizontal_menu();  
       do{
@@ -134,6 +136,8 @@ char filemenu() {
   char ch=0;
   int countCh = 0;
   char tempfileName[MAXFILENAME];
+  int ok2 = -1;
+  int retvalue = 0;
   write_str(screen1,0, new_rows, STATUS_BAR_MSG2, STATUSBAR, STATUSMSG,1);
   write_str(screen1,0, 1, "File", MENU_SELECTOR, MENU_FOREGROUND1,1);
   loadmenus(FILE_MENU);
@@ -181,11 +185,34 @@ char filemenu() {
       buffertoScreen(0);
       countCh=inputWindow("File:", tempfileName,  "Quick load...",26,2,44);
       if (countCh>0) {
-	 strcpy(fileName, tempfileName);
-	 filetoBuffer(fileName);
-         flush_editarea(0);
-         buffertoScreen(0);
-        dump_screen(screen1);
+		//check if it's a binary file
+	    if (openandcheckFile(tempfileName) == 1){
+               ok2 = yesnoWindow(WCHECKFILE_MSG, "Alert window");
+	       switch (ok2){
+	        case 0: // open binary file anyway
+		   retvalue=1;
+	    	   break;            
+	        case 1: //don't open binary file
+	 	  strcpy (fileName,"\0");
+	 	  strcpy (fullPath,"\0");
+		  retvalue=0;
+	 	  break;
+	    	case 2: //cancel is the same as no here
+		  strcpy (fileName,"\0");
+	 	  strcpy (fullPath,"\0");
+		  retvalue=0;
+		break;
+	     } 
+	     }else{
+		   retvalue = 1;
+	     }
+         if (retvalue==1){
+     	   strcpy(fileName, tempfileName);
+	   filetoBuffer(fileName);
+           flush_editarea(0);
+           buffertoScreen(0);
+           dump_screen(screen1);
+	 }
      }//buffertoScreen(0, 0, 0);
      return DONT_UPDATE;
 
@@ -198,11 +225,12 @@ char filemenu() {
 	if (strcmp(fileName, "UNTITLED") == 0) {
         countCh=inputWindow("File:", tempfileName,  "Save file as...",26,2,44);
         if (countCh>0) {
-	  strcpy(fileName, tempfileName);
-	   buffertoFile(fileName);
-	   flush_editarea(0);
-	   buffertoScreen(0);
-          dump_screen(screen1);
+	     	
+	     strcpy(fileName, tempfileName);
+	     buffertoFile(fileName);
+	     flush_editarea(0);
+	     buffertoScreen(0);
+            dump_screen(screen1);
 	}	
        } else{
 	   buffertoFile(fileName);

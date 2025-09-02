@@ -115,10 +115,10 @@ extern int WINDOW_TITLEF;
 #define WINFO_SIZE2 "\n-No. of lines: "
 #define WINFO_SIZE3 "\n-File name: "
 #define WCHECKFILE2_MSG " File does not exist!  \n\n A new buffer will be created. \n"
-#define WCHECKFILE_MSG " This file isn't a  \n text file. Program \n may crash. Open anyway?"
+#define WCHECKFILE_MSG " This file isn't a|text file. Program may crash.|Open anyway?"
 #define WINFONOTYET_MSG "Not implemented yet!"
 #define WCHECKLINES_MSG " File longer than 3000 \n lines. You'll view those \n lines as read Mode! "
-#define WMODIFIED_MSG " File has been modified\n Save current buffer?"
+#define WMODIFIED_MSG "File has been modified|Save current buffer?"
 #define WFILEEXISTS_MSG " File exists. \n Overwrite?"
 #define WFILEINREADMODE_MSG " File is on read mode. \n"
 

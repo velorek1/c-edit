@@ -4,7 +4,6 @@
  * @author:velorek
  */
 #include <stdio.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
 #include <wchar.h>
@@ -20,8 +19,6 @@
 int oldEndLine= 0;
 
 wchar_t convertChar(char c1, char c2) {
-    // Given the two-byte representation for a Char get the wchar convrsion
-    setlocale(LC_ALL, "");
 
     // Combine the bytes into a single string
     char temp[3];

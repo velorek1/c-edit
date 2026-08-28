@@ -5,6 +5,8 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 #include <locale.h>
 #include <wchar.h>
 #include "rterm.h"
@@ -17,6 +19,177 @@
 #include "fileb.h"
 #include "edbuf.h"
 int oldEndLine= 0;
+
+void apply_syntax_highlight(VLINES *line) {
+    if (line == NULL) return;
+    int len = findEndline(*line);
+    if (len <= 0) return;
+
+    for (int k = 0; k < len; k++) {
+        line->linea[k].attrib = EDIT_FORECOLOR;
+    }
+
+    int i = 0;
+    while (i < len) {
+        char c = line->linea[i].ch;
+
+        if (c == ' ' || c == '\t' || c == 0) {
+            i++;
+            continue;
+        }
+
+        if (c == '/' && i + 1 < len && line->linea[i + 1].ch == '/') {
+            for (int k = i; k < len; k++) {
+                line->linea[k].attrib = FH_BLACK;
+            }
+            break;
+        }
+
+        if (c == '/' && i + 1 < len && line->linea[i + 1].ch == '*') {
+            int k = i;
+            while (k < len) {
+                line->linea[k].attrib = FH_BLACK;
+                if (line->linea[k].ch == '*' && k + 1 < len && line->linea[k + 1].ch == '/') {
+                    line->linea[k + 1].attrib = FH_BLACK;
+                    k += 2;
+                    break;
+                }
+                k++;
+            }
+            i = k;
+            continue;
+        }
+
+        if (c == '"') {
+            line->linea[i].attrib = FH_MAGENTA;
+            i++;
+            while (i < len) {
+                line->linea[i].attrib = FH_MAGENTA;
+                if (line->linea[i].ch == '\\' && i + 1 < len) {
+                    i++;
+                    line->linea[i].attrib = FH_MAGENTA;
+                } else if (line->linea[i].ch == '"') {
+                    i++;
+                    break;
+                }
+                i++;
+            }
+            continue;
+        }
+
+        if (c == '\'') {
+            line->linea[i].attrib = FH_MAGENTA;
+            i++;
+            while (i < len) {
+                line->linea[i].attrib = FH_MAGENTA;
+                if (line->linea[i].ch == '\\' && i + 1 < len) {
+                    i++;
+                    line->linea[i].attrib = FH_MAGENTA;
+                } else if (line->linea[i].ch == '\'') {
+                    i++;
+                    break;
+                }
+                i++;
+            }
+            continue;
+        }
+
+        if (c == '#') {
+            int k = i;
+            while (k < len && (line->linea[k].ch != ' ' && line->linea[k].ch != '\t' && line->linea[k].ch != '<')) {
+                line->linea[k].attrib = FH_YELLOW;
+                k++;
+            }
+            i = k;
+            continue;
+        }
+
+        if (c >= '0' && c <= '9' && (i == 0 || (!isalnum((unsigned char)line->linea[i - 1].ch) && line->linea[i - 1].ch != '_'))) {
+            int k = i;
+            while (k < len && (isxdigit((unsigned char)line->linea[k].ch) || line->linea[k].ch == 'x' || line->linea[k].ch == 'X' || line->linea[k].ch == '.' || line->linea[k].ch == 'u' || line->linea[k].ch == 'l' || line->linea[k].ch == 'U' || line->linea[k].ch == 'L' || line->linea[k].ch == 'f' || line->linea[k].ch == 'F')) {
+                line->linea[k].attrib = FH_GREEN;
+                k++;
+            }
+            i = k;
+            continue;
+        }
+
+        if (isalpha((unsigned char)c) || c == '_') {
+            int start = i;
+            char word[64];
+            int wlen = 0;
+            while (i < len && (isalnum((unsigned char)line->linea[i].ch) || line->linea[i].ch == '_')) {
+                if (wlen < 63) {
+                    word[wlen++] = line->linea[i].ch;
+                }
+                i++;
+            }
+            word[wlen] = '\0';
+
+            static const char *keywords[] = {
+                "auto", "break", "case", "char", "const", "continue", "default", "do",
+                "double", "else", "enum", "extern", "float", "for", "goto", "if",
+                "int", "long", "register", "return", "short", "signed", "sizeof", "static",
+                "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while",
+                "NULL", "TRUE", "FALSE", "bool", "inline", "restrict", "_Bool",
+                "include", "define", "ifdef", "ifndef", "endif", "elif", "pragma", "undef",
+                NULL
+            };
+
+            static const char *types[] = {
+                "FILE", "size_t", "ssize_t", "uint8_t", "uint16_t", "uint32_t", "uint64_t",
+                "int8_t", "int16_t", "int32_t", "int64_t", "BOOL", "SCREENCELL", "LISTCHOICE",
+                "VLINES", "CHARBUF", "NTIMER", "SCROLLDATA", NULL
+            };
+
+            int is_kw = 0;
+            for (int k = 0; keywords[k] != NULL; k++) {
+                if (strcmp(word, keywords[k]) == 0) {
+                    is_kw = 1;
+                    break;
+                }
+            }
+
+            int is_type = 0;
+            if (!is_kw) {
+                for (int k = 0; types[k] != NULL; k++) {
+                    if (strcmp(word, types[k]) == 0) {
+                        is_type = 1;
+                        break;
+                    }
+                }
+            }
+
+            if (is_kw) {
+                for (int k = start; k < i; k++) {
+                    line->linea[k].attrib = FH_YELLOW;
+                }
+            } else if (is_type) {
+                for (int k = start; k < i; k++) {
+                    line->linea[k].attrib = FH_CYAN;
+                }
+            }
+            continue;
+        }
+
+        if (strchr("{}[]();,.<>=+-*/%&|^!~?:", c) != NULL) {
+            line->linea[i].attrib = FH_CYAN;
+        }
+
+        i++;
+    }
+}
+
+void rehighlight_buffer(void) {
+    if (edBuf1 == NULL) return;
+    int len = _length(&edBuf1);
+    VLINES curLine;
+    for (int j = 0; j < len; j++) {
+        _dumpLine(edBuf1, j, &curLine);
+        apply_syntax_highlight(&curLine);
+        _updateLine(edBuf1, j, &curLine);
+    }
+}
 
 wchar_t convertChar(char c1, char c2) {
 
@@ -169,7 +342,6 @@ int insertMode=0;
 VLINES *aux = NULL;
 VLINES splitLine = {0};
 int i,j=0;
-int attrib=EDIT_FORECOLOR;
 char newch=0;
 int endLine=0;
        
@@ -198,18 +370,6 @@ int endLine=0;
       if (cursorX < new_columns-2) cursorX++;
       if (posBufX < MAX_LINE_SIZE && cursorX == new_columns-2) {shiftH++;}
       //write_num(screen1,20,2,currentLine,B_CYAN,F_WHITE,1);
-      //SYNTAX HIGHLIGHTING DEMO
-      //Highlight numbers in GREEN
-      if ((accentchar[1] >= 48) && (accentchar[1] <=57)) attrib = FH_GREEN; 
-      //Highlight special characters in CYAN
-      
-      if ((accentchar[1] >= 33) && (accentchar[1] <=47)) attrib = FH_CYAN; 
-      aux = _getObject(edBuf1, posBufY);
-      if ((accentchar[1] >= 58) && (accentchar[1] <=64)) attrib = FH_CYAN; 
-      aux = _getObject(edBuf1, posBufY);
-      if ((accentchar[1] >= 91) && (accentchar[1] <=96)) attrib = FH_CYAN; 
-      aux = _getObject(edBuf1, posBufY); 
-      if ((accentchar[1] >= 123) && (accentchar[1] <=126)) attrib = FH_CYAN; 
       aux = _getObject(edBuf1, posBufY);
 
       //FIRST TIME -> CREATE LINES IN BUFFER
@@ -227,12 +387,13 @@ int endLine=0;
 	}	
 	tempLine.linea[posBufX].ch = accentchar[1];
         tempLine.linea[posBufX].specialChar = accentchar[0];
-        tempLine.linea[posBufX].attrib = attrib;
+        tempLine.linea[posBufX].attrib = EDIT_FORECOLOR;
 	//add end_line_char to line
 	posBufX = posBufX + 1;
 	tempLine.linea[posBufX].ch = END_LINE_CHAR;
         tempLine.linea[posBufX].specialChar = 0;
-        tempLine.linea[posBufX].attrib = attrib;
+        tempLine.linea[posBufX].attrib = EDIT_FORECOLOR;
+        apply_syntax_highlight(&tempLine);
 	edBuf1 = _addatend(edBuf1, _newline(tempLine));
 	linetoScreenRAW(cursorY,tempLine);          
 
@@ -255,8 +416,9 @@ int endLine=0;
 	    }
              tempLine.linea[posBufX].ch = accentchar[1];
              tempLine.linea[posBufX].specialChar = accentchar[0];
-             tempLine.linea[posBufX].attrib = attrib;
+             tempLine.linea[posBufX].attrib = EDIT_FORECOLOR;
               posBufX = posBufX + 1;
+             apply_syntax_highlight(&tempLine);
              _updateLine(edBuf1, posBufY, &tempLine);
 	     linetoScreenRAW(cursorY,tempLine);	
 	     	
@@ -274,11 +436,12 @@ int endLine=0;
           }
 	  tempLine.linea[posBufX].ch = accentchar[1];
           tempLine.linea[posBufX].specialChar = accentchar[0];
-          tempLine.linea[posBufX].attrib = attrib;
+          tempLine.linea[posBufX].attrib = EDIT_FORECOLOR;
 	   posBufX = posBufX + 1;
 	  tempLine.linea[posBufX].ch = END_LINE_CHAR;
           tempLine.linea[posBufX].specialChar = 0;
-          tempLine.linea[posBufX].attrib = attrib;
+          tempLine.linea[posBufX].attrib = EDIT_FORECOLOR;
+          apply_syntax_highlight(&tempLine);
 	  _updateLine(edBuf1, posBufY, &tempLine);  
 	  linetoScreenRAW(cursorY,tempLine);
 	  //the cursor returns to its place when scrolling horizontally
@@ -583,32 +746,15 @@ int filetoBuffer(char *fileName) { //EDBUF*
       if(ch > 0)
        tempLine.linea[inlineChar].ch = ch;
     }
-       //SYNTAX HIGHLIGHTING DEMO
-      //Highlight numbers in GREEN
-      attrib = EDIT_FORECOLOR;
-      if ((ch >= 48) && (ch <=57)) attrib = FH_GREEN; 
-      //Highlight special characters in CYAN
-      
-      if ((ch >= 33) && (ch <=47)) attrib = FH_CYAN; 
-      if ((ch >= 58) && (ch <=64)) attrib = FH_CYAN; 
-      if ((ch >= 91) && (ch <=96)) attrib = FH_CYAN; 
-      if ((ch >= 123) && (ch <=126)) attrib = FH_CYAN; 
-
-   
-     tempLine.linea[inlineChar].attrib = attrib;
-        //TABs are converted into spaces
-      /*  if(ch == K_TAB) {
-        for (tabcount=0;tabcount<TAB_DISTANCE;tabcount++){
-          ch = FILL_CHAR;
-          writetoBuffer(editBuffer, inlineChar, lineCounter, ch);
-          inlineChar++;
-        }*/
+        attrib = EDIT_FORECOLOR;
+        tempLine.linea[inlineChar].attrib = attrib;
 
     inlineChar++; //NEXT CHARACTER
 
     if(ch == END_LINE_CHAR) {
       inlineChar = 0;
       ch = 0;
+      apply_syntax_highlight(&tempLine);
       _updateLine(edBuf1, lineCounter, &tempLine);
       lineCounter++;
       memset(&tempLine, '\0',sizeof(tempLine));
@@ -624,6 +770,10 @@ int filetoBuffer(char *fileName) { //EDBUF*
       //break loop at last allowed line.
       }
       ch = getc(filePointer);
+    }
+    if (inlineChar > 0) {
+      apply_syntax_highlight(&tempLine);
+      _updateLine(edBuf1, lineCounter, &tempLine);
     }
   }
   closeFile(filePointer);
@@ -680,7 +830,13 @@ int i;
   write_ch(screen1, 1, old_rows - 1, '<', SCROLLBAR_ARR, SCROLLBAR_FORE,0);
   write_ch(screen1, old_columns - 2, old_rows - 1, '>', SCROLLBAR_ARR, SCROLLBAR_FORE,0);
   if (strlen(fileName) == 0) strcpy(fileName,"UNTITLED");
-  write_str(screen1,(new_columns / 2) - (strlen(fileName) / 2), 2, fileName,
-        MENU_PANEL, MENU_FOREGROUND0,0);
+  char titleDisp[MAXFILENAME + 16];
+  if (fileModified == FILE_MODIFIED) {
+      sprintf(titleDisp, " %s [*] ", fileName);
+  } else {
+      sprintf(titleDisp, " %s ", fileName);
+  }
+  write_str(screen1,(new_columns / 2) - (strlen(titleDisp) / 2), 2, titleDisp,
+        MENU_PANEL, (fileModified == FILE_MODIFIED) ? FH_RED : MENU_FOREGROUND0,0);
  if (force_update) dump_screen(screen1);
 }

@@ -80,31 +80,31 @@ extern int WINDOW_TITLEF;
 
 #define HELP0 "C-EDIT                                             \0"
 #define HELP1 "=======                                            \0"
-#define HELP2 "C-EDIT is a terminal TUI curses text editor.       \0"
-#define HELP3 "It offers both vertical and horizontal scroll      \0"
-#define HELP4 "for file buffer navigation. It also features a     \0"
-#define HELP5 "variety of animations and has a built-in open file \0"
-#define HELP6 "dialog to easily locate the files in directories.  \0"
-#define HELP7 "___________________________________________________\0"
-#define HELP8 "[F1] or [ALT + H] -> Display help                  \0"
-#define HELP9 "[F2] or [CTRL + L] -> Activate menu                \0"
-#define HELP10 "[Arrow Keys] -> Navigate file buffer              \0"
-#define HELP11 "[CTRL + A] -> Quick Load  | CTRL + N -> New file  \0"
-#define HELP12 "[ALT + O] -> Open file    |                       \0"
-#define HELP13 "[ALT + S] -> Save file                             \0"
-#define HELP14 "[ESC] or [CTRL + C] or [ALT+X] -> Exit program     \0"
-#define HELP15 "[S] Hide/Show table | CTRL or ALT may be used.     \0"
-#define HELP16 "___________________________________________________\0"
-#define HELP17 "This program was coded in C & Vim from 2018-2024.  \0"
-#define HELP18 "Some of the techniques used can be found in my     \0"
-#define HELP19 "personal blog : oldstuff286.blogspot.com           \0"
-#define HELP20 "Peace!  - by v3l0r3k                               \0"
+#define HELP2 "C-EDIT is a fast, retro TUI code and text editor.  \0"
+#define HELP3 "It offers dynamic buffering, scroll navigation,    \0"
+#define HELP4 "real-time syntax highlighting, multiple themes,    \0"
+#define HELP5 "and built-in file & search utilities.              \0"
+#define HELP6 "___________________________________________________\0"
+#define HELP7 "KEYBOARD SHORTCUTS:                                \0"
+#define HELP8 "[F1] or [ALT + H]      -> Display this Help        \0"
+#define HELP9 "[F2] or [CTRL + L]      -> Open Dropdown Menu       \0"
+#define HELP10 "[F3]                   -> Find Next Match          \0"
+#define HELP11 "[CTRL + S] / [ALT + S] -> Save Current File        \0"
+#define HELP12 "[CTRL + O] / [ALT + O] -> Open File Dialog         \0"
+#define HELP13 "[CTRL + N]             -> Create New Buffer        \0"
+#define HELP14 "[CTRL + F]             -> Find / Search Text       \0"
+#define HELP15 "[CTRL + G]             -> Go to Specific Line      \0"
+#define HELP16 "[CTRL + Q] / [ALT + X] -> Exit C-EDIT (with prompt)\0"
+#define HELP17 "___________________________________________________\0"
+#define HELP18 "Themes: MS-DOS Blue, Dark Slate, Turbo C, Matrix   \0"
+#define HELP19 "        Retro Amber CRT, Ocean Solarized           \0"
+#define HELP20 "C-EDIT - Enhanced Text User Interface by v3l0r3k   \0"
 #define HELPLINES 21
 
 //USER-DEFINED MESSAGES
 #define UNKNOWN "UNTITLED"
 #define WINDOWMSG "DISPLAY IS TOO SMALL. PLEASE, RESIZE WINDOW"
-#define STATUS_BAR_MSG1  " [C-Edit] | F2,CTRL+L: MENU | F1: HELP"
+#define STATUS_BAR_MSG1  " [C-Edit] F1:Help F2:Menu ^S:Save ^O:Open ^F:Find ^G:Goto ^Q:Exit"
 #define STATUS_BAR_MSG2 " [C-Edit] Press ESC to exit menu.             "
 #define STATUS_BAR_MSG3 " ENTER: SELECT | <- -> ARROW KEYS             "
 #define WLEAVE_MSG "\n       Are you sure\n    you want to quit?"
@@ -125,6 +125,14 @@ extern int WINDOW_TITLEF;
 #define START_CURSOR_X 1
 #define START_CURSOR_Y 2
 
+//THEMES
+#define THEME_MSDOS 0
+#define THEME_DARK 1
+#define THEME_TURBOC 2
+#define THEME_MATRIX 3
+#define THEME_AMBER 4
+#define THEME_SOLARIZED 5
+
 //MENU CONSTANTS
 #define HOR_MENU -1
 #define FILE_MENU 0
@@ -135,6 +143,7 @@ extern int WINDOW_TITLEF;
 #define MAX_FILENAME 255
 #define MAX_LINES 100000
 #define MAXLINE 255
+#define MAX_TEXT 255
 
 //DROP-DOWN MENUS
 #define OPTION_1 0
@@ -148,13 +157,6 @@ extern int WINDOW_TITLEF;
 #define K_LEFTMENU -1		//Left arrow key pressed while in menu
 #define K_RIGHTMENU -2		//Right arrow key pressed while in menu
 #define DONT_UPDATE -5
-//MENU CONSTANTS
-#define HOR_MENU -1
-#define FILE_MENU 0
-#define OPT_MENU 1
-#define HELP_MENU 2
-#define YESNO_MENU 3
-#define OK_MENU 4
 #define MAXFILENAME 100
 #define OK_MENU2 5
 #define COLORS_MENU 6
@@ -176,7 +178,6 @@ extern int unwantedChars;
 int _animation();
 int initCEDIT(); 
 
-
 //TEXT BUFFER POINTERS
 extern VLINES *edBuf1; //Buffer vector of lines(1022 chars)
 extern VLINES tempLine;
@@ -195,9 +196,16 @@ extern char fileName[MAXFILENAME];
 extern char fullPath[MAXFILENAME]; 
 extern int fileModified;
 extern int deleteKeyPressed;         	    
-//extern int hscrollActive; //horizontal scroll, horizontal scroll is posible
+extern char lastSearchStr[MAX_TEXT];
+extern char tempMessage[150];
 
-
-
+void set_color_theme(int theme_id);
+int find_text(const char *query, int startY, int startX);
+int findDialog(void);
+int gotoLineDialog(void);
+int fileInfoDialog(void);
+int colorsDialog(void);
+void apply_syntax_highlight(VLINES *line);
+void rehighlight_buffer(void);
 
 #endif

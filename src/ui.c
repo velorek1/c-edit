@@ -217,7 +217,6 @@ int inputWindow(char *label, char *tempFile, char *windowTitle,  int offsetX, in
 int yesnoWindow(char *message, char *windowTitle) {
 
   int     window_x1 = 0, window_y1 = 0, window_x2 = 0, window_y2 = 0;
-  char ch = 0;
   int ok = 0;
   size_t i=0;
   int j = 0;
@@ -252,10 +251,9 @@ int yesnoWindow(char *message, char *windowTitle) {
   listBox1 = addatend(listBox1, newitem("[CANCEL]",window_x1+23,window_y2-1,-1,-1));
 
   setselectorLimit(8);
-  ch = listBox(listBox1, window_x1+2,window_y2, &scrollData, MENU_PANEL, MENU_FOREGROUND0,MENU_SELECTOR, MENU_FOREGROUND1, 3, HORIZONTAL,1,LOCKED);
+  listBox(listBox1, window_x1+2,window_y2, &scrollData, MENU_PANEL, MENU_FOREGROUND0,MENU_SELECTOR, MENU_FOREGROUND1, 3, HORIZONTAL,1,LOCKED);
   ok = scrollData.itemIndex;
   if (listBox1 != NULL) removeList(&listBox1);
-  ch++;
   copy_screen(screen1,screen2);
   dump_screen(screen1);
   resetScrollData(&scrollData); 

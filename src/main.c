@@ -27,7 +27,6 @@ int special_keys();
 int control_keys(char ch);
 void _resizeScreen();
 wchar_t currentChar = 0;
-char tempMessage[150];
 int displayMessage(char *temporaryMessage, int x, int y, int fColor, int bColor, int timeDuration);
 void update_indicators();
 int oldPositionY = 4; 
@@ -36,7 +35,7 @@ void draw_screen(){
 //BASE SCREEN IS STORED IN SCREEN 2
      int i=0;
      if (screen1 != NULL) deleteList(&screen1);
-     //if (screen2 != NULL) deleteList(&screen2);
+     if (screen2 != NULL) deleteList(&screen2);
      //Init 2 : Create 2 Screens for a double buffer  approach  
      old_rows=new_rows;
      old_columns=new_columns;
@@ -59,10 +58,10 @@ void draw_screen(){
     write_ch(screen1, i, old_rows, FILL_CHAR, STATUSBAR, STATUSMSG,1);
   }
   // Text messages
-  write_str(screen1, 0, 1, "File  Options  Help", MENU_PANEL, MENU_FOREGROUND0,0);
-  write_str(screen1, 0, 1, "F", MENU_PANEL, F_RED,0);
-  write_str(screen1, 7, 1, "p", MENU_PANEL, F_RED,0);
-  write_str(screen1, 15, 1, "H", MENU_PANEL, F_RED,0);
+  write_str(screen1, 0, 1, " File  Options  Help", MENU_PANEL, MENU_FOREGROUND0,0);
+  write_str(screen1, 1, 1, "F", MENU_PANEL, F_RED,0);
+  write_str(screen1, 7, 1, "O", MENU_PANEL, F_RED,0);
+  write_str(screen1, 16, 1, "H", MENU_PANEL, F_RED,0);
   write_str(screen1, 0, old_rows, STATUS_BAR_MSG1, STATUSBAR, STATUSMSG,0);
 
   /* Frames */
@@ -95,12 +94,16 @@ void draw_screen(){
   write_ch(screen1, 1, old_rows - 1, '<', SCROLLBAR_ARR, SCROLLBAR_FORE,0);
   write_ch(screen1, old_columns - 2, old_rows - 1, '>', SCROLLBAR_ARR, SCROLLBAR_FORE,0);
   if (strlen(fileName) == 0) strcpy(fileName, "UNTITLED");
-  write_str(screen1,(new_columns / 2) - (strlen(fileName) / 2), 2, fileName,
-        MENU_PANEL, MENU_FOREGROUND0,0); 
+  char titleDisp[MAXFILENAME + 16];
+  if (fileModified == FILE_MODIFIED) {
+      sprintf(titleDisp, " %s [*] ", fileName);
+  } else {
+      sprintf(titleDisp, " %s ", fileName);
+  }
+  write_str(screen1,(new_columns / 2) - (strlen(titleDisp) / 2), 2, titleDisp,
+        MENU_PANEL, (fileModified == FILE_MODIFIED) ? FH_RED : MENU_FOREGROUND0,0); 
 
   dump_screen(screen1);
-  //Save screen for later
-  //copy_screen(screen2,screen1);
 }
 
 void cursor_tick(void){
@@ -194,11 +197,11 @@ void update_indicators() {
  if (_length(&edBuf1) > vdisplayArea ) {
      write_ch(screen1,new_columns-1, oldPositionY, ' ', SCROLLBAR_BACK, SCROLLBAR_FORE,1);	 
      positionY = posBufY;
-     scrollRatio = _length(&edBuf1) / vdisplayArea;
+     scrollRatio = (float)_length(&edBuf1) / vdisplayArea;
      scrollIndicator = positionY / scrollRatio;
      percentage = (scrollIndicator * 100) / vdisplayArea;
      scrollBar = ((vdisplayArea-3) * percentage)/100;
-     if (positionY == 1) percentage = 0;
+     if (positionY == 0) percentage = 0;
      if (percentage > 100) percentage = 100;
      if (scrollBar+2>=new_rows-5) scrollBar = new_rows - 7;
      write_ch(screen1,new_columns-1, 4+scrollBar, '*', SCROLLBAR_SEL, SCROLLBAR_FORE,1);
@@ -209,7 +212,7 @@ void update_indicators() {
      positionX = posBufX;
      write_ch(screen1, oldPositionX,new_rows-1, ' ', SCROLLBAR_BACK, SCROLLBAR_FORE,1);
      oldPositionX = 2+hscrollBar;
-     hscrollRatio = MAX_LINE_SIZE / hdisplayArea;
+     hscrollRatio = (float)MAX_LINE_SIZE / hdisplayArea;
      hscrollIndicator = positionX / hscrollRatio;
      hpercentage = (hscrollIndicator * 100) / hdisplayArea;
      hscrollBar = (((hdisplayArea) * hpercentage)/100);
@@ -218,8 +221,8 @@ void update_indicators() {
      oldPositionX = 2+hscrollBar;
  }
   strcpy(info, "\0");
-  sprintf(info, "|LINES: %d| L: %ld C: %ld [%d%c]           ", _length(&edBuf1), posBufY, posBufX,pep,'%');
-  update_str(new_columns - 40, new_rows, info, STATUSBAR, STATUSMSG);
+  sprintf(info, "|LINES: %d| L: %ld C: %ld [%d%%] %s       ", _length(&edBuf1), posBufY + 1, posBufX + 1, pep, (fileModified == FILE_MODIFIED) ? "[*]" : "   ");
+  update_str(new_columns - 42, new_rows, info, STATUSBAR, STATUSMSG);
 }
 
 
@@ -288,7 +291,7 @@ int keypressed = 0;
 			       ch = 0;}       
            else {
 		//Capture control keys   
-		if ((ch>0 && ch< 0x0F) && (ch!=K_ENTER && ch != K_TAB)){buffertoScreen(FALSE); esc_key= control_keys(ch); ch=0;}   
+		if ((ch > 0 && ch < 32) && (ch != K_ENTER && ch != K_TAB && ch != K_BACKSPACE && ch != 10 && ch != 13)){buffertoScreen(FALSE); esc_key= control_keys(ch); ch=0;}   
 		else 
 	         //Process raw edit input from keyboard in editor.c		
 		{
@@ -315,39 +318,128 @@ int control_keys(char ch){
   int returnValue=0;
   char countCh=0;
   char tempfileName[MAXFILENAME];
-    if(ch == K_CTRL_L) {
-      //Akin to F2
-	handlemenus(&returnMenuChar, &menuCounter,TRUE);
-    } 
-    if(ch == K_CTRL_C) {
-      returnValue  = ENDSIGNAL;
+  int ok = -1;
+
+  if(ch == K_CTRL_L) {
+    handlemenus(&returnMenuChar, &menuCounter, TRUE);
+  } 
+  else if(ch == K_CTRL_C || ch == K_CTRL_Q) {
+    if (fileModified == FILE_MODIFIED) {
+      ok = yesnoWindow(WMODIFIED_MSG, "Alert Window");
+      if (ok == 0) {
+        if (strcmp(fileName, "UNTITLED") == 0) {
+          countCh = inputWindow("File:", tempfileName, "Save file as...", 26, 2, 44);
+          if (countCh > 0) {
+            strcpy(fileName, tempfileName);
+            buffertoFile(fileName);
+            returnValue = ENDSIGNAL;
+          }
+        } else {
+          buffertoFile(fileName);
+          returnValue = ENDSIGNAL;
+        }
+      } else if (ok == 1) {
+        returnValue = ENDSIGNAL;
+      } else {
+        buffertoScreen(0);
+        dump_screen(screen1);
+      }
+    } else {
+      returnValue = ENDSIGNAL;
     }
-    if (ch == K_CTRL_A) {
+  }
+  else if (ch == K_CTRL_S) {
+    flush_editarea(0);
+    buffertoScreen(0);
+    if (strcmp(fileName, "UNTITLED") == 0) {
+      countCh = inputWindow("File:", tempfileName, "Save file as...", 26, 2, 44);
+      if (countCh > 0) {
+        strcpy(fileName, tempfileName);
+        buffertoFile(fileName);
+        strcpy(tempMessage, "[File saved!]");
+        timer3.ticks = 0;
+      }
+    } else {
+      buffertoFile(fileName);
+      strcpy(tempMessage, "[File saved!]");
+      timer3.ticks = 0;
+    }
+    flush_editarea(0);
+    buffertoScreen(0);
+    dump_screen(screen1);
+  }
+  else if (ch == K_CTRL_O || ch == K_CTRL_A) {
+    flush_editarea(0);
+    buffertoScreen(0);
+    if (openFileDialog(fileName, fullPath) == 1) {
+      filetoBuffer(fileName);
+      cursorX = START_CURSOR_X;
+      cursorY = START_CURSOR_Y;
+      currentLine = 0;
+      shiftH = 0;
+      posBufX = 0;
+      posBufY = 0;
       flush_editarea(0);
-       buffertoScreen(0);
-      countCh=inputWindow("File:", tempfileName,  "Quick load...",28,2,48);
-      if (countCh>0) {
-	 strcpy(fileName, tempfileName);
-	 filetoBuffer(fileName);
-         flush_editarea(0);
-         buffertoScreen(0);
-        dump_screen(screen1);
-     }//buffertoScreen(0, 0, 0);
+      buffertoScreen(0);
+      sprintf(tempMessage, "[Loaded %s]", fileName);
+      timer3.ticks = 0;
     }
-
-      if (ch == K_CTRL_N){
-        if (openFileDialog(fileName,fullPath) == 1){
- 	 filetoBuffer(fileName);
-         flush_editarea(0);
-         buffertoScreen(0);
-     }
+    dump_screen(screen1);
+  }
+  else if (ch == K_CTRL_N) {
+    flush_editarea(0);
+    buffertoScreen(0);
+    if (fileModified == FILE_MODIFIED) {
+      ok = yesnoWindow("File is modified.|Save before creating new?", "New File");
+      if (ok == 0) {
+        if (strcmp(fileName, "UNTITLED") == 0) {
+          countCh = inputWindow("File:", tempfileName, "Save file as...", 26, 2, 44);
+          if (countCh > 0) {
+            strcpy(fileName, tempfileName);
+            buffertoFile(fileName);
+          }
+        } else {
+          buffertoFile(fileName);
+        }
+      } else if (ok == 2) {
         dump_screen(screen1);
-    
-    
+        return returnValue;
+      }
     }
-	     
+    if (edBuf1 != NULL) _deletetheList(&edBuf1);
+    memset(&tempLine, 0, sizeof(tempLine));
+    tempLine.index = 0;
+    tempLine.linea[0].ch = END_LINE_CHAR;
+    edBuf1 = _addatend(edBuf1, _newline(tempLine));
+    strcpy(fileName, "UNTITLED");
+    fullPath[0] = '\0';
+    posBufX = 0; posBufY = 0;
+    cursorX = START_CURSOR_X; cursorY = START_CURSOR_Y;
+    currentLine = 0; shiftH = 0;
+    fileModified = FILE_UNMODIFIED;
+    flush_editarea(0);
+    buffertoScreen(0);
+    dump_screen(screen1);
+    strcpy(tempMessage, "[New file created]");
+    timer3.ticks = 0;
+  }
+  else if (ch == K_CTRL_F) {
+    flush_editarea(0);
+    buffertoScreen(0);
+    findDialog();
+    flush_editarea(0);
+    buffertoScreen(0);
+    dump_screen(screen1);
+  }
+  else if (ch == K_CTRL_G) {
+    flush_editarea(0);
+    buffertoScreen(0);
+    gotoLineDialog();
+    flush_editarea(0);
+    buffertoScreen(0);
+    dump_screen(screen1);
+  }
 
- 
   return returnValue;
 }
 
@@ -368,9 +460,7 @@ int special_keys() {
   char    chartrail[5];
   char    returnMenuChar=0;
   int menuCounter = 0;
-  int countCh = 0;
   int ok = -1;
-  char tempfileName[MAXFILENAME];
     old_cursorX = cursorX;
     old_cursorY = cursorY;
     oldposBufX = posBufX;
@@ -409,6 +499,24 @@ int special_keys() {
        handlemenus(&returnMenuChar, &menuCounter,TRUE);
     } else if(strcmp(chartrail, K_F3_TRAIL) == 0 ||
           strcmp(chartrail, K_F3_TRAIL2) == 0) {
+       if (lastSearchStr[0] != '\0') {
+           int res = find_text(lastSearchStr, posBufY, posBufX + 1);
+           if (res == 1) {
+               sprintf(tempMessage, "[Found '%s']", lastSearchStr);
+               timer3.ticks = 0;
+           } else if (res == 2) {
+               sprintf(tempMessage, "[Found '%s' (wrapped)]", lastSearchStr);
+               timer3.ticks = 0;
+           } else {
+               sprintf(tempMessage, "['%s' not found]", lastSearchStr);
+               timer3.ticks = 0;
+           }
+       } else {
+           findDialog();
+       }
+       flush_editarea(0);
+       buffertoScreen(0);
+       dump_screen(screen1);
     } else if(strcmp(chartrail, K_F1_TRAIL) == 0 ||
           strcmp(chartrail, K_F1_TRAIL2) == 0) {
 	  flush_editarea(0);
@@ -479,7 +587,7 @@ int special_keys() {
           vdisplayLimit = _length(&edBuf1) - vdisplayArea;
 	  if (_length(&edBuf1) > vdisplayArea ) {
 		if (currentLine + vdisplayArea <= vdisplayLimit )
-                            currentLine =  currentLine + vdisplayArea;
+                             currentLine =  currentLine + vdisplayArea;
                 else
                             currentLine = vdisplayLimit;  // stop at the limit of our scroll
                posBufY = currentLine;
@@ -519,7 +627,7 @@ int special_keys() {
       returnMenuChar=FILE_MENU;
       menuCounter=FILE_MENU;
       handlemenus(&returnMenuChar, &menuCounter,FALSE);
-    } else if(strcmp(chartrail, K_ALT_P) == 0) {
+    } else if(strcmp(chartrail, K_ALT_P) == 0 || strcmp(chartrail, K_ALT_O) == 0) {
       returnMenuChar=OPT_MENU;
       menuCounter=OPT_MENU;
       handlemenus(&returnMenuChar, &menuCounter,FALSE);
@@ -527,63 +635,19 @@ int special_keys() {
       returnMenuChar=HELP_MENU;
       menuCounter=HELP_MENU;
       handlemenus(&returnMenuChar, &menuCounter,FALSE);
-    } else if(strcmp(chartrail, K_ALT_O) == 0) {
-      //openFileHandler();    //Open file Dialog
-       buffertoScreen(0);
-       dump_screen(screen1);
-       if (openFileDialog(fileName,fullPath) == 1){
-	       //is it a binary file?
-	    filetoBuffer(fileName);
-            flush_editarea(0);
-            buffertoScreen(0);
-	 }
-        dump_screen(screen1);
-    } else if(strcmp(chartrail, K_ALT_N) == 0) {
-      //newDialog(currentFile);   // New file
-      //refresh_screen(-1);
-      resetch();
-    } else if(strcmp(chartrail, K_ALT_A) == 0) {
-      //saveasDialog(currentFile);    //Save as.. file
-      //refresh_screen(-1);
-    } else if(strcmp(chartrail, K_ALT_S) == 0) {
-      //Save file
+    } else if(strcmp(chartrail, K_ALT_G) == 0) {
       flush_editarea(0);
       buffertoScreen(0);
-      strcpy(tempMessage, "[File saved!]\0");
-    	   if (strcmp(fileName, "UNTITLED") == 0) {
-        countCh=inputWindow("File:", tempfileName,  "Save file as...",28,2,48);
-        if (countCh>0) {
-	   strcpy(fileName, tempfileName);
-	   buffertoFile(fileName);
-	   flush_editarea(0);
-	   buffertoScreen(0);
-           dump_screen(screen1);
-           timer3.ticks=0; 
-	}	
-       } else{
-	   buffertoFile(fileName);
-	   flush_editarea(0);
-	   buffertoScreen(0);
-           dump_screen(screen1);
-           timer3.ticks=0; 
-       }
-	   //a bit convoluted but it works / exit if user selcts yes after saving
-        if (ok==0){printf("File saved!. Exiting...\n"); return ENDSIGNAL; }
-    } else if(strcmp(chartrail, K_ALT_W) == 0) {
-      //if(strcmp(currentFile, UNKNOWN) == 0)
-    //saveasDialog(currentFile);  //Write to file
-      //else {
-    //saveDialog(currentFile);
-      //}
-      //refresh_screen(-1);
-    } else if(strcmp(chartrail, K_ALT_X) == 0) {
-    /*  
-    if(fileModified == 1)
-      exitp = confirmation(); //Shall we exit? Global variable!
-      else
-    exitp = EXIT_FLAG;
-    } } 
-    */
+      gotoLineDialog();
+      flush_editarea(0);
+      buffertoScreen(0);
+      dump_screen(screen1);
+    } else if(strcmp(chartrail, K_ALT_N) == 0) {
+      control_keys(K_CTRL_N);
+    } else if(strcmp(chartrail, K_ALT_S) == 0) {
+      control_keys(K_CTRL_S);
+    } else if(strcmp(chartrail, K_ALT_X) == 0 || strcmp(chartrail, K_ALT_Q) == 0) {
+      return control_keys(K_CTRL_Q);
     }
     esc_key = 1;
   return esc_key;
@@ -677,7 +741,7 @@ void _resizeScreen(){
 	if (screen1 != NULL) deleteList(&screen1);
 	if (screen2 != NULL) deleteList(&screen2);
 	create_screen(&screen1);
-	create_screen(&screen1);
+	create_screen(&screen2);
 	draw_screen();
 	flush_editarea(0);
 	hdisplayArea = new_columns - 2;	

@@ -20,8 +20,9 @@ Ideally, a keyboard library abstraction would be nice to expand the editor's pos
 
 TO INSTALL:  
 
-    * Download or clone repository.
-    * Type "cd src", "make" and "./cedit" to execute.
+    * Run: `make` (compiles and automatically installs `cedit` to your system path)
+    * Now you can launch it globally from anywhere: `cedit [file]`
+    * To uninstall: `make uninstall`
     
 So far I have implemented:
 

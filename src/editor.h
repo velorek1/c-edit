@@ -29,6 +29,8 @@ wchar_t convertChar(char c1, char c2);
 void buffertoFile(char *fileName);
 int filetoBuffer(char *fileName);
 void flush_editarea(int force_update);
+void apply_syntax_highlight(VLINES *line);
+void rehighlight_buffer(void);
 #endif
 
 

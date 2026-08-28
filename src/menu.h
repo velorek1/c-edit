@@ -23,6 +23,10 @@ void credits();
 void handlemenus(char *returnMenuChar, int *menuCounter, BOOL horizontalMenu);
 int displayAbout();
 int displayHelp(void);
+int fileInfoDialog(void);
+int findDialog(void);
+int gotoLineDialog(void);
+int colorsDialog(void);
 
 #endif
 

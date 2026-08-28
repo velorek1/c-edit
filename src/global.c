@@ -60,6 +60,138 @@ char fullPath[MAXFILENAME];
 FILE *filePointer;
 int fileModified=FILE_UNMODIFIED;
 int deleteKeyPressed = 0;         	    
+char lastSearchStr[MAX_TEXT] = "";
+char tempMessage[150] = "";
+
+void set_color_theme(int theme_id) {
+    switch (theme_id) {
+        case THEME_MSDOS: // Classic MS-DOS Edit
+            EDITAREACOL = B_BLUE;
+            EDIT_FORECOLOR = FH_WHITE;
+            STATUSBAR = B_BLACK;
+            STATUSMSG = F_WHITE;
+            MENU_PANEL = B_WHITE;
+            MENU2_PANEL = B_BLACK;
+            MENU_SELECTOR = B_RED;
+            MENU_FOREGROUND0 = F_BLACK;
+            MENU2_FOREGROUND0 = F_WHITE;
+            MENU_FOREGROUND1 = FH_WHITE;
+            EDITWINDOW_BACK = B_BLUE;
+            EDITWINDOW_FORE = F_WHITE;
+            SCROLLBAR_BACK = B_WHITE;
+            SCROLLBAR_FORE = FH_WHITE;
+            SCROLLBAR_SEL = B_CYAN;
+            SCROLLBAR_ARR = B_BLACK;
+            WINDOW_TITLEB = B_BLACK;
+            WINDOW_TITLEF = FH_WHITE;
+            break;
+            
+        case THEME_DARK: // Modern Dark / Slate
+            EDITAREACOL = B_BLACK;
+            EDIT_FORECOLOR = FH_WHITE;
+            STATUSBAR = BH_BLACK;
+            STATUSMSG = FH_CYAN;
+            MENU_PANEL = BH_BLACK;
+            MENU2_PANEL = B_BLACK;
+            MENU_SELECTOR = B_CYAN;
+            MENU_FOREGROUND0 = FH_WHITE;
+            MENU2_FOREGROUND0 = FH_WHITE;
+            MENU_FOREGROUND1 = F_BLACK;
+            EDITWINDOW_BACK = B_BLACK;
+            EDITWINDOW_FORE = F_WHITE;
+            SCROLLBAR_BACK = BH_BLACK;
+            SCROLLBAR_FORE = F_GREY;
+            SCROLLBAR_SEL = B_CYAN;
+            SCROLLBAR_ARR = B_BLACK;
+            WINDOW_TITLEB = B_CYAN;
+            WINDOW_TITLEF = F_BLACK;
+            break;
+
+        case THEME_TURBOC: // Borland Turbo C
+            EDITAREACOL = B_BLUE;
+            EDIT_FORECOLOR = FH_YELLOW;
+            STATUSBAR = B_CYAN;
+            STATUSMSG = F_BLACK;
+            MENU_PANEL = B_CYAN;
+            MENU2_PANEL = B_BLUE;
+            MENU_SELECTOR = B_BLACK;
+            MENU_FOREGROUND0 = F_BLACK;
+            MENU2_FOREGROUND0 = FH_WHITE;
+            MENU_FOREGROUND1 = FH_WHITE;
+            EDITWINDOW_BACK = B_BLUE;
+            EDITWINDOW_FORE = FH_YELLOW;
+            SCROLLBAR_BACK = B_CYAN;
+            SCROLLBAR_FORE = F_BLACK;
+            SCROLLBAR_SEL = B_RED;
+            SCROLLBAR_ARR = B_BLUE;
+            WINDOW_TITLEB = B_CYAN;
+            WINDOW_TITLEF = F_BLACK;
+            break;
+
+        case THEME_MATRIX: // Matrix Green
+            EDITAREACOL = B_BLACK;
+            EDIT_FORECOLOR = FH_GREEN;
+            STATUSBAR = B_GREEN;
+            STATUSMSG = F_BLACK;
+            MENU_PANEL = B_BLACK;
+            MENU2_PANEL = B_BLACK;
+            MENU_SELECTOR = B_GREEN;
+            MENU_FOREGROUND0 = FH_GREEN;
+            MENU2_FOREGROUND0 = FH_GREEN;
+            MENU_FOREGROUND1 = F_BLACK;
+            EDITWINDOW_BACK = B_BLACK;
+            EDITWINDOW_FORE = FH_GREEN;
+            SCROLLBAR_BACK = B_BLACK;
+            SCROLLBAR_FORE = F_GREEN;
+            SCROLLBAR_SEL = B_GREEN;
+            SCROLLBAR_ARR = B_BLACK;
+            WINDOW_TITLEB = B_GREEN;
+            WINDOW_TITLEF = F_BLACK;
+            break;
+
+        case THEME_AMBER: // Retro Amber CRT
+            EDITAREACOL = B_BLACK;
+            EDIT_FORECOLOR = FH_YELLOW;
+            STATUSBAR = B_YELLOW;
+            STATUSMSG = F_BLACK;
+            MENU_PANEL = B_BLACK;
+            MENU2_PANEL = B_BLACK;
+            MENU_SELECTOR = B_YELLOW;
+            MENU_FOREGROUND0 = FH_YELLOW;
+            MENU2_FOREGROUND0 = FH_YELLOW;
+            MENU_FOREGROUND1 = F_BLACK;
+            EDITWINDOW_BACK = B_BLACK;
+            EDITWINDOW_FORE = FH_YELLOW;
+            SCROLLBAR_BACK = B_BLACK;
+            SCROLLBAR_FORE = F_YELLOW;
+            SCROLLBAR_SEL = B_YELLOW;
+            SCROLLBAR_ARR = B_BLACK;
+            WINDOW_TITLEB = B_YELLOW;
+            WINDOW_TITLEF = F_BLACK;
+            break;
+
+        case THEME_SOLARIZED: // Solarized / Cyan Theme
+            EDITAREACOL = B_CYAN;
+            EDIT_FORECOLOR = F_BLACK;
+            STATUSBAR = B_BLUE;
+            STATUSMSG = FH_WHITE;
+            MENU_PANEL = B_WHITE;
+            MENU2_PANEL = B_CYAN;
+            MENU_SELECTOR = B_BLUE;
+            MENU_FOREGROUND0 = F_BLACK;
+            MENU2_FOREGROUND0 = F_BLACK;
+            MENU_FOREGROUND1 = FH_WHITE;
+            EDITWINDOW_BACK = B_CYAN;
+            EDITWINDOW_FORE = F_BLACK;
+            SCROLLBAR_BACK = B_WHITE;
+            SCROLLBAR_FORE = F_BLACK;
+            SCROLLBAR_SEL = B_BLUE;
+            SCROLLBAR_ARR = B_CYAN;
+            WINDOW_TITLEB = B_BLUE;
+            WINDOW_TITLEF = FH_WHITE;
+            break;
+    }
+}         	    
 
 char aboutMSG[7][MAXLINE] = {ABOUT_ASC_0,ABOUT_ASC_1,ABOUT_ASC_2,ABOUT_ASC_3,ABOUT_ASC_4,ABOUT_ASC_5};
 char help[HELPLINES][MAXLINE] = { HELP0,

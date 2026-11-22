@@ -203,7 +203,7 @@ int _dumpLine(VLINES *head, long index, VLINES *line){
    int i=-1; char ch=0; char attrib = 0; char specialChar = 0;
    VLINES *aux = NULL; //auxiliary pointer
    aux = _getObject(head, index);
-   memset(line, '\0',sizeof(&line)); //Clear memory for temporary line
+   memset(line, 0, sizeof *line); //Clear memory for temporary line
    //Does the line exist?
    if (aux != NULL) { 
      for (i=0; i<MAX_LINE_SIZE; i++)

@@ -191,10 +191,6 @@ char currentPath[4] = "./\0";
 
     if (ch!=27){
     	    //we pass the values
-            //memset(&fullPath, '\0',sizeof(fullPath)); //Clear memory for temporary line
-            memset(fileName, '\0', strlen(fileName) + 1); // Clear memory for temporary line
-            memset(fullPath, '\0', strlen(fullPath) + 1); // Clear memory for temporary line
-           // memset(&fileName, '\0',sizeof(fileName)); //Clear memory for temporary line
     	    strcpy(bit,"\0");
             strcpy(path,"\0");
             strcpy(fileName, scrollData.item);

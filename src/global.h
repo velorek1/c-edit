@@ -95,7 +95,7 @@ extern int WINDOW_TITLEF;
 #define HELP14 "[ESC] or [CTRL + C] or [ALT+X] -> Exit program     \0"
 #define HELP15 "[S] Hide/Show table | CTRL or ALT may be used.     \0"
 #define HELP16 "___________________________________________________\0"
-#define HELP17 "This program was coded in C & Vim from 2018-2024.  \0"
+#define HELP17 "This program was started in C & Vim in 2018.       \0"
 #define HELP18 "Some of the techniques used can be found in my     \0"
 #define HELP19 "personal blog : oldstuff286.blogspot.com           \0"
 #define HELP20 "Peace!  - by v3l0r3k                               \0"

@@ -621,7 +621,7 @@ void credits() {
   //Frees memory and displays goodbye message 
   //Free selected path item/path from opfiledialog 
   size_t i; //to be compatible with strlen
-  char auth[27] ="Coded by v3l0r3k 2018-2025";
+  char auth[27] ="Coded by v3l0r3k - Peace!";
   //int wherex=0,wherey=0;  
 
   close_term();			//restore terminal settings from failsafe

@@ -83,10 +83,8 @@ int initCEDIT(){
    //timer4.ticks=0;
    cursor_timer1.ticks=0;
    //Init Text buffer
-   VLINES tempLine = {0};
-  
    memset(&fileName, '\0',sizeof(fileName)); //Clear fileName
-   memset(&tempLine, '\0',sizeof(tempLine)); //Clear memory for temporary line
+   memset(&tempLine, 0, sizeof tempLine); //Reset the shared temporary line
    //Create one screen in memory
    if (screen1 != NULL) deleteList(&screen1);
    if (screen2 != NULL) deleteList(&screen2);
